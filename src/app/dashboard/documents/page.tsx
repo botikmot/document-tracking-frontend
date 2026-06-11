@@ -27,7 +27,6 @@ export default function DocumentsPage() {
             '/documents',
           );
 
-        console.log('documents:', response.data)
         setDocuments(
           response.data,
         );
@@ -38,13 +37,14 @@ export default function DocumentsPage() {
       }
     };
 
-    useEffect(() => {
-        const load = async () => {
-            await fetchDocuments();
-        };
+  useEffect(() => {
+    const load =
+      async () => {
+        await fetchDocuments();
+      };
 
-        void load();
-    }, []);
+    void load();
+  }, []);
 
   const filteredDocuments =
     documents.filter(
@@ -64,34 +64,51 @@ export default function DocumentsPage() {
     );
 
   return (
-    <main className="flex-1 overflow-hidden">
-      <DocumentsHeader
-        onCreated={
-          fetchDocuments
-        }
-      />
+    <main className="relative flex-1 overflow-hidden bg-[#F5F7F2]">
+      {/* ====================================== */}
+      {/* BACKGROUND GLOW */}
+      {/* ====================================== */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute right-0 top-0 h-[450px] w-[450px] rounded-full bg-green-500/5 blur-3xl" />
 
-      <div className="space-y-8 p-8">
-        <DocumentsStats
-          documents={documents}
-        />
+        <div className="absolute bottom-0 left-0 h-[350px] w-[350px] rounded-full bg-emerald-500/5 blur-3xl" />
+      </div>
 
-        <DocumentsTabs
-          activeTab={
-            activeTab
-          }
-          setActiveTab={
-            setActiveTab
+      <div className="relative z-10">
+        <DocumentsHeader
+          onCreated={
+            fetchDocuments
           }
         />
 
-        <DocumentsTable
-          documents={
-            filteredDocuments
-          }
-          loading={loading}
-          onRefresh={fetchDocuments}
-        />
+        <div className="space-y-8 p-8">
+          <DocumentsStats
+            documents={
+              documents
+            }
+          />
+
+          <DocumentsTabs
+            activeTab={
+              activeTab
+            }
+            setActiveTab={
+              setActiveTab
+            }
+          />
+
+          <DocumentsTable
+            documents={
+              filteredDocuments
+            }
+            loading={
+              loading
+            }
+            onRefresh={
+              fetchDocuments
+            }
+          />
+        </div>
       </div>
     </main>
   );

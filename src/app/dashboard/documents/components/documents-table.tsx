@@ -2,14 +2,16 @@
 
 import {
   Building2,
+  Clock3,
   FileText,
   Search,
-  //Send,
 } from 'lucide-react';
 
-import {
-  Badge,
-} from '@/components/ui/badge';
+import { useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+
+import { Button } from '@/components/ui/button';
 
 import {
   Card,
@@ -18,16 +20,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 
-import {
-  Input,
-} from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 
 import { RouteDocumentDialog } from './route-document-dialog';
+
 import { DocumentTimelineDrawer } from './document-timeline-drawer';
+
 import { DocumentDetailsDrawer } from './document-details-drawer';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { api } from '@/lib/axios';
 
 export function DocumentsTable({
   documents,
@@ -36,10 +35,11 @@ export function DocumentsTable({
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   documents: any[];
+
   loading: boolean;
+
   onRefresh: () => void;
 }) {
-
   const [
     selectedDocument,
     setSelectedDocument,
@@ -55,157 +55,234 @@ export function DocumentsTable({
     setOpenDetails,
   ] = useState(false);
 
-
-
   if (loading) {
     return (
-      <Card className="rounded-3xl border-0 bg-white shadow-sm">
-        <CardContent className="p-10 text-center text-slate-500">
+      <Card className="rounded-[32px] border-0 bg-white shadow-xl">
+        <CardContent className="p-16 text-center text-slate-500">
           Loading documents...
         </CardContent>
       </Card>
     );
   }
 
+  const getStatusStyle =
+    (
+      status: string,
+    ) => {
+      switch (status) {
+        case 'APPROVED':
+          return 'bg-emerald-100 text-emerald-700';
+
+        case 'REJECTED':
+          return 'bg-red-100 text-red-700';
+
+        case 'COMPLETED':
+          return 'bg-slate-200 text-slate-700';
+
+        case 'IN_REVIEW':
+          return 'bg-blue-100 text-blue-700';
+
+        default:
+          return 'bg-amber-100 text-amber-700';
+      }
+    };
 
   return (
-    <Card className="rounded-3xl border-0 bg-white shadow-sm">
-      <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <CardTitle className="text-2xl font-black">
-          Documents Registry
-        </CardTitle>
+    <>
+      <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-green-100/30">
+        {/* ====================================== */}
+        {/* HEADER */}
+        {/* ====================================== */}
+        <CardHeader className="border-b border-slate-100 pb-6">
+          <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+            <div>
+              <CardTitle className="text-3xl font-black text-[#102418]">
+                Documents Registry
+              </CardTitle>
 
-        <div className="relative w-full lg:w-80">
-          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <p className="mt-2 text-slate-500">
+                Monitor all active and archived documents across
+                offices and departments.
+              </p>
+            </div>
 
-          <Input
-            placeholder="Search document..."
-            className="h-11 rounded-2xl pl-11"
-          />
-        </div>
-      </CardHeader>
+            {/* SEARCH */}
+            <div className="relative w-full xl:w-[360px]">
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
 
-      <CardContent>
-        <div className="space-y-4">
+              <Input
+                placeholder="Search documents..."
+                className="h-14 rounded-2xl border-0 bg-slate-100 pl-12 shadow-sm focus-visible:ring-2 focus-visible:ring-green-500"
+              />
+            </div>
+          </div>
+        </CardHeader>
+
+        {/* ====================================== */}
+        {/* CONTENT */}
+        {/* ====================================== */}
+        <CardContent className="space-y-5 p-6">
           {documents.map((doc) => {
             const canRoute = [
               'DRAFT',
               'PENDING',
               'REJECTED',
             ].includes(
-              doc.currentStatus?.name,
+              doc.currentStatus
+                ?.name,
             );
 
             return (
               <div
                 key={doc.id}
-                className="flex flex-col gap-5 rounded-3xl border border-slate-100 p-6 transition hover:border-blue-200 hover:bg-slate-50 lg:flex-row lg:items-center lg:justify-between"
+                className="group rounded-[30px] border border-slate-100 bg-slate-50/60 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-green-200 hover:bg-white hover:shadow-xl"
               >
-                {/* LEFT */}
-                <div className="flex items-center gap-5">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
-                    <FileText className="h-8 w-8 text-slate-700" />
-                  </div>
-
-                  <div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h3 className="text-xl font-bold text-slate-900">
-                        {
-                          doc.title
-                        }
-                      </h3>
-
-                      <Badge className="rounded-full bg-blue-100 text-blue-700">
-                        {
-                          doc
-                            .documentType
-                            ?.name
-                        }
-                      </Badge>
+                <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+                  {/* LEFT */}
+                  <div className="flex items-start gap-5">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-xl">
+                      <FileText className="h-10 w-10" />
                     </div>
 
-                    <div className="mt-2 flex flex-wrap items-center gap-5 text-sm text-slate-500">
-                      <div>
-                        {
-                          doc.trackingNumber
-                        }
+                    <div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h3 className="text-2xl font-black text-[#102418]">
+                          {
+                            doc.title
+                          }
+                        </h3>
+
+                        <Badge className="rounded-full bg-blue-100 px-4 py-1 text-blue-700">
+                          {
+                            doc
+                              .documentType
+                              ?.name
+                          }
+                        </Badge>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4" />
+                      <div className="mt-4 flex flex-wrap items-center gap-6 text-sm text-slate-500">
+                        <div className="rounded-full bg-slate-200 px-4 py-1 font-medium text-slate-700">
+                          {
+                            doc.trackingNumber
+                          }
+                        </div>
 
-                        {
-                          doc
-                            .currentOffice
-                            ?.officeName
-                        }
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4" />
+
+                          {
+                            doc
+                              .currentOffice
+                              ?.officeName
+                          }
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Clock3 className="h-4 w-4" />
+
+                          Last updated recently
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* RIGHT */}
-                <div className="flex flex-wrap items-center gap-3">
-                  <Badge className="rounded-full bg-emerald-100 text-emerald-700">
-                    {doc.currentStatus?.name}
-                  </Badge>
+                  {/* RIGHT */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Badge
+                      className={`rounded-full px-5 py-2 text-sm font-semibold ${getStatusStyle(
+                        doc
+                          .currentStatus
+                          ?.name,
+                      )}`}
+                    >
+                      {
+                        doc
+                          .currentStatus
+                          ?.name
+                      }
+                    </Badge>
 
-                  {canRoute && (
-                    <div
-                      onClick={(e) => {
+                    {doc.route
+                      ?.toOffice && (
+                      <div className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600">
+                        Routed to:
+                        {' '}
+                        <span className="font-bold text-slate-900">
+                          {
+                            doc
+                              .route
+                              .toOffice
+                              .officeName
+                          }
+                        </span>
+                      </div>
+                    )}
+
+                    {canRoute && (
+                      <div
+                        onClick={(
+                          e,
+                        ) => {
+                          e.stopPropagation();
+                        }}
+                      >
+                        <RouteDocumentDialog
+                          documentId={
+                            doc.id
+                          }
+                          onSuccess={
+                            onRefresh
+                          }
+                        />
+                      </div>
+                    )}
+
+                    <Button
+                      variant="outline"
+                      className="h-11 rounded-2xl border-slate-200 bg-white px-5"
+                      onClick={(
+                        e,
+                      ) => {
                         e.stopPropagation();
+
+                        setSelectedDocument(
+                          doc,
+                        );
+
+                        setOpenDetails(
+                          true,
+                        );
                       }}
                     >
-                      <RouteDocumentDialog
-                        documentId={doc.id}
-                        onSuccess={onRefresh}
-                      />
-                    </div>
-                  )}
+                      View Details
+                    </Button>
 
-                  {doc.route?.toOffice && (
-                    <div className="flex items-center gap-2 text-sm text-slate-500">
-                      Routed to:
-                      <span className="font-semibold">
-                        {doc.route.toOffice.officeName}
-                      </span>
-                    </div>
-                  )}
+                    <Button
+                      className="h-11 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 px-5 text-white hover:from-green-700 hover:to-emerald-700"
+                      onClick={(
+                        e,
+                      ) => {
+                        e.stopPropagation();
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl"
-                    onClick={(e) => {
-                      e.stopPropagation();
+                        setSelectedDocument(
+                          doc,
+                        );
 
-                      setSelectedDocument(doc);
-                      setOpenDetails(true);
-                    }}
-                  >
-                    View Details
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl"
-                    onClick={(e) => {
-                      e.stopPropagation();
-
-                      setSelectedDocument(doc);
-                      setOpenTimeline(true);
-                    }}
-                  >
-                    Timeline
-                  </Button>
-
+                        setOpenTimeline(
+                          true,
+                        );
+                      }}
+                    >
+                      Timeline
+                    </Button>
+                  </div>
                 </div>
               </div>
             );
           })}
-        </div>
-      </CardContent>
+        </CardContent>
+      </Card>
 
       <DocumentTimelineDrawer
         open={openTimeline}
@@ -226,7 +303,6 @@ export function DocumentsTable({
           selectedDocument
         }
       />
-
-    </Card>
+    </>
   );
 }

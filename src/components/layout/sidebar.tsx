@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 import {
@@ -8,13 +9,13 @@ import {
   Inbox,
   Send,
   Clock3,
-  //CheckCircle2,
   Archive,
   Settings,
   Users,
   Building2,
   LogOut,
   FileText,
+  ShieldCheck,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -24,7 +25,8 @@ import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth.store';
 
 export function Sidebar() {
-  const pathname = usePathname();
+  const pathname =
+    usePathname();
 
   const user =
     useAuthStore(
@@ -52,151 +54,211 @@ export function Sidebar() {
     },
     {
       label: 'Documents',
-      href: '/dashboard/documents',
+      href:
+        '/dashboard/documents',
       icon: FileText,
     },
     {
       label: 'Incoming',
-      href: '/dashboard/incoming',
+      href:
+        '/dashboard/incoming',
       icon: Inbox,
     },
     {
       label: 'Outgoing',
-      href: '/dashboard/outgoing',
+      href:
+        '/dashboard/outgoing',
       icon: Send,
     },
     {
       label: 'Pending',
-      href: '/dashboard/pending',
+      href:
+        '/dashboard/pending',
       icon: Clock3,
     },
-    /* {
-      label: 'Received',
-      href: '/dashboard/received',
-      icon: CheckCircle2,
-    }, */
     {
       label: 'Archived',
-      href: '/dashboard/archived',
+      href:
+        '/dashboard/archived',
       icon: Archive,
     },
     {
       label: 'Settings',
-      href: '/dashboard/settings',
+      href:
+        '/dashboard/settings',
       icon: Settings,
     },
   ];
 
   return (
-    <aside className="hidden w-72 border-r bg-white lg:flex lg:flex-col">
-      {/* LOGO */}
-      <div className="border-b p-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg">
-            <FileText className="h-7 w-7" />
+    <aside className="sticky top-0 hidden h-screen w-80 flex-col border-r border-white/10 bg-[#07150d] lg:flex">
+      {/* ====================================== */}
+      {/* HEADER */}
+      {/* ====================================== */}
+      <div className="border-b border-white/10 p-6">
+        <div className="flex items-center gap-4">
+          <div className="rounded-full bg-white p-1 shadow-2xl">
+            <Image
+              src="/images/logo_denr.png"
+              alt="DENR"
+              width={54}
+              height={54}
+            />
           </div>
 
           <div>
-            <h1 className="text-xl font-black text-slate-900">
-              GovTrack
+            <h1 className="text-2xl font-black tracking-wide text-white">
+              eDATS
             </h1>
 
-            <p className="text-sm text-slate-500">
+            <p className="text-xs text-green-100/70">
               Document Tracking
             </p>
           </div>
         </div>
       </div>
 
-      {/* USER */}
-      <div className="border-b p-6">
-        <div className="rounded-2xl bg-slate-100 p-4">
-          <p className="text-sm text-slate-500">
-            Logged in as
-          </p>
+      {/* ====================================== */}
+      {/* USER INFO */}
+      {/* ====================================== */}
+      <div className="border-b border-white/10 p-6">
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-500/20">
+              <ShieldCheck className="h-7 w-7 text-green-300" />
+            </div>
 
-          <h2 className="mt-1 font-bold text-slate-900">
-            {user?.username ??
-              'Employee'}
-          </h2>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs uppercase tracking-widest text-green-100/50">
+                Logged in as
+              </p>
 
-          <p className="mt-1 text-xs text-slate-500">
-            {roles.join(', ')}
-          </p>
+              <h2 className="truncate text-lg font-bold text-white">
+                {user?.username ??
+                  'Employee'}
+              </h2>
+
+              <p className="mt-1 truncate text-xs text-green-100/60">
+                {roles.join(', ')}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* MENU */}
-      <div className="flex-1 space-y-2 p-4">
-        {menus.map((menu) => {
-          const Icon =
-            menu.icon;
+      {/* ====================================== */}
+      {/* NAVIGATION */}
+      {/* ====================================== */}
+      <div className="flex-1 overflow-y-auto px-4 py-3">
+        <div className="space-y-2">
+          {menus.map((menu) => {
+            const Icon =
+              menu.icon;
 
-          const active =
-            pathname ===
-            menu.href;
+            const active =
+              pathname ===
+              menu.href;
 
-          return (
-            <Link
-              key={menu.href}
-              href={menu.href}
-              className={cn(
-                'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all',
-                active
-                  ? 'bg-slate-900 text-white shadow-lg'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
-              )}
-            >
-              <Icon className="h-5 w-5" />
+            return (
+              <Link
+                key={menu.href}
+                href={menu.href}
+                className={cn(
+                  'group flex items-center gap-4 rounded-2xl px-5 py-2 text-sm font-semibold transition-all duration-300',
+                  active
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-2xl'
+                    : 'text-green-50/70 hover:bg-white/5 hover:text-white',
+                )}
+              >
+                <div
+                  className={cn(
+                    'flex h-11 w-11 items-center justify-center rounded-2xl transition-all',
+                    active
+                      ? 'bg-white/10'
+                      : 'bg-white/5 group-hover:bg-white/10',
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                </div>
 
-              {menu.label}
-            </Link>
-          );
-        })}
+                <span>
+                  {menu.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
 
+        {/* ====================================== */}
+        {/* ADMIN */}
+        {/* ====================================== */}
         {isSuperAdmin && (
-          <>
-            <div className="my-4 border-t" />
+          <div className="mt-8">
+            <div className="mb-4 px-3">
+              <p className="text-xs font-bold uppercase tracking-[0.25em] text-green-100/40">
+                Administration
+              </p>
+            </div>
 
-            <p className="px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Administration
-            </p>
+            <div className="space-y-2">
+              <Link
+                href="/dashboard/users"
+                className={cn(
+                  'group flex items-center gap-4 rounded-2xl px-5 py-4 text-sm font-semibold transition-all duration-300',
+                  pathname ===
+                    '/dashboard/users'
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-2xl'
+                    : 'text-green-50/70 hover:bg-white/5 hover:text-white',
+                )}
+              >
+                <div
+                  className={cn(
+                    'flex h-11 w-11 items-center justify-center rounded-2xl transition-all',
+                    pathname ===
+                      '/dashboard/users'
+                      ? 'bg-white/10'
+                      : 'bg-white/5 group-hover:bg-white/10',
+                  )}
+                >
+                  <Users className="h-5 w-5" />
+                </div>
 
-            <Link
-              href="/dashboard/users"
-              className={cn(
-                'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all',
-                pathname ===
-                  '/dashboard/users'
-                  ? 'bg-slate-900 text-white shadow-lg'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
-              )}
-            >
-              <Users className="h-5 w-5" />
+                Users
+              </Link>
 
-              Users
-            </Link>
+              <Link
+                href="/dashboard/offices"
+                className={cn(
+                  'group flex items-center gap-4 rounded-2xl px-5 py-4 text-sm font-semibold transition-all duration-300',
+                  pathname ===
+                    '/dashboard/offices'
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-2xl'
+                    : 'text-green-50/70 hover:bg-white/5 hover:text-white',
+                )}
+              >
+                <div
+                  className={cn(
+                    'flex h-11 w-11 items-center justify-center rounded-2xl transition-all',
+                    pathname ===
+                      '/dashboard/offices'
+                      ? 'bg-white/10'
+                      : 'bg-white/5 group-hover:bg-white/10',
+                  )}
+                >
+                  <Building2 className="h-5 w-5" />
+                </div>
 
-            <Link
-              href="/dashboard/offices"
-              className={cn(
-                'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all',
-                pathname ===
-                  '/dashboard/offices'
-                  ? 'bg-slate-900 text-white shadow-lg'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
-              )}
-            >
-              <Building2 className="h-5 w-5" />
-
-              Offices
-            </Link>
-          </>
+                Offices
+              </Link>
+            </div>
+          </div>
         )}
       </div>
 
-      {/* LOGOUT */}
-      <div className="border-t p-4">
+      {/* ====================================== */}
+      {/* FOOTER */}
+      {/* ====================================== */}
+      <div className="border-t border-white/10 p-5">
         <Button
           variant="outline"
           onClick={() => {
@@ -205,9 +267,9 @@ export function Sidebar() {
             window.location.href =
               '/login';
           }}
-          className="w-full justify-start rounded-2xl"
+          className="h-14 w-full justify-start rounded-2xl border-white/10 bg-white/5 text-green-100 hover:bg-white/10 hover:text-white"
         >
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="mr-3 h-5 w-5" />
 
           Logout
         </Button>

@@ -1,6 +1,9 @@
 'use client';
 
-import { FileText } from 'lucide-react';
+import {
+  FileText,
+  ShieldCheck,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 
@@ -12,34 +15,45 @@ export function DocumentsHeader({
   onCreated: () => void;
 }) {
   return (
-    <div className="border-b bg-white">
-      <div className="flex flex-col gap-5 px-8 py-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-100">
-            <FileText className="h-8 w-8 text-blue-600" />
+    <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
+      <div className="flex flex-col gap-6 px-8 py-6 xl:flex-row xl:items-center xl:justify-between">
+        {/* LEFT */}
+        <div className="flex items-center gap-5">
+          <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-2xl">
+            <FileText className="h-10 w-10" />
           </div>
 
           <div>
-            <h1 className="text-3xl font-black text-slate-900">
-              Documents
+            <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-700">
+              DENR eDATS
+            </p>
+
+            <h1 className="mt-2 text-4xl font-black tracking-tight text-[#102418]">
+              Documents Registry
             </h1>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Track, route, and manage documents region-wide.
+            <p className="mt-2 text-slate-600">
+              Track, route, monitor, and manage official documents
+              across departments and offices.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Badge className="rounded-full bg-blue-100 px-4 py-1 text-blue-700">
+        {/* RIGHT */}
+        <div className="flex flex-wrap items-center gap-4">
+          <Badge className="rounded-full border border-emerald-200 bg-emerald-100 px-5 py-2 text-emerald-700 hover:bg-emerald-100">
             Live Tracking
           </Badge>
 
-          <CreateDocumentDialog
-            
-          />
+          <Badge className="rounded-full border border-blue-200 bg-blue-100 px-5 py-2 text-blue-700 hover:bg-blue-100">
+            System Active
+          </Badge>
+
+          <div className="rounded-2xl">
+            <CreateDocumentDialog />
+          </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 }

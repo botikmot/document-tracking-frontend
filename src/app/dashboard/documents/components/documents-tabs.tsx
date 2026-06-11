@@ -22,7 +22,7 @@ export function DocumentsTabs({
   ) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap gap-3 rounded-[30px] border border-white/60 bg-white/70 p-3 shadow-lg backdrop-blur-xl">
       {tabs.map((tab) => (
         <button
           key={tab}
@@ -30,10 +30,10 @@ export function DocumentsTabs({
             setActiveTab(tab)
           }
           className={cn(
-            'rounded-2xl px-5 py-2 text-sm font-semibold transition-all',
+            'rounded-2xl px-5 py-3 text-sm font-bold transition-all duration-300',
             activeTab === tab
-              ? 'bg-slate-900 text-white shadow-lg'
-              : 'bg-white text-slate-600 hover:bg-slate-100',
+              ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-xl'
+              : 'text-slate-600 hover:bg-slate-100',
           )}
         >
           {tab.replaceAll(
