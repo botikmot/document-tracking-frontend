@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-
+import { useEffect, useState } from 'react';
 import {
   CalendarDays,
   FileText,
@@ -19,13 +18,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-
 import { Button } from '@/components/ui/button';
-
 import { Input } from '@/components/ui/input';
-
 import { Textarea } from '@/components/ui/textarea';
-
 import {
   Select,
   SelectContent,
@@ -33,17 +28,69 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
 import { Label } from '@/components/ui/label';
-
 import { Badge } from '@/components/ui/badge';
+import { api } from '@/lib/axios';
+import { DateTimePicker } from '@/components/ui/date-time-picker';
 
-export default function CreateDocumentDialog() {
+type Attachment = {
+  fileName: string;
+  filePath: string;
+  mimeType: string;
+  fileSize: number;
+  publicId: string;
+};
+
+export default function CreateDocumentDialog(
+  {
+    onCreated,
+  }: {
+    onCreated: () => void;
+  }
+) {
   const [open, setOpen] =
     useState(false);
 
   const [loading, setLoading] =
     useState(false);
+  
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [attachments, setAttachments] = useState<any[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [documentTypes, setDocumentTypes] = useState<{id: string; name: string;}[]>([]);
+  const [formData, setFormData] =
+    useState({
+      title: '',
+      description: '',
+      deadline: undefined as
+        | Date
+        | undefined,
+      documentTypeId: '',
+      priority: '',
+      confidentialityLevel: '',
+    });
+
+  const fetchTrackingNumber =
+    async () => {
+      try {
+        const response = await api.get('/documents/next-tracking-number');
+          setTrackingNumber(response.data.trackingNumber);
+
+        const types = await api.get('/document-types');
+        console.log('doc types:', types)
+        setDocumentTypes(types.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+  useEffect(() => {
+      const load = async () => {
+      await fetchTrackingNumber();
+      };
+      void load();
+  }, []);
 
   const handleSubmit =
     async (
@@ -53,21 +100,17 @@ export default function CreateDocumentDialog() {
 
       try {
         setLoading(true);
+       
+        const payload = {
+          ...formData,
+          attachments,
+        };
 
-        /*
-         |----------------------------------------
-         | SUBMIT API HERE
-         |----------------------------------------
-         */
+        console.log('data:', payload);
+        const res = await api.post('/documents', payload);
 
-        await new Promise(
-          (resolve) =>
-            setTimeout(
-              resolve,
-              1500,
-            ),
-        );
-
+        console.log('created: ', res)
+        onCreated()
         setOpen(false);
       } catch (error) {
         console.error(error);
@@ -75,6 +118,114 @@ export default function CreateDocumentDialog() {
         setLoading(false);
       }
     };
+
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = e.target.files;
+
+    if (!files) return;
+
+    try {
+      setUploading(true);
+
+      const uploadedFiles: Attachment[] = [];
+
+      for (const file of Array.from(files)) {
+        /*
+        |----------------------------------------
+        | FILE SIZE LIMIT
+        |----------------------------------------
+        */
+
+        if (file.size > MAX_FILE_SIZE) {
+          alert(
+            `${file.name} exceeds 10MB limit`
+          );
+
+          continue;
+        }
+
+        /*
+        |----------------------------------------
+        | UPLOAD TO CLOUDINARY
+        |----------------------------------------
+        */
+
+        const data = new FormData();
+
+        data.append('file', file);
+
+        const response = await fetch(
+          '/api/upload',
+          {
+            method: 'POST',
+            body: data,
+          }
+        );
+
+        const result =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result.error ||
+              'Upload failed'
+          );
+        }
+
+        uploadedFiles.push({
+          fileName: file.name,
+          filePath: result.url,
+          mimeType: file.type,
+          fileSize: file.size,
+          publicId: result.public_id,
+        });
+      }
+
+      setAttachments((prev) => [
+        ...prev,
+        ...uploadedFiles,
+      ]);
+    } catch (error) {
+      console.error(error);
+
+      alert('Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeAttachment = async (
+    publicId: string
+  ) => {
+    try {
+      await fetch(
+        '/api/upload/delete',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type':
+              'application/json',
+          },
+          body: JSON.stringify({
+            publicId,
+          }),
+        }
+      );
+
+      setAttachments((prev) =>
+        prev.filter(
+          (item) =>
+            item.publicId !== publicId
+        )
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <Dialog
@@ -155,6 +306,13 @@ export default function CreateDocumentDialog() {
                 <Input
                   placeholder="Enter document title..."
                   className="h-12 rounded-2xl border-slate-200 bg-slate-50"
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      title: e.target.value,
+                    })
+                  }
                 />
               </div>
 
@@ -167,19 +325,35 @@ export default function CreateDocumentDialog() {
                 <Textarea
                   placeholder="Enter document description..."
                   className="min-h-[120px] rounded-2xl border-slate-200 bg-slate-50"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      description: e.target.value,
+                    })
+                  }
                 />
               </div>
 
-              {/* REFERENCE */}
+              {/* TRACKING NUMBER */}
               <div>
                 <Label className="mb-2 block text-sm font-semibold text-slate-700">
-                  Reference Number
+                  Tracking Number
                 </Label>
 
-                <Input
-                  placeholder="REF-2026-001"
-                  className="h-12 rounded-2xl border-slate-200 bg-slate-50"
-                />
+                <div className="relative">
+                  <FileText className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-green-700" />
+
+                  <Input
+                    value={trackingNumber}
+                    readOnly
+                    className="h-12 rounded-2xl border-green-200 bg-green-50 pl-12 font-semibold tracking-wide text-green-800"
+                  />
+                </div>
+
+                <p className="mt-2 text-xs text-slate-500">
+                  Automatically generated by the system
+                </p>
               </div>
 
               {/* DEADLINE */}
@@ -188,14 +362,20 @@ export default function CreateDocumentDialog() {
                   Deadline
                 </Label>
 
-                <div className="relative">
-                  <CalendarDays className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <DateTimePicker
+                  value={formData.deadline}
+                  onChange={(date) =>
+                    setFormData({
+                      ...formData,
+                      deadline: date,
+                    })
+                  }
+                  placeholder="Select deadline"
+                />
 
-                  <Input
-                    type="date"
-                    className="h-12 rounded-2xl border-slate-200 bg-slate-50 pl-12"
-                  />
-                </div>
+                <p className="mt-2 text-xs text-slate-500">
+                  Select document due date and time
+                </p>
               </div>
             </div>
           </section>
@@ -227,23 +407,30 @@ export default function CreateDocumentDialog() {
                   Document Type
                 </Label>
 
-                <Select>
-                  <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-slate-50">
+                <Select
+                  value={
+                    formData.documentTypeId
+                  }
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      documentTypeId: value,
+                    })
+                  }
+                >
+                  <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
 
                   <SelectContent>
-                    <SelectItem value="memo">
-                      Memorandum
-                    </SelectItem>
-
-                    <SelectItem value="letter">
-                      Letter
-                    </SelectItem>
-
-                    <SelectItem value="report">
-                      Report
-                    </SelectItem>
+                    {documentTypes.map((type) => (
+                      <SelectItem
+                        key={type.id}
+                        value={type.id}
+                      >
+                        {type.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -254,25 +441,33 @@ export default function CreateDocumentDialog() {
                   Priority Level
                 </Label>
 
-                <Select>
-                  <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-slate-50">
+                <Select
+                  value={formData.priority}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      priority: value,
+                    })
+                  }
+                >
+                  <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50">
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
 
                   <SelectContent>
-                    <SelectItem value="low">
+                    <SelectItem value="LOW">
                       Low
                     </SelectItem>
 
-                    <SelectItem value="medium">
+                    <SelectItem value="MEDIUM">
                       Medium
                     </SelectItem>
 
-                    <SelectItem value="high">
+                    <SelectItem value="HIGH">
                       High
                     </SelectItem>
 
-                    <SelectItem value="urgent">
+                    <SelectItem value="URGENT">
                       Urgent
                     </SelectItem>
                   </SelectContent>
@@ -285,22 +480,33 @@ export default function CreateDocumentDialog() {
                   Confidentiality
                 </Label>
 
-                <Select>
-                  <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-slate-50">
+                <Select
+                  value={
+                    formData.confidentialityLevel
+                  }
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      confidentialityLevel:
+                        value,
+                    })
+                  }
+                >
+                  <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50">
                     <SelectValue placeholder="Select level" />
                   </SelectTrigger>
 
                   <SelectContent>
-                    <SelectItem value="public">
+                    <SelectItem value="PUBLIC">
                       Public
                     </SelectItem>
 
-                    <SelectItem value="internal">
+                    <SelectItem value="INTERNAL">
                       Internal
                     </SelectItem>
 
-                    <SelectItem value="restricted">
-                      Restricted
+                    <SelectItem value="CONFIDENTIAL">
+                      Confidential
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -335,18 +541,74 @@ export default function CreateDocumentDialog() {
               </h2>
 
               <p className="mt-2 max-w-md text-sm leading-7 text-slate-600">
-                Drag and drop files here or browse documents for
-                upload. Supported formats include PDF, DOCX, XLSX,
-                and image files.
+                Upload PDF, DOCX, XLSX,
+                images, and other files.
               </p>
 
-              <Button
-                type="button"
-                variant="outline"
-                className="mt-6 rounded-2xl border-green-300 bg-white"
-              >
-                Browse Files
-              </Button>
+              <label>
+                <input
+                  type="file"
+                  multiple
+                  hidden
+                  onChange={
+                    handleFileUpload
+                  }
+                />
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={uploading}
+                  className="mt-6 rounded-2xl border-green-300 bg-white"
+                  asChild
+                >
+                  <span>
+                    {uploading
+                      ? 'Uploading...'
+                      : 'Browse Files'}
+                  </span>
+                </Button>
+              </label>
+            </div>
+
+            {/* FILE LIST */}
+            <div className="mt-8 space-y-3">
+              {attachments.map(
+                (file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4"
+                  >
+                    <div>
+                      <p className="font-medium text-slate-800">
+                        {file.fileName}
+                      </p>
+
+                      <p className="text-xs text-slate-500">
+                        {(
+                          file.fileSize /
+                          1024 /
+                          1024
+                        ).toFixed(2)}{' '}
+                        MB
+                      </p>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={() =>
+                        removeAttachment(
+                          file.publicId
+                        )
+                      }
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )
+              )}
             </div>
           </section>
 

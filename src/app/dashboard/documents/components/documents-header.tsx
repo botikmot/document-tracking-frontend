@@ -50,7 +50,7 @@ export function DocumentsHeader({
           </Badge>
 
           <div className="rounded-2xl">
-            <CreateDocumentDialog />
+            <CreateDocumentDialog onCreated={onCreated}/>
           </div>
         </div>
       </div>
