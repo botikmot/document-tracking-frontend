@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import {
-  CalendarDays,
   FileText,
   FolderOpen,
   Loader2,
@@ -48,28 +47,40 @@ export default function CreateDocumentDialog(
     onCreated: () => void;
   }
 ) {
-  const [open, setOpen] =
-    useState(false);
 
-  const [loading, setLoading] =
-    useState(false);
+  const initialFormData = {
+    title: '',
+    description: '',
+    deadline:
+      undefined as
+        | Date
+        | undefined,
+    documentTypeId: '',
+    priority: '',
+    confidentialityLevel: '',
+    senderType: '',
+    senderOfficeId: '',
+    senderName: '',
+    senderOrganization: '',
+    senderContact: '',
+  };
+  
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [attachments, setAttachments] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState('');
   const [documentTypes, setDocumentTypes] = useState<{id: string; name: string;}[]>([]);
-  const [formData, setFormData] =
-    useState({
-      title: '',
-      description: '',
-      deadline: undefined as
-        | Date
-        | undefined,
-      documentTypeId: '',
-      priority: '',
-      confidentialityLevel: '',
-    });
+  const [currentOffice, setCurrentOffice] = useState<{id: string; officeName: string;} | null>(null);
+  const [formData, setFormData] = useState(initialFormData);
+
+  const resetForm = () => {
+    setFormData(initialFormData);
+    setAttachments([]);
+    void fetchTrackingNumber();
+  };
 
   const fetchTrackingNumber =
     async () => {
@@ -80,6 +91,13 @@ export default function CreateDocumentDialog(
         const types = await api.get('/document-types');
         console.log('doc types:', types)
         setDocumentTypes(types.data);
+
+        const meRes = await api.get('/auth/me');
+        console.log('meRes:', meRes)
+        const office = meRes.data.officeUsers?.[0]?.office;
+        if (office) {
+          setCurrentOffice(office);
+        }
       } catch (error) {
         console.error(error);
       }
@@ -111,6 +129,7 @@ export default function CreateDocumentDialog(
 
         console.log('created: ', res)
         onCreated()
+        resetForm()
         setOpen(false);
       } catch (error) {
         console.error(error);
@@ -377,6 +396,208 @@ const handleFileUpload = async (
                   Select document due date and time
                 </p>
               </div>
+            </div>
+          </section>
+
+          {/* ===================================== */}
+          {/* SENDER INFORMATION */}
+          {/* ===================================== */}
+          <section className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-sm">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100">
+                <FileText className="h-6 w-6 text-blue-700" />
+              </div>
+
+              <div>
+                <h2 className="text-xl font-black text-[#102418]">
+                  Sender Information
+                </h2>
+
+                <p className="text-sm text-slate-500">
+                  Identify where the document originated from.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* SENDER TYPE */}
+              <div className="lg:col-span-2">
+                <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Sender Type
+                </Label>
+
+                <Select
+                  value={formData.senderType}
+                  onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    senderType: value,
+                    senderOfficeId:
+                      value === 'OFFICE' &&
+                      currentOffice
+                        ? currentOffice.id
+                        : '',
+
+                    senderName: '',
+                    senderOrganization: '',
+                    senderContact: '',
+                  })
+                }
+                >
+                  <SelectTrigger className="h-12 w-1/2 rounded-2xl border-slate-200 bg-slate-50">
+                    <SelectValue placeholder="Select sender type" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="OFFICE">
+                      Office
+                    </SelectItem>
+
+                    <SelectItem value="CLIENT">
+                      Client / Citizen
+                    </SelectItem>
+
+                    <SelectItem value="AGENCY">
+                      Government Agency
+                    </SelectItem>
+
+                    <SelectItem value="COMPANY">
+                      Company / Organization
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* ===================================== */}
+              {/* OFFICE */}
+              {/* ===================================== */}
+
+              {formData.senderType ===
+                'OFFICE' &&
+                currentOffice && (
+                  <div className="lg:col-span-2">
+                    <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                      Originating Office
+                    </Label>
+
+                    <div className="flex h-12 items-center rounded-2xl border border-green-200 bg-green-50 px-4">
+                      <p className="font-semibold text-green-800">
+                        {
+                          currentOffice.officeName
+                        }
+                      </p>
+                    </div>
+
+                    <p className="mt-2 text-xs text-slate-500">
+                      Automatically selected from
+                      your assigned office
+                    </p>
+                  </div>
+                )}
+
+              {/* ===================================== */}
+              {/* CLIENT */}
+              {/* ===================================== */}
+
+              {formData.senderType ===
+                'CLIENT' && (
+                <>
+                  <div>
+                    <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                      Client Name
+                    </Label>
+
+                    <Input
+                      placeholder="Enter client name"
+                      className="h-12 rounded-2xl border-slate-200 bg-slate-50"
+                      value={
+                        formData.senderName
+                      }
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          senderName:
+                            e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                      Contact Number
+                    </Label>
+
+                    <Input
+                      placeholder="09XXXXXXXXX"
+                      className="h-12 rounded-2xl border-slate-200 bg-slate-50"
+                      value={
+                        formData.senderContact
+                      }
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          senderContact:
+                            e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* ===================================== */}
+              {/* AGENCY / COMPANY */}
+              {/* ===================================== */}
+
+              {(formData.senderType ===
+                'AGENCY' ||
+                formData.senderType ===
+                  'COMPANY') && (
+                <>
+                  <div>
+                    <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                      Organization Name
+                    </Label>
+
+                    <Input
+                      placeholder="Enter organization"
+                      className="h-12 rounded-2xl border-slate-200 bg-slate-50"
+                      value={
+                        formData.senderOrganization
+                      }
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          senderOrganization:
+                            e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                      Contact Person
+                    </Label>
+
+                    <Input
+                      placeholder="Enter contact person"
+                      className="h-12 rounded-2xl border-slate-200 bg-slate-50"
+                      value={
+                        formData.senderName
+                      }
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          senderName:
+                            e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </section>
 
