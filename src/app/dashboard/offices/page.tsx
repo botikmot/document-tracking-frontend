@@ -59,7 +59,7 @@ export default function OfficesPage() {
         setOffices(
           officesRes.data,
         );
-
+        console.log(' officesRes:',officesRes)
         setOrganizationUnits(
           organizationsRes.data,
         );

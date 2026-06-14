@@ -88,7 +88,8 @@ export function RouteDocumentDialog({
             await api.get(
               '/offices/accessible',
             );
-
+          
+          console.log('route office:',response)
           setOffices(
             response.data,
           );

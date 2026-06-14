@@ -1,18 +1,18 @@
 'use client';
 
 import {
+  useEffect,
   useState,
 } from 'react';
-
-import {
-  Plus,
-} from 'lucide-react';
 
 import { api } from '@/lib/axios';
 
 import {
-  Button,
-} from '@/components/ui/button';
+  Building2,
+  Shield,
+} from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 
 import {
   Dialog,
@@ -22,78 +22,89 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 
-import {
-  Input,
-} from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 
-import {
-  Label,
-} from '@/components/ui/label';
+import { Label } from '@/components/ui/label';
 
-import {
-  Textarea,
-} from '@/components/ui/textarea';
+interface Props {
+  onSuccess: () => void;
+}
 
-export function CreateOfficeDialog({
-  organizationUnits,
+interface OrganizationUnit {
+  id: string;
+  name: string;
+  type: string;
+}
+
+export default function CreateOfficeDialog({
   onSuccess,
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-}: any) {
-  const [open, setOpen] =
-    useState(false);
+}: Props) {
+  const [open, setOpen] = useState(false);
+
+  const [organizations, setOrganizations] =
+    useState<OrganizationUnit[]>([]);
 
   const [loading, setLoading] =
     useState(false);
 
-  const [
-    officeCode,
-    setOfficeCode,
-  ] = useState('');
+  const [formData, setFormData] =
+    useState({
+      officeCode: '',
+      officeName: '',
+      organizationUnitId: '',
+      category: 'REGULAR',
+      description: '',
+    });
 
-  const [
-    officeName,
-    setOfficeName,
-  ] = useState('');
-
-  const [
-    description,
-    setDescription,
-  ] = useState('');
-
-  const [
-    organizationUnitId,
-    setOrganizationUnitId,
-  ] = useState('');
-
-  const handleCreate =
+  const fetchOrganizations =
     async () => {
       try {
-        setLoading(true);
-
-        await api.post(
-          '/offices',
-          {
-            officeCode,
-            officeName,
-            description,
-            organizationUnitId,
-          },
+        const response = await api.get(
+          '/organization-units',
         );
-
-        onSuccess?.();
-
-        setOpen(false);
-
-        setOfficeCode('');
-        setOfficeName('');
-        setDescription('');
-        setOrganizationUnitId('');
+        console.log('organization units:', response)
+        setOrganizations(response.data);
       } catch (error) {
         console.error(error);
-      } finally {
-        setLoading(false);
       }
     };
+
+  useEffect(() => {
+    const load =
+      async () => {
+        await fetchOrganizations();
+      };
+
+    void load();
+  }, []);
+
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+
+      await api.post(
+        '/offices',
+        formData,
+      );
+
+      onSuccess();
+
+      setOpen(false);
+
+      setFormData({
+        officeCode: '',
+        officeName: '',
+        organizationUnitId: '',
+        category: 'REGULAR',
+        description: '',
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Dialog
@@ -101,125 +112,212 @@ export function CreateOfficeDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger asChild>
-        <Button className="h-12 rounded-2xl bg-slate-900 px-6 hover:bg-slate-800">
-          <Plus className="mr-2 h-5 w-5" />
+        <Button className="gap-2">
+          <Building2 className="size-4" />
           Add Office
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="rounded-3xl sm:max-w-xl">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black">
+          <DialogTitle>
             Create Office
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-5 py-4">
-          <div>
+        <div className="space-y-5">
+          {/* OFFICE CODE */}
+
+          <div className="space-y-2">
             <Label>
               Office Code
             </Label>
 
             <Input
-              value={officeCode}
-              onChange={(e) =>
-                setOfficeCode(
-                  e.target.value,
-                )
+              placeholder="e.g. PENRO-ADN-Records"
+              value={
+                formData.officeCode
               }
-              className="mt-2 h-11 rounded-xl"
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  officeCode:
+                    e.target.value,
+                })
+              }
             />
           </div>
 
-          <div>
+          {/* OFFICE NAME */}
+
+          <div className="space-y-2">
             <Label>
               Office Name
             </Label>
 
             <Input
-              value={officeName}
-              onChange={(e) =>
-                setOfficeName(
-                  e.target.value,
-                )
+              placeholder="Enter office name"
+              value={
+                formData.officeName
               }
-              className="mt-2 h-11 rounded-xl"
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  officeName:
+                    e.target.value,
+                })
+              }
             />
           </div>
 
-          <div>
-            <Label>
-              Description
-            </Label>
+          {/* ORGANIZATION */}
 
-            <Textarea
-              value={description}
-              onChange={(e) =>
-                setDescription(
-                  e.target.value,
-                )
-              }
-              className="mt-2 rounded-xl"
-            />
-          </div>
-
-          <div>
+          <div className="space-y-2">
             <Label>
               Organization Unit
             </Label>
 
             <select
+              className="w-full rounded-md border bg-background px-3 py-2"
               value={
-                organizationUnitId
+                formData.organizationUnitId
               }
               onChange={(e) =>
-                setOrganizationUnitId(
-                  e.target.value,
-                )
+                setFormData({
+                  ...formData,
+                  organizationUnitId:
+                    e.target.value,
+                })
               }
-              className="mt-2 h-11 w-full rounded-xl border border-slate-200 px-3"
             >
               <option value="">
                 Select organization
               </option>
 
-              {organizationUnits.map(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (org: any) => (
+              {organizations.map(
+                (organization) => (
                   <option
-                    key={org.id}
-                    value={org.id}
+                    key={
+                      organization.id
+                    }
+                    value={
+                      organization.id
+                    }
                   >
-                    {org.name}
+                    {
+                      organization.name
+                    }{' '}
+                    (
+                    {
+                      organization.type
+                    }
+                    )
                   </option>
                 ),
               )}
             </select>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={() =>
-                setOpen(false)
-              }
-              className="rounded-xl"
-            >
-              Cancel
-            </Button>
+          {/* CATEGORY */}
 
-            <Button
-              disabled={loading}
-              onClick={() =>
-                void handleCreate()
-              }
-              className="rounded-xl bg-slate-900 hover:bg-slate-800"
-            >
-              {loading
-                ? 'Creating...'
-                : 'Create Office'}
-            </Button>
+          <div className="space-y-2">
+            <Label>
+              Office Category
+            </Label>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData({
+                    ...formData,
+                    category:
+                      'REGULAR',
+                  })
+                }
+                className={`rounded-xl border p-4 text-left transition ${
+                  formData.category ===
+                  'REGULAR'
+                    ? 'border-primary bg-primary/5'
+                    : ''
+                }`}
+              >
+                <Building2 className="mb-2 size-5" />
+
+                <p className="font-medium">
+                  Regular Office
+                </p>
+
+                <p className="text-sm text-muted-foreground">
+                  Standard office
+                  within organization
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData({
+                    ...formData,
+                    category:
+                      'RECORDS',
+                  })
+                }
+                className={`rounded-xl border p-4 text-left transition ${
+                  formData.category ===
+                  'RECORDS'
+                    ? 'border-primary bg-primary/5'
+                    : ''
+                }`}
+              >
+                <Shield className="mb-2 size-5" />
+
+                <p className="font-medium">
+                  Records Office
+                </p>
+
+                <p className="text-sm text-muted-foreground">
+                  Handles routing
+                  and document
+                  transfers
+                </p>
+              </button>
+            </div>
           </div>
+
+          {/* DESCRIPTION */}
+
+          <div className="space-y-2">
+            <Label>
+              Description
+            </Label>
+
+            <textarea
+              className="min-h-[100px] w-full rounded-md border bg-background px-3 py-2"
+              value={
+                formData.description
+              }
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  description:
+                    e.target.value,
+                })
+              }
+            />
+          </div>
+
+          {/* SUBMIT */}
+
+          <Button
+            className="w-full"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading
+              ? 'Creating Office...'
+              : 'Create Office'}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
