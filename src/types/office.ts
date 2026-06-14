@@ -3,6 +3,7 @@ export type Office = {
   officeCode: string;
   officeName: string;
   description?: string;
+  category: string;
   organizationUnitId: string;
   createdAt: string;
 };

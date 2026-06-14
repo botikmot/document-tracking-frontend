@@ -9,11 +9,10 @@ import { api } from '@/lib/axios';
 
 import {
   Building2,
+  Pencil,
   Shield,
 } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
-
 import {
   Dialog,
   DialogContent,
@@ -23,11 +22,12 @@ import {
 } from '@/components/ui/dialog';
 
 import { Input } from '@/components/ui/input';
-
 import { Label } from '@/components/ui/label';
+import type { Office } from '@/types/office';
 
 interface Props {
   onSuccess: () => void;
+  office?: Office;
 }
 
 interface OrganizationUnit {
@@ -36,34 +36,59 @@ interface OrganizationUnit {
   type: string;
 }
 
-export default function CreateOfficeDialog({
+export default function OfficeDialog({
   onSuccess,
+  office,
 }: Props) {
-  const [open, setOpen] = useState(false);
+  const isEdit =
+    !!office;
 
-  const [organizations, setOrganizations] =
-    useState<OrganizationUnit[]>([]);
+  const [open, setOpen] =
+    useState(false);
+
+  const [
+    organizations,
+    setOrganizations,
+  ] = useState<
+    OrganizationUnit[]
+  >([]);
 
   const [loading, setLoading] =
     useState(false);
 
   const [formData, setFormData] =
     useState({
-      officeCode: '',
-      officeName: '',
-      organizationUnitId: '',
-      category: 'REGULAR',
-      description: '',
+      officeCode:
+        office?.officeCode || '',
+      officeName:
+        office?.officeName || '',
+      organizationUnitId:
+        office?.organizationUnitId ||
+        '',
+      category:
+        office?.category ||
+        'REGULAR',
+      description:
+        office?.description || '',
     });
+
+  /*
+   |--------------------------------------------------------------------------
+   | FETCH ORGANIZATIONS
+   |--------------------------------------------------------------------------
+   */
 
   const fetchOrganizations =
     async () => {
       try {
-        const response = await api.get(
-          '/organization-units',
+        const response =
+          await api.get(
+            '/organization-units',
+          );
+
+        setOrganizations(
+          response.data,
         );
-        console.log('organization units:', response)
-        setOrganizations(response.data);
       } catch (error) {
         console.error(error);
       }
@@ -78,50 +103,82 @@ export default function CreateOfficeDialog({
     void load();
   }, []);
 
+  /*
+   |--------------------------------------------------------------------------
+   | SUBMIT
+   |--------------------------------------------------------------------------
+   */
 
-  const handleSubmit = async () => {
-    try {
-      setLoading(true);
+  const handleSubmit =
+    async () => {
+      try {
+        setLoading(true);
 
-      await api.post(
-        '/offices',
-        formData,
-      );
+        if (isEdit) {
+          await api.patch(
+            `/offices/${office.id}`,
+            formData,
+          );
+        } else {
+          await api.post(
+            '/offices',
+            formData,
+          );
+        }
 
-      onSuccess();
+        onSuccess();
 
-      setOpen(false);
+        setOpen(false);
 
-      setFormData({
-        officeCode: '',
-        officeName: '',
-        organizationUnitId: '',
-        category: 'REGULAR',
-        description: '',
-      });
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        if (!isEdit) {
+          setFormData({
+            officeCode: '',
+            officeName: '',
+            organizationUnitId:
+              '',
+            category:
+              'REGULAR',
+            description:
+              '',
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   return (
     <Dialog
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={
+        setOpen
+      }
     >
       <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Building2 className="size-4" />
-          Add Office
-        </Button>
+        {isEdit ? (
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit Office
+          </Button>
+        ) : (
+          <Button className="gap-2">
+            <Building2 className="size-4" />
+            Add Office
+          </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
-            Create Office
+            {isEdit
+              ? 'Update Office'
+              : 'Create Office'}
           </DialogTitle>
         </DialogHeader>
 
@@ -195,7 +252,9 @@ export default function CreateOfficeDialog({
               </option>
 
               {organizations.map(
-                (organization) => (
+                (
+                  organization,
+                ) => (
                   <option
                     key={
                       organization.id
@@ -247,11 +306,6 @@ export default function CreateOfficeDialog({
                 <p className="font-medium">
                   Regular Office
                 </p>
-
-                <p className="text-sm text-muted-foreground">
-                  Standard office
-                  within organization
-                </p>
               </button>
 
               <button
@@ -274,12 +328,6 @@ export default function CreateOfficeDialog({
 
                 <p className="font-medium">
                   Records Office
-                </p>
-
-                <p className="text-sm text-muted-foreground">
-                  Handles routing
-                  and document
-                  transfers
                 </p>
               </button>
             </div>
@@ -311,12 +359,20 @@ export default function CreateOfficeDialog({
 
           <Button
             className="w-full"
-            onClick={handleSubmit}
-            disabled={loading}
+            onClick={
+              handleSubmit
+            }
+            disabled={
+              loading
+            }
           >
             {loading
-              ? 'Creating Office...'
-              : 'Create Office'}
+              ? isEdit
+                ? 'Updating Office...'
+                : 'Creating Office...'
+              : isEdit
+                ? 'Update Office'
+                : 'Create Office'}
           </Button>
         </div>
       </DialogContent>

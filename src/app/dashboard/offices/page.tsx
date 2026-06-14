@@ -4,21 +4,15 @@ import {
   useEffect,
   useState,
 } from 'react';
-
 import { api } from '@/lib/axios';
-
 import type {
   Office,
 } from '@/types/office';
-
 import {
   RoleGuard,
 } from '@/components/auth/role-guard';
-
 import { OfficeHeader } from './components/office-header';
-
 import { OfficeStats } from './components/office-stats';
-
 import { OfficeList } from './components/office-list';
 
 type OrganizationUnit = {
@@ -109,6 +103,7 @@ export default function OfficesPage() {
           <OfficeList
             offices={offices}
             loading={loading}
+            onRefresh={fetchData}
           />
         </div>
       </main>

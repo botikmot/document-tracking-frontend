@@ -4,6 +4,8 @@ import {
   Building2,
   MoreHorizontal,
   Search,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 
 import type {
@@ -28,13 +30,53 @@ import {
 import {
   Input,
 } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import OfficeDialog from './office-dialog';
+import { api } from '@/lib/axios';
+import { toast } from 'sonner';
 
 export function OfficeList({
   offices,
+  loading,
+  onRefresh,
 }: {
   offices: Office[];
   loading: boolean;
+  onRefresh: () => void;
 }) {
+
+  const handleDelete =
+    async (
+      officeId: string,
+    ) => {
+      const confirmed =
+        window.confirm(
+          'Are you sure you want to delete this office?',
+        );
+
+      if (!confirmed)
+        return;
+
+      try {
+        await api.delete(
+          `/offices/${officeId}`,
+        );
+        toast.success('Office deleted successfully');
+        onRefresh();
+        //window.location.reload();
+      } catch (error) {
+        toast.error('Failed to delete office');
+        console.error(error);
+      }
+    };
+
+
+
   return (
     <Card className="rounded-3xl border-0 bg-white shadow-sm">
       <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -91,13 +133,36 @@ export function OfficeList({
                   </div>
                 </div>
 
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="rounded-2xl"
-                >
-                  <MoreHorizontal className="h-5 w-5" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="rounded-2xl"
+                    >
+                      <MoreHorizontal className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent align="end">
+                    <OfficeDialog
+                      office={office}
+                      onSuccess={onRefresh}
+                    />
+
+                    <DropdownMenuItem
+                      className="text-red-600"
+                      onClick={() =>
+                        handleDelete(
+                          office.id,
+                        )
+                      }
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Office
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ),
           )}

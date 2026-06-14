@@ -8,7 +8,7 @@ import {
   Badge,
 } from '@/components/ui/badge';
 
-import CreateOfficeDialog from './create-office-dialog';
+import OfficeDialog from './office-dialog';
 import { CreateOrganizationDialog } from './create-organization-dialog';
 
 export function OfficeHeader({
@@ -65,7 +65,7 @@ export function OfficeHeader({
             }
           />
 
-          <CreateOfficeDialog
+          <OfficeDialog
             onSuccess={
               onRefresh
             }
