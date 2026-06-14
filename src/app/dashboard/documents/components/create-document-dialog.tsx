@@ -9,7 +9,7 @@ import {
   Plus,
   Shield,
 } from 'lucide-react';
-
+import QRCode from 'qrcode';
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { api } from '@/lib/axios';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
+import { downloadRoutingSlip } from '@/lib/download-routing-slip';
 
 type Attachment = {
   fileName: string;
@@ -56,9 +57,10 @@ export default function CreateDocumentDialog(
         | Date
         | undefined,
     documentTypeId: '',
-    priority: '',
-    confidentialityLevel: '',
-    senderType: '',
+    classification: 'SIMPLE',
+    priority: 'MEDIUM',
+    confidentialityLevel: 'PUBLIC',
+    senderType: 'OFFICE',
     senderOfficeId: '',
     senderName: '',
     senderOrganization: '',
@@ -128,8 +130,47 @@ export default function CreateDocumentDialog(
         const res = await api.post('/documents', payload);
 
         console.log('created: ', res)
-        onCreated()
-        resetForm()
+        const trackingUrl = `${window.location.origin}/track/${res.data.trackingNumber}`;
+
+        const qrCode =
+          await QRCode.toDataURL(
+            trackingUrl,
+          );
+        
+        await downloadRoutingSlip({
+          trackingNumber:
+            res.data.trackingNumber,
+
+          title:
+            res.data.title,
+
+          description:
+            res.data.description,
+
+          sender:
+            res.data.senderName ||
+            res.data.senderOrganization ||
+            currentOffice?.officeName ||
+            'N/A',
+
+          classification:
+            res.data.classification,
+
+          priority:
+            res.data.priority,
+
+          createdAt:
+            new Date(
+              res.data.createdAt,
+            ).toLocaleString(),
+
+          qrCode,
+        });
+
+        onCreated();
+
+        resetForm();
+
         setOpen(false);
       } catch (error) {
         console.error(error);
@@ -622,6 +663,42 @@ const handleFileUpload = async (
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
+              {/* DOCUMENT CLASSIFICATION */}
+
+            <div>
+              <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                Classification
+              </Label>
+
+              <Select
+                value={
+                  formData.classification
+                }
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    classification:
+                      value,
+                  })
+                }
+              >
+                <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50">
+                  <SelectValue placeholder="Select classification" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="SIMPLE">
+                    Simple
+                  </SelectItem>
+                  <SelectItem value="COMPLEX">
+                    Complex
+                  </SelectItem>
+                  <SelectItem value="TECHNICAL">
+                    Highly Technical
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
               {/* DOCUMENT TYPE */}
               <div>
                 <Label className="mb-2 block text-sm font-semibold text-slate-700">
