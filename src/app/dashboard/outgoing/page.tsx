@@ -215,6 +215,7 @@ export default function OutgoingDocumentsPage() {
             documents={
               documents
             }
+            type="outgoing"
             loading={
               loading
             }

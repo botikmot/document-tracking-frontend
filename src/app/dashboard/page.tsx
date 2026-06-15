@@ -1,11 +1,10 @@
+'use client';
+
 import {
   Archive,
-  ArrowRight,
   Bell,
   CheckCircle2,
   Clock3,
-  FilePlus2,
-  FileSearch,
   FileText,
   Inbox,
   Search,
@@ -15,9 +14,7 @@ import {
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
-
 import { Button } from '@/components/ui/button';
-
 import {
   Card,
   CardContent,
@@ -28,8 +25,133 @@ import {
 import { Input } from '@/components/ui/input';
 
 import { Progress } from '@/components/ui/progress';
+import { useAuthStore } from '@/store/auth.store';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/axios';
 
 export default function DashboardPage() {
+  const [stats, setStats] = useState({
+    incomingDocuments: 0,
+    outgoingDocuments: 0,
+    pendingDocuments: 0,
+    archivedDocuments: 0,
+    incomingPercentage: 0,
+    outgoingPercentage: 0,
+    recentActivities: [],
+
+    performance: {
+      processingEfficiency: 0,
+      approvalCompletion: 0,
+      archivedRecords: 0,
+    },
+  });
+
+  const user = useAuthStore((state) => state.user,);
+
+  const fetchDashboardStats =
+    async () => {
+      try {
+        const response = await api.get(
+          '/documents/dashboard/stats',
+        );
+        console.log('dashboard stats:', response.data)
+        setStats(response.data);
+      } catch (error) {
+        console.error(
+          'Failed to fetch dashboard stats',
+          error,
+        );
+      }
+    };
+
+  useEffect(() => {
+      const load =
+        async () => {
+          await fetchDashboardStats();
+        };
+  
+      void load();
+    }, []);
+
+  const getStatusColor = (
+    status: string,
+  ) => {
+    switch (status) {
+      case 'APPROVED':
+        return 'bg-emerald-100 text-emerald-700';
+
+      case 'PENDING':
+        return 'bg-amber-100 text-amber-700';
+
+      case 'IN_REVIEW':
+        return 'bg-blue-100 text-blue-700';
+
+      case 'COMPLETED':
+        return 'bg-slate-200 text-slate-700';
+
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const getPerformanceData = (
+      efficiency: number,
+    ) => {
+      if (efficiency >= 90) {
+        return {
+          title: 'Outstanding Performance',
+          message:
+            'Your office is operating at exceptional efficiency this month.',
+          iconBg:
+            'bg-emerald-500/20',
+          iconColor:
+            'text-emerald-300',
+        };
+      }
+
+      if (efficiency >= 75) {
+        return {
+          title: 'Excellent Performance',
+          message:
+            'Your office achieved strong processing efficiency this month.',
+          iconBg:
+            'bg-green-500/20',
+          iconColor:
+            'text-green-300',
+        };
+      }
+
+      if (efficiency >= 50) {
+        return {
+          title: 'Good Performance',
+          message:
+            'Your office is maintaining stable document processing performance.',
+          iconBg:
+            'bg-amber-500/20',
+          iconColor:
+            'text-amber-300',
+        };
+      }
+
+      return {
+        title:
+          'Performance Needs Improvement',
+        message:
+          'Document processing efficiency is below target this month.',
+        iconBg:
+          'bg-red-500/20',
+        iconColor:
+          'text-red-300',
+      };
+    };
+
+  const performanceData =
+    getPerformanceData(
+      stats.performance
+        .processingEfficiency,
+    );
+
+
   return (
     <main className="relative flex-1 overflow-hidden bg-[#F5F7F2]">
       {/* ====================================== */}
@@ -53,7 +175,7 @@ export default function DashboardPage() {
             </p>
 
             <h1 className="mt-2 text-4xl font-black tracking-tight text-[#102418]">
-              Good Morning, Secretary 👋
+              Good Morning, {user?.firstName ?? 'Employee'}
             </h1>
 
             <p className="mt-2 text-slate-600">
@@ -90,8 +212,8 @@ export default function DashboardPage() {
                 </div>
 
                 <div>
-                  <p className="text-sm font-bold text-[#102418]">
-                    Secretary
+                  <p className="text-sm font-bold capitalize text-[#102418]">
+                    {user?.offices[0].officeName ?? 'Secretary'}
                   </p>
 
                   <p className="text-xs text-slate-500">
@@ -117,31 +239,37 @@ export default function DashboardPage() {
             {
               title:
                 'Incoming Documents',
-              value: '148',
+              value: stats.incomingDocuments,
               icon: Inbox,
               color:
                 'from-blue-500 to-cyan-500',
-              badge:
-                '+12% this week',
+              badge: `${
+                  stats.incomingPercentage >= 0
+                    ? '+'
+                    : ''
+                }${stats.incomingPercentage}% this week`,
               badgeStyle:
                 'bg-blue-100 text-blue-700',
             },
             {
               title:
                 'Outgoing Documents',
-              value: '92',
+              value: stats.outgoingDocuments,
               icon: Send,
               color:
                 'from-emerald-500 to-green-500',
-              badge:
-                '+8% this week',
+              badge: `${
+                stats.outgoingPercentage >= 0
+                  ? '+'
+                  : ''
+              }${stats.outgoingPercentage}% this week`,
               badgeStyle:
                 'bg-emerald-100 text-emerald-700',
             },
             {
               title:
-                'Pending Approval',
-              value: '34',
+                'Pending Documents',
+              value: stats.pendingDocuments,
               icon: Clock3,
               color:
                 'from-orange-500 to-amber-500',
@@ -152,8 +280,8 @@ export default function DashboardPage() {
             },
             {
               title:
-                'Archived Files',
-              value: '1,284',
+                'Archived',
+              value: stats.archivedDocuments,
               icon: Archive,
               color:
                 'from-slate-700 to-slate-900',
@@ -184,7 +312,7 @@ export default function DashboardPage() {
                       </p>
 
                       <h2 className="mt-3 text-5xl font-black tracking-tight text-[#102418]">
-                        {item.value}
+                        {item.value.toLocaleString()}
                       </h2>
 
                       <Badge
@@ -232,78 +360,43 @@ export default function DashboardPage() {
             </CardHeader>
 
             <CardContent className="space-y-5">
-              {[
-                {
-                  title:
-                    'Budget Proposal 2026',
-                  tracking:
-                    'EDATS-2026-00124',
-                  status:
-                    'Under Review',
-                  color:
-                    'bg-blue-100 text-blue-700',
-                },
-                {
-                  title:
-                    'HR Employment Records',
-                  tracking:
-                    'EDATS-2026-00125',
-                  status:
-                    'Approved',
-                  color:
-                    'bg-emerald-100 text-emerald-700',
-                },
-                {
-                  title:
-                    'Procurement Request',
-                  tracking:
-                    'EDATS-2026-00126',
-                  status:
-                    'Pending',
-                  color:
-                    'bg-amber-100 text-amber-700',
-                },
-                {
-                  title:
-                    'Infrastructure Report',
-                  tracking:
-                    'EDATS-2026-00127',
-                  status:
-                    'Archived',
-                  color:
-                    'bg-slate-200 text-slate-700',
-                },
-              ].map((doc, i) => (
-                <div
-                  key={i}
-                  className="group flex flex-col gap-5 rounded-3xl border border-slate-100 bg-slate-50/70 p-5 transition-all duration-300 hover:border-green-200 hover:bg-white md:flex-row md:items-center md:justify-between"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-lg">
-                      <FileText className="h-8 w-8" />
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-bold text-[#102418]">
-                        {doc.title}
-                      </h3>
-
-                      <p className="mt-1 text-sm text-slate-500">
-                        Tracking No:
-                        {' '}
-                        {doc.tracking}
-                      </p>
-                    </div>
-                  </div>
-
-                  <Badge
-                    className={`rounded-full px-5 py-2 ${doc.color}`}
+            {stats.recentActivities.map(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (doc: any, i: number) => {
+                return (
+                  <div
+                    key={i}
+                    className="group flex flex-col gap-5 rounded-3xl border border-slate-100 bg-slate-50/70 p-5 transition-all duration-300 hover:border-green-200 hover:bg-white md:flex-row md:items-center md:justify-between"
                   >
-                    {doc.status}
-                  </Badge>
-                </div>
-              ))}
-            </CardContent>
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-lg">
+                        <FileText className="h-8 w-8" />
+                      </div>
+
+                      <div>
+                        <h3 className="text-lg font-bold text-[#102418]">
+                          {doc.title}
+                        </h3>
+
+                        <p className="mt-1 text-sm text-slate-500">
+                          Tracking No:{' '}
+                          {doc.trackingNumber}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Badge
+                      className={`rounded-full px-5 py-2 ${getStatusColor(
+                        doc.status,
+                      )}`}
+                    >
+                      {doc.status}
+                    </Badge>
+                  </div>
+                );
+              },
+            )}
+          </CardContent>
           </Card>
 
           {/* ====================================== */}
@@ -325,17 +418,25 @@ export default function DashboardPage() {
                 {
                   label:
                     'Processing Efficiency',
-                  value: 87,
+                  value:
+                    stats.performance
+                      .processingEfficiency,
                 },
+
                 {
                   label:
                     'Approval Completion',
-                  value: 73,
+                  value:
+                    stats.performance
+                      .approvalCompletion,
                 },
+
                 {
                   label:
                     'Archived Records',
-                  value: 94,
+                  value:
+                    stats.performance
+                      .archivedRecords,
                 },
               ].map((item, i) => (
                 <div key={i}>
@@ -360,18 +461,30 @@ export default function DashboardPage() {
 
               <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-emerald-500/20">
-                    <CheckCircle2 className="h-7 w-7 text-emerald-300" />
+                  <div
+                    className={`flex h-14 w-14 items-center justify-center rounded-3xl ${performanceData.iconBg}`}
+                  >
+                    <CheckCircle2
+                      className={`h-7 w-7 ${performanceData.iconColor}`}
+                    />
                   </div>
 
                   <div>
                     <h4 className="text-xl font-bold text-white">
-                      Excellent Performance
+                      {performanceData.title}
                     </h4>
 
                     <p className="mt-3 text-sm leading-7 text-green-100/70">
-                      Your office processed documents faster than
-                      82% of departments this month.
+                      {performanceData.message}
+
+                      <span className="ml-1 font-bold text-white">
+                        (
+                        {
+                          stats.performance
+                            .processingEfficiency
+                        }
+                        % efficiency)
+                      </span>
                     </p>
                   </div>
                 </div>

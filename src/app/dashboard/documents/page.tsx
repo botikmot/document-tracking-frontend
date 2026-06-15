@@ -27,6 +27,7 @@ export default function DocumentsPage() {
             '/documents',
           );
 
+        console.log('documents::', response.data)
         setDocuments(
           response.data,
         );

@@ -196,8 +196,6 @@ export default function RoutingSlipPDF({
   qrCode,
 }: Props) {
 
-  console.log('sender:',sender)
-
   return (
     <Document>
       <Page

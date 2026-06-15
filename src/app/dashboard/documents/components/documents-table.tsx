@@ -8,9 +8,7 @@ import {
 } from 'lucide-react';
 
 import { useState } from 'react';
-
 import { Badge } from '@/components/ui/badge';
-
 import { Button } from '@/components/ui/button';
 
 import {
@@ -21,23 +19,20 @@ import {
 } from '@/components/ui/card';
 
 import { Input } from '@/components/ui/input';
-
 import { RouteDocumentDialog } from './route-document-dialog';
-
 import { DocumentTimelineDrawer } from './document-timeline-drawer';
-
 import { DocumentDetailsDrawer } from './document-details-drawer';
 
 export function DocumentsTable({
   documents,
+  type,
   loading,
   onRefresh,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   documents: any[];
-
+  type: string;
   loading: boolean;
-
   onRefresh: () => void;
 }) {
   const [
@@ -123,7 +118,7 @@ export function DocumentsTable({
         {/* ====================================== */}
         <CardContent className="space-y-5 p-6">
           {documents.map((doc) => {
-            const canRoute = [
+            const canRoute = type !== 'outgoing' && [
               'DRAFT',
               'PENDING',
               'REJECTED',

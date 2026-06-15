@@ -133,8 +133,8 @@ export function Sidebar() {
                 Logged in as
               </p>
 
-              <h2 className="truncate text-lg font-bold text-white">
-                {user?.username ??
+              <h2 className="truncate text-lg font-bold text-white capitalize">
+                {user?.firstName ??
                   'Employee'}
               </h2>
 

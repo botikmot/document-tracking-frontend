@@ -45,8 +45,6 @@ export function DocumentDetailsDrawer({
     return null;
   }
 
-  console.log('document:',document)
-
   const handleDownloadRoutingSlip =
   async () => {
     const trackingUrl = `${window.location.origin}/track/${document.trackingNumber}`;
