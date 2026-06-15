@@ -52,7 +52,7 @@ export function DocumentTimelineDrawer({
         onOpenChange
       }
     >
-      <SheetContent className="w-full overflow-hidden border-0 sm:max-w-2xl">
+      <SheetContent className="w-full overflow-hidden border-0 sm:!max-w-xl">
         <SheetHeader className="border-b pb-5">
           <SheetTitle className="flex items-center gap-3 text-2xl font-black">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100">

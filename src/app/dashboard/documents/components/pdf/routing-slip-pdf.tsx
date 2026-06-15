@@ -96,12 +96,12 @@ const styles = StyleSheet.create({
 
   infoRow: {
     flexDirection: 'row',
-    marginBottom: 6,
+    marginBottom: 3,
   },
 
   infoLabel: {
     width: 140,
-    fontWeight: 'bold',
+    //fontWeight: 'bold',
   },
 
   infoValue: {
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   divider: {
     borderBottomWidth: 1,
     borderBottomColor: '#9CA3AF',
-    marginVertical: 12,
+    marginVertical: 5,
   },
 
   /*
@@ -137,11 +137,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: '#D1D5DB',
-    minHeight: 28,
+    minHeight: 20,
+  },
+
+  colFromTo: {
+    width: '15%',
+    borderRightWidth: 1,
+    borderRightColor: '#374151',
+    padding: 6,
   },
 
   colDate: {
-    width: '20%',
+    width: '15%',
     borderRightWidth: 1,
     borderRightColor: '#374151',
     padding: 6,
@@ -161,7 +168,8 @@ const styles = StyleSheet.create({
 
   tableHeaderText: {
     fontWeight: 'bold',
-    fontSize: 10,
+    textAlign: 'center',
+    fontSize: 8,
   },
 });
 
@@ -172,6 +180,7 @@ type Props = {
   sender: string;
   classification: string;
   priority: string;
+  addressee: string;
   createdAt: string;
   qrCode: string;
 };
@@ -179,13 +188,16 @@ type Props = {
 export default function RoutingSlipPDF({
   trackingNumber,
   title,
-  description,
   sender,
   classification,
   priority,
+  addressee,
   createdAt,
   qrCode,
 }: Props) {
+
+  console.log('sender:',sender)
+
   return (
     <Document>
       <Page
@@ -337,9 +349,10 @@ export default function RoutingSlipPDF({
             </Text>
 
             <Text
-              style={
-                styles.infoValue
-              }
+              style={{
+                    ...styles.infoValue,
+                    fontWeight: 'bold',
+                }}
             >
               {trackingNumber}
             </Text>
@@ -381,33 +394,12 @@ export default function RoutingSlipPDF({
             </Text>
 
             <Text
-              style={
-                styles.infoValue
-              }
+              style={{
+                    ...styles.infoValue,
+                    fontWeight: 'bold',
+                }}
             >
               {title}
-            </Text>
-          </View>
-
-          <View
-            style={
-              styles.infoRow
-            }
-          >
-            <Text
-              style={
-                styles.infoLabel
-              }
-            >
-              Description:
-            </Text>
-
-            <Text
-              style={
-                styles.infoValue
-              }
-            >
-              {description}
             </Text>
           </View>
 
@@ -454,6 +446,29 @@ export default function RoutingSlipPDF({
               {priority}
             </Text>
           </View>
+        
+          <View
+            style={
+              styles.infoRow
+            }
+          >
+            <Text
+              style={
+                styles.infoLabel
+              }
+            >
+              Addressee:
+            </Text>
+
+            <Text
+              style={
+                styles.infoValue
+              }
+            >
+              {addressee}
+            </Text>
+          </View>
+
         </View>
 
         <View
@@ -492,6 +507,20 @@ export default function RoutingSlipPDF({
           >
             <View
               style={
+                styles.colFromTo
+              }
+            >
+              <Text
+                style={
+                  styles.tableHeaderText
+                }
+              >
+                From
+              </Text>
+            </View>
+
+            <View
+              style={
                 styles.colDate
               }
             >
@@ -506,7 +535,7 @@ export default function RoutingSlipPDF({
 
             <View
               style={
-                styles.colForwarded
+                styles.colFromTo
               }
             >
               <Text
@@ -514,7 +543,21 @@ export default function RoutingSlipPDF({
                   styles.tableHeaderText
                 }
               >
-                Forwarded To
+                To
+              </Text>
+            </View>
+
+            <View
+              style={
+                styles.colDate
+              }
+            >
+              <Text
+                style={
+                  styles.tableHeaderText
+                }
+              >
+                Date Released
               </Text>
             </View>
 
@@ -528,7 +571,7 @@ export default function RoutingSlipPDF({
                   styles.tableHeaderText
                 }
               >
-                Remarks
+                Action Required / Taken / Remarks / Status
               </Text>
             </View>
             </View>
@@ -536,7 +579,7 @@ export default function RoutingSlipPDF({
           {/* EMPTY ROWS */}
 
           {Array.from({
-            length: 15,
+            length: 21,
           }).map((_, index) => (
             <View
               key={index}
@@ -546,13 +589,25 @@ export default function RoutingSlipPDF({
             >
               <View
                 style={
+                  styles.colFromTo
+                }
+              /> 
+
+              <View
+                style={
                   styles.colDate
                 }
               />
 
               <View
                 style={
-                  styles.colForwarded
+                  styles.colFromTo
+                }
+              /> 
+
+              <View
+                style={
+                  styles.colDate
                 }
               />
 

@@ -57,6 +57,7 @@ export default function CreateDocumentDialog(
         | Date
         | undefined,
     documentTypeId: '',
+    addressee: '',
     classification: 'SIMPLE',
     priority: 'MEDIUM',
     confidentialityLevel: 'PUBLIC',
@@ -158,6 +159,9 @@ export default function CreateDocumentDialog(
 
           priority:
             res.data.priority,
+          
+          addressee:
+            res.data.addressee,
 
           createdAt:
             new Date(
@@ -810,13 +814,32 @@ const handleFileUpload = async (
                 </Select>
               </div>
 
+              {/* Addressee */}
+              <div>
+                <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Addressee
+                </Label>
+
+                <Input
+                  placeholder="Enter Addressee..."
+                  className="rounded-2xl border-slate-200 bg-slate-50"
+                  value={formData.addressee}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      addressee: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
               {/* STATUS */}
               <div>
                 <Label className="mb-2 block text-sm font-semibold text-slate-700">
                   Initial Status
                 </Label>
 
-                <div className="flex h-12 items-center rounded-2xl border border-slate-200 bg-slate-50 px-4">
+                <div className="flex h-10 items-center rounded-2xl border border-slate-200 bg-slate-50 px-4">
                   <Badge className="rounded-full bg-amber-100 text-amber-700">
                     Pending Review
                   </Badge>
