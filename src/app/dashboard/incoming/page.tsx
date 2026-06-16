@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  useCallback,
   useEffect,
   useState,
 } from 'react';
@@ -71,9 +72,24 @@ export default function IncomingPage() {
     IncomingDocument[]
   >([]);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [meta, setMeta] = useState<any>(null);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
+  useEffect(() => {
+    const timer =
+      setTimeout(() => {
+        setDebouncedSearch(
+          search,
+        );
+      }, 500);
+
+    return () =>
+      clearTimeout(timer);
+  }, [search]);
   /*
    |-------------------------------------------------------------
    | FETCH DOCUMENTS
@@ -81,22 +97,43 @@ export default function IncomingPage() {
    */
 
   const fetchDocuments =
-    async () => {
-      try {
-        const response =
-          await api.get(
-            '/documents/incoming',
+    useCallback(
+      async () => {
+        try {
+          setLoading(true);
+
+          const response =
+            await api.get(
+              '/documents/incoming',
+              {
+                params: {
+                  page,
+                  limit: 5,
+
+                  search:
+                    debouncedSearch,
+                },
+              },
+            );
+
+          setDocuments(
+            response.data.data,
           );
 
-        setDocuments(
-          response.data,
-        );
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+          setMeta(
+            response.data.meta,
+          );
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
+      },
+        [
+          page,
+          debouncedSearch,
+        ],
+      );
 
   /*
    |-------------------------------------------------------------
@@ -111,7 +148,7 @@ export default function IncomingPage() {
       };
 
     void load();
-  }, []);
+  }, [fetchDocuments]);
 
   /*
    |-------------------------------------------------------------
@@ -277,9 +314,7 @@ export default function IncomingPage() {
                   </p>
 
                   <h2 className="mt-3 text-5xl font-black text-[#102418]">
-                    {
-                      documents.length
-                    }
+                    {meta?.total ?? 0}
                   </h2>
 
                   <Badge className="mt-5 rounded-full bg-blue-100 px-4 py-1 text-blue-700">
@@ -364,6 +399,11 @@ export default function IncomingPage() {
             onRefresh={
               fetchDocuments
             }
+            page={page}
+            setPage={setPage}
+            meta={meta}
+            search={search}
+            setSearch={setSearch}
           />
         </div>
       </div>

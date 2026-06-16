@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import {
   Send,
@@ -21,47 +21,81 @@ import { api } from '@/lib/axios';
 import { DocumentsTable } from '../documents/components/documents-table';
 
 export default function OutgoingDocumentsPage() {
-  const [documents, setDocuments] =
-    useState([]);
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [meta, setMeta] = useState<any>(null);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  const [loading, setLoading] =
-    useState(true);
+
+  useEffect(() => {
+    const timer =
+      setTimeout(() => {
+        setDebouncedSearch(
+          search,
+        );
+      }, 500);
+
+    return () =>
+      clearTimeout(timer);
+  }, [search]);
 
   const fetchOutgoingDocuments =
-    async () => {
-      try {
-        setLoading(true);
+    useCallback(
+      async () => {
+        try {
+          setLoading(true);
 
-        const response =
-          await api.get(
-            '/documents/outgoing',
+          const response =
+            await api.get(
+              '/documents/outgoing',
+              {
+                params: {
+                  page,
+                  limit: 10,
+                  search:
+                    debouncedSearch,
+                },
+              },
+            );
+
+          /*
+          |--------------------------------------------------------
+          | Normalize route -> document
+          |--------------------------------------------------------
+          */
+
+          const normalized =
+            response.data.data.map(
+              (
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                route: any,
+              ) => ({
+                ...route.document,
+                route,
+              }),
+            );
+
+          setDocuments(
+            normalized,
           );
 
-        /*
-         |--------------------------------------------------------
-         | Normalize route -> document
-         |--------------------------------------------------------
-         */
-
-        const normalized =
-          response.data.map(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (route: any) => ({
-              ...route.document,
-
-              route,
-            }),
+          setMeta(
+            response.data.meta,
           );
-
-        setDocuments(
-          normalized,
-        );
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
+      },
+        [
+          page,
+          debouncedSearch,
+        ],
+      );
 
   useEffect(() => {
     const load =
@@ -70,7 +104,7 @@ export default function OutgoingDocumentsPage() {
       };
 
     void load();
-  }, []);
+  }, [fetchOutgoingDocuments]);
 
   return (
     <main className="relative flex-1 overflow-hidden bg-[#F5F7F2]">
@@ -212,16 +246,17 @@ export default function OutgoingDocumentsPage() {
         {/* ====================================== */}
         <div className="px-8 pb-8">
           <DocumentsTable
-            documents={
-              documents
-            }
+            documents={documents}
             type="outgoing"
-            loading={
-              loading
-            }
+            loading={loading}
             onRefresh={
               fetchOutgoingDocuments
             }
+            page={page}
+            setPage={setPage}
+            meta={meta}
+            search={search}
+            setSearch={setSearch}
           />
         </div>
       </div>

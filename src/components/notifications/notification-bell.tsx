@@ -49,6 +49,11 @@ export function NotificationBell() {
     );
 
   const [audioEnabled, setAudioEnabled] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+
+  const displayedNotifications = showAll
+    ? notifications
+    : notifications.slice(0, 5);
 
   /*
    |-------------------------------------------------------------
@@ -162,7 +167,7 @@ export function NotificationBell() {
         'notification',
       );
     };
-  }, []);
+  }, [audioEnabled]);
 
   /*
    |-------------------------------------------------------------
@@ -179,17 +184,20 @@ export function NotificationBell() {
           `/notifications/${id}/read`,
         );
 
+        /*
+        |-------------------------------------------------------
+        | REMOVE FROM STATE
+        |-------------------------------------------------------
+        */
+
         setNotifications(
           (prev) =>
-            prev.map(
-              (notification) =>
-                notification.id ===
-                id
-                  ? {
-                      ...notification,
-                      isRead: true,
-                    }
-                  : notification,
+            prev.filter(
+              (
+                notification,
+              ) =>
+                notification.id !==
+                id,
             ),
         );
       } catch (error) {
@@ -392,7 +400,7 @@ export function NotificationBell() {
               </p>
             </div>
           ) : (
-            notifications.map(
+            displayedNotifications.map(
               (
                 notification,
               ) => (
@@ -449,6 +457,24 @@ export function NotificationBell() {
             )
           )}
         </div>
+
+          {/* SEE MORE */}
+          {notifications.length > 5 && (
+            <div className="border-t border-slate-100 p-3">
+              <Button
+                variant="ghost"
+                className="w-full rounded-2xl"
+                onClick={() =>
+                  setShowAll(!showAll)
+                }
+              >
+                {showAll
+                  ? 'See Less'
+                  : `See More (${notifications.length - 5} more)`}
+              </Button>
+            </div>
+          )}
+
       </PopoverContent>
     </Popover>
   );

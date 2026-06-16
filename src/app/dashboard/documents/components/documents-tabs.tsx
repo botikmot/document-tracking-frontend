@@ -5,20 +5,23 @@ import { cn } from '@/lib/utils';
 const tabs = [
   'ALL',
   'DRAFT',
-  'IN_REVIEW',
+  'FOR_REVIEW',
   'APPROVED',
-  'REJECTED',
+  'ON_PROCESS',
   'COMPLETED',
 ];
 
 export function DocumentsTabs({
   activeTab,
   setActiveTab,
+  setPage,
 }: {
   activeTab: string;
-
   setActiveTab: (
     value: string,
+  ) => void;
+  setPage: (
+    page: number,
   ) => void;
 }) {
   return (
@@ -26,9 +29,10 @@ export function DocumentsTabs({
       {tabs.map((tab) => (
         <button
           key={tab}
-          onClick={() =>
-            setActiveTab(tab)
-          }
+          onClick={() => {
+            setActiveTab(tab);
+            setPage(1);
+          }}
           className={cn(
             'rounded-2xl px-5 py-3 text-sm font-bold transition-all duration-300',
             activeTab === tab

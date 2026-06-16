@@ -37,13 +37,26 @@ export function IncomingDocumentsTable({
   routes,
   loading,
   onRefresh,
+  page,
+  setPage,
+  meta,
+  search,
+  setSearch,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   routes: any[];
-
   loading: boolean;
-
   onRefresh: () => void;
+  page: number;
+  setPage: (
+    page: number,
+  ) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  meta: any;
+  search: string;
+  setSearch: (
+    value: string,
+  ) => void;
 }) {
   const [
     receivingId,
@@ -87,6 +100,14 @@ export function IncomingDocumentsTable({
             <Input
               placeholder="Search incoming documents..."
               className="h-14 rounded-2xl border-0 bg-slate-100 pl-12 shadow-sm focus-visible:ring-2 focus-visible:ring-green-500"
+              value={search}
+              onChange={(e) => {
+                setSearch(
+                  e.target.value,
+                );
+
+                setPage(1);
+              }}
             />
           </div>
         </div>
@@ -223,7 +244,7 @@ export function IncomingDocumentsTable({
                         receivingId ===
                         route.documentId
                       }
-                      className="h-12 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 px-6 text-white shadow-lg hover:from-green-700 hover:to-emerald-700"
+                      className="h-12 rounded-2xl cursor-pointer bg-gradient-to-r from-green-600 to-emerald-600 px-6 text-white shadow-lg hover:from-green-700 hover:to-emerald-700"
                       onClick={async () => {
                         try {
                           setReceivingId(
@@ -260,6 +281,42 @@ export function IncomingDocumentsTable({
           );
         })}
       </CardContent>
+
+      {/* PAGINATION */}
+      <div className="flex items-center justify-between border-t border-slate-100 p-6">
+        <p className="text-sm text-slate-500">
+          Page {meta?.page ?? 1} of{' '}
+          {meta?.totalPages ?? 1}
+        </p>
+
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            disabled={
+              page <= 1
+            }
+            onClick={() =>
+              setPage(page - 1)
+            }
+          >
+            Previous
+          </Button>
+
+          <Button
+            variant="outline"
+            disabled={
+              page >=
+              (meta?.totalPages ??
+                1)
+            }
+            onClick={() =>
+              setPage(page + 1)
+            }
+          >
+            Next
+          </Button>
+        </div>
+      </div>
     </Card>
   );
 }

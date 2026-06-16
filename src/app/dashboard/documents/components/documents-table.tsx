@@ -38,12 +38,23 @@ export function DocumentsTable({
   type,
   loading,
   onRefresh,
+  page,
+  setPage,
+  meta,
+  search,
+  setSearch,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   documents: any[];
   type: string;
   loading: boolean;
   onRefresh: () => void;
+  page?: number;
+  setPage?: (page: number,) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  meta?: any;
+  search?: string;
+  setSearch?: (value: string,) => void;
 }) {
   const [
     selectedDocument,
@@ -61,12 +72,11 @@ export function DocumentsTable({
   ] = useState(false);
 
   const WORKFLOW_STATUSES = [
-    'PENDING',
     'FOR_REVIEW',
     'FOR_APPROVAL',
     'ON_PROCESS',
+    'APPROVED',
     'COMPLETED',
-    'RETURNED',
   ];
 
   const handleStatusChange =
@@ -231,7 +241,15 @@ export function DocumentsTable({
 
               <Input
                 placeholder="Search documents..."
-                className="h-12 rounded-2xl border-slate-200 bg-slate-50 pl-11 focus-visible:ring-green-500"
+                className="pl-10"
+                value={search ?? ''}
+                onChange={(e) => {
+                  setSearch?.(
+                    e.target.value,
+                  );
+
+                  setPage?.(1);
+                }}
               />
             </div>
           </div>
@@ -500,6 +518,40 @@ export function DocumentsTable({
             );
           })}
         </CardContent>
+
+        <div className="flex items-center justify-between border-t border-slate-100 px-6 py-4">
+          <p className="text-sm text-slate-500">
+            Page {meta?.page} of{' '}
+            {meta?.totalPages}
+          </p>
+
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              disabled={page === 1}
+              onClick={() =>
+                setPage?.(page! - 1)
+              }
+            >
+              Previous
+            </Button>
+
+            <Button
+              variant="outline"
+              disabled={
+                page ===
+                meta?.totalPages
+              }
+              onClick={() =>
+                setPage?.(page! + 1)
+              }
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+
+
       </Card>
 
       {/* TIMELINE */}

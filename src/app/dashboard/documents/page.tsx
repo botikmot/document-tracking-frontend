@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 import { api } from '@/lib/axios';
 
@@ -10,33 +10,66 @@ import { DocumentsTabs } from './components/documents-tabs';
 import { DocumentsTable } from './components/documents-table';
 
 export default function DocumentsPage() {
-  const [documents, setDocuments] =
-    useState([]);
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('ALL');
+  const [page, setPage] = useState(1);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [meta, setMeta] = useState<any>(null);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  const [loading, setLoading] =
-    useState(true);
+  useEffect(() => {
+    const timer =
+      setTimeout(() => {
+        setDebouncedSearch(
+          search,
+        );
+      }, 500);
 
-  const [activeTab, setActiveTab] =
-    useState('ALL');
+    return () =>
+      clearTimeout(timer);
+  }, [search]);
 
   const fetchDocuments =
-    async () => {
-      try {
-        const response =
-          await api.get(
-            '/documents',
+    useCallback(
+      async () => {
+        try {
+          setLoading(true);
+
+          const response =
+            await api.get(
+              '/documents',
+              {
+                params: {
+                  page,
+                  limit: 5,
+                  status:
+                    activeTab,
+                  search: debouncedSearch,
+                },
+              },
+            );
+
+          setDocuments(
+            response.data.data,
           );
 
-        console.log('documents::', response.data)
-        setDocuments(
-          response.data,
-        );
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+          setMeta(
+            response.data.meta,
+          );
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
+      },
+      [
+        page,
+        activeTab,
+        debouncedSearch,
+      ],
+    );
 
   useEffect(() => {
     const load =
@@ -45,24 +78,7 @@ export default function DocumentsPage() {
       };
 
     void load();
-  }, []);
-
-  const filteredDocuments =
-    documents.filter(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (doc: any) => {
-        if (
-          activeTab === 'ALL'
-        ) {
-          return true;
-        }
-
-        return (
-          doc.currentStatus
-            ?.name === activeTab
-        );
-      },
-    );
+  }, [fetchDocuments]);
 
   return (
     <main className="relative flex-1 overflow-hidden bg-[#F5F7F2]">
@@ -96,19 +112,19 @@ export default function DocumentsPage() {
             setActiveTab={
               setActiveTab
             }
+            setPage={setPage}
           />
 
           <DocumentsTable
-            documents={
-              filteredDocuments
-            }
+            documents={documents}
             type="documents"
-            loading={
-              loading
-            }
-            onRefresh={
-              fetchDocuments
-            }
+            loading={loading}
+            onRefresh={fetchDocuments}
+            page={page}
+            setPage={setPage}
+            meta={meta}
+            search={search}
+            setSearch={setSearch}
           />
         </div>
       </div>

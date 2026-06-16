@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import {
   Archive,
@@ -21,31 +21,64 @@ import { api } from '@/lib/axios';
 import { DocumentsTable } from '../documents/components/documents-table';
 
 export default function ArchivedDocumentsPage() {
-  const [documents, setDocuments] =
-    useState([]);
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [meta, setMeta] = useState<any>(null);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  const [loading, setLoading] =
-    useState(true);
+  useEffect(() => {
+    const timer =
+      setTimeout(() => {
+        setDebouncedSearch(
+          search,
+        );
+      }, 500);
+
+    return () =>
+      clearTimeout(timer);
+  }, [search]);
 
   const fetchArchivedDocuments =
-    async () => {
-      try {
-        setLoading(true);
+    useCallback(
+      async () => {
+        try {
+          setLoading(true);
 
-        const response =
-          await api.get(
-            '/documents/archived',
+          const response =
+            await api.get(
+              '/documents/archived',
+              {
+                params: {
+                  page,
+                  limit: 5,
+
+                  search:
+                    debouncedSearch,
+                },
+              },
+            );
+
+          setDocuments(
+            response.data.data,
           );
 
-        setDocuments(
-          response.data,
-        );
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+          setMeta(
+            response.data.meta,
+          );
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
+      },
+        [
+          page,
+          debouncedSearch,
+        ],
+      );
 
   useEffect(() => {
     const load =
@@ -54,7 +87,7 @@ export default function ArchivedDocumentsPage() {
       };
 
     void load();
-  }, []);
+  }, [fetchArchivedDocuments]);
 
   return (
     <main className="relative flex-1 overflow-hidden bg-[#F5F7F2]">
@@ -184,12 +217,18 @@ export default function ArchivedDocumentsPage() {
             documents={
               documents
             }
+            type="archived"
             loading={
               loading
             }
             onRefresh={
               fetchArchivedDocuments
             }
+            page={page}
+            setPage={setPage}
+            meta={meta}
+            search={search}
+            setSearch={setSearch}
           />
         </div>
       </div>
