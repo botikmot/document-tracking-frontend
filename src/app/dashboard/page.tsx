@@ -2,7 +2,6 @@
 
 import {
   Archive,
-  Bell,
   CheckCircle2,
   Clock3,
   FileText,
@@ -28,6 +27,7 @@ import { Progress } from '@/components/ui/progress';
 import { useAuthStore } from '@/store/auth.store';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/axios';
+import { NotificationBell } from '@/components/notifications/notification-bell';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -198,13 +198,7 @@ export default function DashboardPage() {
 
             {/* ACTIONS */}
             <div className="flex items-center gap-3">
-              <Button
-                size="icon"
-                variant="outline"
-                className="h-12 w-12 rounded-2xl border-slate-200 bg-white"
-              >
-                <Bell className="h-5 w-5 text-slate-700" />
-              </Button>
+              <NotificationBell />
 
               <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2 shadow-sm">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-green-600 to-emerald-600 text-white">
@@ -213,7 +207,7 @@ export default function DashboardPage() {
 
                 <div>
                   <p className="text-sm font-bold capitalize text-[#102418]">
-                    {user?.offices[0].officeName ?? 'Secretary'}
+                    {user?.offices[0]?.officeName ?? 'Secretary'}
                   </p>
 
                   <p className="text-xs text-slate-500">

@@ -102,6 +102,7 @@ export default function DocumentsPage() {
             documents={
               filteredDocuments
             }
+            type="documents"
             loading={
               loading
             }

@@ -1,5 +1,7 @@
 'use client';
 
+import { SocketProvider } from '../providers/socket-provider';
+import { NotificationListener } from '../providers/notification-listener';
 import {
   useEffect,
 } from 'react';
@@ -80,6 +82,9 @@ export function ProtectedLayout({
   }
 
   return (
+    <>
+    <SocketProvider userId={user.userId} />
+     <NotificationListener />
     <div className="flex min-h-screen bg-[#F5F7F2]">
       <Sidebar />
 
@@ -87,5 +92,6 @@ export function ProtectedLayout({
         {children}
       </main>
     </div>
+    </>
   );
 }

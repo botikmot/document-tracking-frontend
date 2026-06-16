@@ -246,7 +246,7 @@ export function DocumentTimelineDrawer({
 
                           <Badge className="rounded-full bg-slate-100 text-slate-700">
                             {
-                              route.status
+                              document.currentStatus?.name
                             }
                           </Badge>
                         </div>

@@ -4,11 +4,14 @@ import {
   Building2,
   Clock3,
   FileText,
+  MoreVertical,
   Search,
 } from 'lucide-react';
 
 import { useState } from 'react';
+
 import { Badge } from '@/components/ui/badge';
+
 import { Button } from '@/components/ui/button';
 
 import {
@@ -18,9 +21,19 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
 import { Input } from '@/components/ui/input';
+
 import { RouteDocumentDialog } from './route-document-dialog';
+
 import { DocumentTimelineDrawer } from './document-timeline-drawer';
+
 import { DocumentDetailsDrawer } from './document-details-drawer';
 
 export function DocumentsTable({
@@ -52,7 +65,7 @@ export function DocumentsTable({
 
   if (loading) {
     return (
-      <Card className="rounded-[32px] border-0 bg-white shadow-xl">
+      <Card className="rounded-[28px] border-0 bg-white shadow-sm">
         <CardContent className="p-16 text-center text-slate-500">
           Loading documents...
         </CardContent>
@@ -60,63 +73,121 @@ export function DocumentsTable({
     );
   }
 
-  const getStatusStyle =
-    (
-      status: string,
-    ) => {
-      switch (status) {
-        case 'APPROVED':
-          return 'bg-emerald-100 text-emerald-700';
+  const getStatusStyle = (
+    status: string,
+  ) => {
+    switch (status) {
+      case 'APPROVED':
+        return 'bg-emerald-100 text-emerald-700 border-emerald-200';
 
-        case 'REJECTED':
-          return 'bg-red-100 text-red-700';
+      case 'REJECTED':
+        return 'bg-red-100 text-red-700 border-red-200';
 
-        case 'COMPLETED':
-          return 'bg-slate-200 text-slate-700';
+      case 'COMPLETED':
+        return 'bg-slate-200 text-slate-700 border-slate-300';
 
-        case 'IN_REVIEW':
-          return 'bg-blue-100 text-blue-700';
+      case 'IN_REVIEW':
+        return 'bg-blue-100 text-blue-700 border-blue-200';
 
-        default:
-          return 'bg-amber-100 text-amber-700';
-      }
+      default:
+        return 'bg-amber-100 text-amber-700 border-amber-200';
+    }
+  };
+
+  const getDeadlineInfo = (
+    deadline: string,
+  ) => {
+    if (!deadline) {
+      return null;
+    }
+
+    const now = new Date();
+
+    const deadlineDate =
+      new Date(deadline);
+
+    const diffMs =
+      deadlineDate.getTime() -
+      now.getTime();
+
+    if (diffMs <= 0) {
+      return {
+        text: 'Overdue',
+        className:
+          'bg-red-100 text-red-700 border-red-200',
+      };
+    }
+
+    const diffHours = Math.floor(
+      diffMs /
+        (1000 * 60 * 60),
+    );
+
+    const diffDays = Math.floor(
+      diffHours / 24,
+    );
+
+    if (diffHours < 24) {
+      return {
+        text: `${diffHours} hour${
+          diffHours > 1
+            ? 's'
+            : ''
+        } remaining`,
+        className:
+          'bg-orange-100 text-orange-700 border-orange-200 animate-pulse',
+      };
+    }
+
+    if (diffDays <= 3) {
+      return {
+        text: `${diffDays} day${
+          diffDays > 1
+            ? 's'
+            : ''
+        } remaining`,
+        className:
+          'bg-amber-100 text-amber-700 border-amber-200',
+      };
+    }
+
+    return {
+      text: `${diffDays} days remaining`,
+      className:
+        'bg-emerald-100 text-emerald-700 border-emerald-200',
     };
+  };
 
   return (
     <>
-      <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-green-100/30">
-        {/* ====================================== */}
+      <Card className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm">
         {/* HEADER */}
-        {/* ====================================== */}
-        <CardHeader className="border-b border-slate-100 pb-6">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+        <CardHeader className="border-b border-slate-100 bg-white">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <CardTitle className="text-3xl font-black text-[#102418]">
                 Documents Registry
               </CardTitle>
 
-              <p className="mt-2 text-slate-500">
-                Monitor all active and archived documents across
-                offices and departments.
+              <p className="mt-2 text-sm text-slate-500">
+                Monitor and manage all incoming and outgoing documents.
               </p>
             </div>
 
             {/* SEARCH */}
-            <div className="relative w-full xl:w-[360px]">
-              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+            <div className="relative w-full lg:w-[320px]">
+              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
               <Input
                 placeholder="Search documents..."
-                className="h-14 rounded-2xl border-0 bg-slate-100 pl-12 shadow-sm focus-visible:ring-2 focus-visible:ring-green-500"
+                className="h-12 rounded-2xl border-slate-200 bg-slate-50 pl-11 focus-visible:ring-green-500"
               />
             </div>
           </div>
         </CardHeader>
 
-        {/* ====================================== */}
         {/* CONTENT */}
-        {/* ====================================== */}
-        <CardContent className="space-y-5 p-6">
+        <CardContent className="space-y-3 p-4">
           {documents.map((doc) => {
             const canRoute = type !== 'outgoing' && [
               'DRAFT',
@@ -127,43 +198,70 @@ export function DocumentsTable({
                 ?.name,
             );
 
+            const deadlineInfo =
+              getDeadlineInfo(
+                doc.deadline,
+              );
+
             return (
               <div
                 key={doc.id}
-                className="group rounded-[30px] border border-slate-100 bg-slate-50/60 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-green-200 hover:bg-white hover:shadow-xl"
+                onClick={() => {
+                  setSelectedDocument(
+                    doc,
+                  );
+
+                  setOpenDetails(
+                    true,
+                  );
+                }}
+                className={`group cursor-pointer rounded-3xl border p-5 transition-all duration-300 hover:border-green-200 hover:bg-slate-50 hover:shadow-md ${
+                  deadlineInfo?.text ===
+                  'Overdue'
+                    ? 'border-red-200 bg-red-50/30'
+                    : 'border-slate-200 bg-white'
+                }`}
               >
-                <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                   {/* LEFT */}
-                  <div className="flex items-start gap-5">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-xl">
-                      <FileText className="h-10 w-10" />
+                  <div className="flex min-w-0 items-start gap-4">
+                    {/* ICON */}
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-lg">
+                      <FileText className="h-8 w-8" />
                     </div>
 
-                    <div>
-                      <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="text-2xl font-black text-[#102418]">
+                    {/* INFO */}
+                    <div className="min-w-0">
+                      {/* TITLE */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="truncate text-xl font-bold text-[#102418]">
                           {
                             doc.title
                           }
                         </h3>
 
-                        <Badge className="rounded-full bg-blue-100 px-4 py-1 text-blue-700">
+                        <span className="text-sm text-slate-400">
+                          •
+                        </span>
+
+                        <span className="text-sm font-medium text-slate-500">
                           {
                             doc
                               .documentType
                               ?.name
                           }
-                        </Badge>
+                        </span>
                       </div>
 
-                      <div className="mt-4 flex flex-wrap items-center gap-6 text-sm text-slate-500">
-                        <div className="rounded-full bg-slate-200 px-4 py-1 font-medium text-slate-700">
+                      {/* META */}
+                      <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                        <div className="font-medium text-slate-700">
                           {
                             doc.trackingNumber
                           }
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
                           <Building2 className="h-4 w-4" />
 
                           {
@@ -173,21 +271,21 @@ export function DocumentsTable({
                           }
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
                           <Clock3 className="h-4 w-4" />
 
-                          Last updated recently
+                          Recently updated
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* RIGHT */}
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-3">
+                    {/* STATUS */}
                     <Badge
-                      className={`rounded-full px-5 py-2 text-sm font-semibold ${getStatusStyle(
-                        doc
-                          .currentStatus
+                      className={`rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-wide ${getStatusStyle(
+                        doc.currentStatus
                           ?.name,
                       )}`}
                     >
@@ -198,79 +296,95 @@ export function DocumentsTable({
                       }
                     </Badge>
 
-                    {doc.route
-                      ?.toOffice && (
-                      <div className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600">
-                        Routed to:
-                        {' '}
-                        <span className="font-bold text-slate-900">
-                          {
-                            doc
-                              .route
-                              .toOffice
-                              .officeName
-                          }
-                        </span>
+                    {/* DEADLINE */}
+                    {deadlineInfo && (
+                      <div
+                        className={`rounded-full border px-4 py-2 text-sm font-bold ${deadlineInfo.className}`}
+                      >
+                        {
+                          deadlineInfo.text
+                        }
                       </div>
                     )}
 
-                    {canRoute && (
-                      <div
+                    {/* ACTIONS */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        asChild
                         onClick={(
                           e,
-                        ) => {
-                          e.stopPropagation();
-                        }}
+                        ) =>
+                          e.stopPropagation()
+                        }
                       >
-                        <RouteDocumentDialog
-                          documentId={
-                            doc.id
-                          }
-                          onSuccess={
-                            onRefresh
-                          }
-                        />
-                      </div>
-                    )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10 rounded-xl cursor-pointer"
+                        >
+                          <MoreVertical className="h-5 w-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
 
-                    <Button
-                      variant="outline"
-                      className="h-11 rounded-2xl border-slate-200 bg-white px-5"
-                      onClick={(
-                        e,
-                      ) => {
-                        e.stopPropagation();
+                      <DropdownMenuContent
+                        align="end"
+                        className="w-52 rounded-2xl"
+                        onClick={(e) =>
+                          e.stopPropagation()
+                        }
+                      >
+                        {/* VIEW DETAILS */}
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
 
-                        setSelectedDocument(
-                          doc,
-                        );
+                            setSelectedDocument(
+                              doc,
+                            );
 
-                        setOpenDetails(
-                          true,
-                        );
-                      }}
-                    >
-                      View Details
-                    </Button>
+                            setOpenDetails(
+                              true,
+                            );
+                          }}
+                        >
+                          View Details
+                        </DropdownMenuItem>
 
-                    <Button
-                      className="h-11 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 px-5 text-white hover:from-green-700 hover:to-emerald-700"
-                      onClick={(
-                        e,
-                      ) => {
-                        e.stopPropagation();
+                        {/* TIMELINE */}
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
 
-                        setSelectedDocument(
-                          doc,
-                        );
+                            setSelectedDocument(
+                              doc,
+                            );
 
-                        setOpenTimeline(
-                          true,
-                        );
-                      }}
-                    >
-                      Timeline
-                    </Button>
+                            setOpenTimeline(
+                              true,
+                            );
+                          }}
+                        >
+                          View Timeline
+                        </DropdownMenuItem>
+
+                        {/* ROUTE */}
+                        {canRoute && (
+                          <div
+                            className="px-2 py-1"
+                            onClick={(e) =>
+                              e.stopPropagation()
+                            }
+                          >
+                            <RouteDocumentDialog
+                              documentId={doc.id}
+                              onSuccess={
+                                onRefresh
+                              }
+                            />
+                          </div>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               </div>
@@ -279,6 +393,7 @@ export function DocumentsTable({
         </CardContent>
       </Card>
 
+      {/* TIMELINE */}
       <DocumentTimelineDrawer
         open={openTimeline}
         onOpenChange={
@@ -289,6 +404,7 @@ export function DocumentsTable({
         }
       />
 
+      {/* DETAILS */}
       <DocumentDetailsDrawer
         open={openDetails}
         onOpenChange={

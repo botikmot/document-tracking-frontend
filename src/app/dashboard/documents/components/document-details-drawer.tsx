@@ -206,7 +206,16 @@ export function DocumentDetailsDrawer({
                     {document.deadline
                       ? new Date(
                           document.deadline,
-                        ).toLocaleDateString()
+                        ).toLocaleString(
+                          undefined,
+                          {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          },
+                        )
                       : 'No deadline'}
                   </h4>
                 </div>
