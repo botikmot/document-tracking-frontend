@@ -45,6 +45,8 @@ export function DocumentTimelineDrawer({
     return null;
   }
 
+  console.log('timeline:',document)
+
   return (
     <Sheet
       open={open}
@@ -246,7 +248,7 @@ export function DocumentTimelineDrawer({
 
                           <Badge className="rounded-full bg-slate-100 text-slate-700">
                             {
-                              document.currentStatus?.name
+                              route.status
                             }
                           </Badge>
                         </div>

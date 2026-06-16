@@ -199,6 +199,7 @@ export default function PendingDocumentsPage() {
             documents={
               documents
             }
+            type="pending"
             loading={
               loading
             }

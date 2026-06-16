@@ -2,17 +2,16 @@
 
 import {
   Building2,
-  Clock3,
   FileText,
   MoreVertical,
   Search,
+  ChevronDown,
 } from 'lucide-react';
 
 import { useState } from 'react';
-
 import { Badge } from '@/components/ui/badge';
-
 import { Button } from '@/components/ui/button';
+import { api } from '@/lib/axios';
 
 import {
   Card,
@@ -29,12 +28,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import { Input } from '@/components/ui/input';
-
 import { RouteDocumentDialog } from './route-document-dialog';
-
 import { DocumentTimelineDrawer } from './document-timeline-drawer';
-
 import { DocumentDetailsDrawer } from './document-details-drawer';
+import { toast } from 'sonner';
 
 export function DocumentsTable({
   documents,
@@ -63,6 +60,42 @@ export function DocumentsTable({
     setOpenDetails,
   ] = useState(false);
 
+  const WORKFLOW_STATUSES = [
+    'PENDING',
+    'FOR_REVIEW',
+    'FOR_APPROVAL',
+    'ON_PROCESS',
+    'COMPLETED',
+    'RETURNED',
+  ];
+
+  const handleStatusChange =
+    async (
+      documentId: string,
+      status: string,
+    ) => {
+      try {
+        await api.patch(
+          `/documents/${documentId}/status`,
+          {
+            status,
+          },
+        );
+
+        toast.success(
+          `Document marked as ${status}`,
+        );
+
+        onRefresh?.();
+      } catch (error) {
+        console.error(error);
+
+        toast.error(
+          'Failed to update status',
+        );
+      }
+    };
+
   if (loading) {
     return (
       <Card className="rounded-[28px] border-0 bg-white shadow-sm">
@@ -86,7 +119,7 @@ export function DocumentsTable({
       case 'COMPLETED':
         return 'bg-slate-200 text-slate-700 border-slate-300';
 
-      case 'IN_REVIEW':
+      case 'FOR_REVIEW':
         return 'bg-blue-100 text-blue-700 border-blue-200';
 
       default:
@@ -206,11 +239,14 @@ export function DocumentsTable({
 
         {/* CONTENT */}
         <CardContent className="space-y-3 p-4">
-          {documents.map((doc) => {
+          {documents.map((doc, i) => {
             const canRoute = type !== 'outgoing' && [
               'DRAFT',
               'PENDING',
               'REJECTED',
+              'FOR_REVIEW',
+              'FOR_APPROVAL',
+              'ON_PROCESS',
             ].includes(
               doc.currentStatus
                 ?.name,
@@ -223,7 +259,7 @@ export function DocumentsTable({
 
             return (
               <div
-                key={doc.id}
+                key={i}
                 onClick={() => {
                   setSelectedDocument(
                     doc,
@@ -323,12 +359,61 @@ export function DocumentsTable({
                     {/* DEADLINE */}
                     {deadlineInfo && (
                       <div
-                        className={`rounded-full border px-4 py-2 text-sm font-bold ${deadlineInfo.className}`}
+                        className={`rounded-full border px-4 py-1 text-sm font-bold ${deadlineInfo.className}`}
                       >
                         {
                           deadlineInfo.text
                         }
                       </div>
+                    )}
+
+                    {type === 'pending' && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger 
+                          asChild
+                          onClick={(
+                            e,
+                          ) =>
+                            e.stopPropagation()
+                          }
+                        >
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="rounded-xl"
+                          >
+                            Change Status
+
+                            <ChevronDown className="ml-2 h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent 
+                        align="end"
+                        onClick={(e) =>
+                            e.stopPropagation()
+                          }
+                        >
+                          {WORKFLOW_STATUSES.map(
+                            (status) => (
+                              <DropdownMenuItem
+                                key={status}
+                                onClick={() =>
+                                  handleStatusChange(
+                                    doc.id,
+                                    status,
+                                  )
+                                }
+                              >
+                                {status.replaceAll(
+                                  '_',
+                                  ' ',
+                                )}
+                              </DropdownMenuItem>
+                            ),
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
 
                     {/* ACTIONS */}
