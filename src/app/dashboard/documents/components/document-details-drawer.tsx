@@ -6,6 +6,7 @@ import {
   FileText,
   Shield,
   AlertCircle,
+  Paperclip
 } from 'lucide-react';
 
 import {
@@ -261,17 +262,43 @@ export function DocumentDetailsDrawer({
             </div>
           </div>
 
-          {/* REFERENCE */}
-          <div className="rounded-2xl border bg-white p-5">
-            <p className="text-sm text-slate-500">
-              Reference Number
-            </p>
+          {/* ATTACHMENTS (NEW ✨) */}
+          {document.attachments?.length > 0 && (
+            <div>
+              <h3 className="mb-3 flex items-center gap-2 text-lg font-bold">
+                <Paperclip className="h-5 w-5" />
+                Attachments
+              </h3>
 
-            <h4 className="mt-2 text-lg font-bold text-slate-900">
-              {document.referenceNumber ||
-                'N/A'}
-            </h4>
-          </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                document.attachments.map((file: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="rounded-2xl border bg-white p-4 hover:bg-slate-50"
+                  >
+                    <p className="font-medium text-slate-900">
+                      {file.fileName}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {file.type || 'File'}
+                    </p>
+
+                    {/* optional preview hook */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-3"
+                      onClick={() => window.open(file.filePath)}
+                    >
+                      Preview
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>

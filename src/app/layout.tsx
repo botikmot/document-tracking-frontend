@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "eDATs+",
+  title: "Caraga | eDATs+",
   description: "Document Action Tracking System",
   icons: {
     icon: "/logo_icon2.png", // or /favicon.png

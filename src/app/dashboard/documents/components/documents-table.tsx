@@ -94,6 +94,24 @@ export function DocumentsTable({
     }
   };
 
+  const getClassificationStyle = (
+    status: string,
+  ) => {
+    switch (status) {
+      case 'SIMPLE':
+        return 'bg-green-100 text-green-700 border-green-200';
+
+      case 'COMPLEX':
+        return 'bg-red-100 text-red-700 border-red-200';
+
+      case 'TECHNICAL':
+        return 'bg-slate-200 text-slate-700 border-slate-300';
+
+      default:
+        return 'bg-amber-100 text-amber-700 border-amber-200';
+    }
+  };
+
   const getDeadlineInfo = (
     deadline: string,
   ) => {
@@ -272,9 +290,15 @@ export function DocumentsTable({
                         </div>
 
                         <div className="flex items-center gap-1.5">
-                          <Clock3 className="h-4 w-4" />
-
-                          Recently updated
+                          <Badge
+                            className={`rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-wide ${getClassificationStyle(
+                             doc.classification,
+                            )}`}
+                          >
+                            {
+                              doc.classification
+                            }
+                          </Badge>
                         </div>
                       </div>
                     </div>

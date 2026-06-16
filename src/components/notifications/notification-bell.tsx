@@ -11,14 +11,13 @@ import {
 
 import {
   useEffect,
+  useRef,
   useState,
 } from 'react';
 
 import { toast } from 'sonner';
-
 import { api } from '@/lib/axios';
 import { socket } from '@/lib/socket';
-
 import { Button } from '@/components/ui/button';
 
 import {
@@ -36,11 +35,6 @@ type Notification = {
   createdAt: string;
 };
 
-const notificationAudio =
-  typeof window !== 'undefined'
-    ? new Audio('/sounds/notification.mp3')
-    : null;
-
 export function NotificationBell() {
   const [
     notifications,
@@ -48,6 +42,13 @@ export function NotificationBell() {
   ] = useState<
     Notification[]
   >([]);
+
+  const notificationAudio =
+    useRef<HTMLAudioElement | null>(
+        null,
+    );
+
+  const [audioEnabled, setAudioEnabled] = useState(false);
 
   /*
    |-------------------------------------------------------------
@@ -86,6 +87,18 @@ export function NotificationBell() {
       void load();
     }, []);
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | INIT AUDIO
+    |--------------------------------------------------------------------------
+    */
+
+    useEffect(() => {
+        notificationAudio.current = new Audio('/sounds/notification.mp3');
+        notificationAudio.current.volume = 0.7;
+    }, []);
+
   /*
    |-------------------------------------------------------------
    | REALTIME SOCKET
@@ -93,21 +106,27 @@ export function NotificationBell() {
    */
 
   useEffect(() => {
-    socket.on(
-      'notification',
-      (
-        data: Notification,
-      ) => {
+    socket.on('notification', async (data: Notification) => {
         /*
          |-------------------------------------------------------
          | PLAY SOUND
          |-------------------------------------------------------
          */
 
-        if (notificationAudio) {
-            notificationAudio.currentTime = 0;
-            void notificationAudio.play();
-        }
+        if (
+            audioEnabled &&
+            notificationAudio.current
+            ) {
+            try {
+                notificationAudio.current.currentTime = 0;
+                await notificationAudio.current.play();
+            } catch (error) {
+                console.error(
+                'Sound play failed',
+                error,
+                );
+            }
+            }
 
         /*
          |-------------------------------------------------------
@@ -224,19 +243,23 @@ export function NotificationBell() {
     ).length;
 
     useEffect(() => {
-        const unlockAudio = async () => {
+        const unlockAudio =
+            async () => {
             try {
-            if (notificationAudio) {
-                notificationAudio.volume = 0;
-                await notificationAudio.play();
-                notificationAudio.pause();
-                notificationAudio.currentTime = 0;
-                notificationAudio.volume = 1;
-            }
+                if (notificationAudio.current) {
+                    await notificationAudio.current.play();
+                    notificationAudio.current.pause();
+                    notificationAudio.current.currentTime = 0;
+                    setAudioEnabled(true);
+                    console.log('Audio unlocked',);
+                }
             } catch (error) {
-            console.error(error);
+                console.error(
+                'Audio unlock failed',
+                error,
+                );
             }
-        };
+            };
 
         window.addEventListener(
             'click',
@@ -252,7 +275,7 @@ export function NotificationBell() {
             unlockAudio,
             );
         };
-    }, []);
+        }, []);
 
 
 
