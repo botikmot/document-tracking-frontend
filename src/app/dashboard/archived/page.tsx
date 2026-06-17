@@ -6,7 +6,6 @@ import {
   Archive,
   ShieldCheck,
   Database,
-  History,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +27,8 @@ export default function ArchivedDocumentsPage() {
   const [meta, setMeta] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
     const timer =
@@ -60,11 +61,11 @@ export default function ArchivedDocumentsPage() {
                 },
               },
             );
-
+          console.log('archived:', response.data)
           setDocuments(
             response.data.data,
           );
-
+          setStats(response.data.stats);
           setMeta(
             response.data.meta,
           );
@@ -88,6 +89,11 @@ export default function ArchivedDocumentsPage() {
 
     void load();
   }, [fetchArchivedDocuments]);
+
+  const secureStorageRate =
+    stats?.totalDocuments > 0
+      ? Math.round((stats?.archivedCount / stats?.totalDocuments) * 100)
+      : 0;
 
   return (
     <main className="relative flex-1 overflow-hidden bg-[#F5F7F2]">
@@ -156,6 +162,9 @@ export default function ArchivedDocumentsPage() {
                   <Badge className="mt-5 rounded-full bg-slate-100 px-4 py-1 text-slate-700">
                     Historical records
                   </Badge>
+                  <p className="mt-3 text-xs text-slate-400">
+                    Completed documents stored for historical reference and compliance.
+                  </p>
                 </div>
 
                 <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-slate-700 to-slate-900 text-white shadow-xl">
@@ -176,12 +185,15 @@ export default function ArchivedDocumentsPage() {
                   </p>
 
                   <h2 className="mt-3 text-5xl font-black text-[#102418]">
-                    99%
+                    {secureStorageRate}%
                   </h2>
 
                   <Badge className="mt-5 rounded-full bg-zinc-100 px-4 py-1 text-zinc-700">
                     Vault protected
                   </Badge>
+                  <p className="mt-3 text-xs text-slate-400">
+                    Percentage of archived documents securely stored and protected in the system.
+                  </p>
                 </div>
 
                 <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-zinc-700 to-black text-white shadow-xl">

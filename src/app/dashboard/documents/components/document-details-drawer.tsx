@@ -109,7 +109,7 @@ export function DocumentDetailsDrawer({
         <div className="space-y-8 px-6 py-6 pb-10">
           {/* TITLE */}
           <div className="rounded-3xl border bg-slate-50 p-6">
-            <div className="flex items-start gap-4">
+            <div className="flex items-center gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white">
                 <FileText className="h-7 w-7 text-slate-700" />
               </div>
@@ -119,14 +119,23 @@ export function DocumentDetailsDrawer({
                   {document.title}
                 </h2>
 
-                <p className="mt-2 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-slate-500">
                   Tracking Number:{' '}
                   {
                     document.trackingNumber
                   }
                 </p>
 
-                <div className="mt-4 flex flex-wrap gap-2">
+                <p className="mt-1 text-sm text-slate-500">
+                  Sender:{'  '}
+                  <span className="font-bold">
+                  {
+                    document.senderType === 'OFFICE' ? document.senderOffice.officeName : document.senderName
+                  }
+                  </span>
+                </p>
+
+                <div className="mt-2 flex flex-wrap gap-2">
                   <Badge className="rounded-full bg-blue-100 text-blue-700">
                     {
                       document
@@ -289,7 +298,7 @@ export function DocumentDetailsDrawer({
                     <Button
                       size="sm"
                       variant="outline"
-                      className="mt-3"
+                      className="mt-3 cursor-pointer"
                       onClick={() => window.open(file.filePath)}
                     >
                       Preview

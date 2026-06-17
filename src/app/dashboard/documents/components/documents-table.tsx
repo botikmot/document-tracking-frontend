@@ -6,6 +6,7 @@ import {
   MoreVertical,
   Search,
   ChevronDown,
+  UserCheck,
 } from 'lucide-react';
 
 import { useState } from 'react';
@@ -265,6 +266,7 @@ export function DocumentsTable({
               'FOR_REVIEW',
               'FOR_APPROVAL',
               'ON_PROCESS',
+              'APPROVED',
             ].includes(
               doc.currentStatus
                 ?.name,
@@ -333,15 +335,23 @@ export function DocumentsTable({
                           }
                         </div>
 
-                        <div className="flex items-center gap-1.5">
-                          <Building2 className="h-4 w-4" />
+                        {type !== 'documents' && type !== 'pending' ? (
+                          <div className="flex items-center gap-1.5">
+                            <Building2 className="h-4 w-4" />
+                            {doc.currentOffice?.officeName}
+                          </div>
+                        ) : (
+                          doc.addressee && (
+                            <div className="flex items-center gap-1.5">
+                              <UserCheck className="h-4 w-4 text-slate-500" />
+                              <span className="font-bold">
+                                {doc.addressee}
+                              </span>
+                            </div>
+                          )
+                        )}
 
-                          {
-                            doc
-                              .currentOffice
-                              ?.officeName
-                          }
-                        </div>
+                        
 
                         <div className="flex items-center gap-1.5">
                           <Badge

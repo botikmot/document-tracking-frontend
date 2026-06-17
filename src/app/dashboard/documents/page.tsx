@@ -18,6 +18,8 @@ export default function DocumentsPage() {
   const [meta, setMeta] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
     const timer =
@@ -80,6 +82,16 @@ export default function DocumentsPage() {
     void load();
   }, [fetchDocuments]);
 
+  useEffect(() => {
+    const fetchStats = async () => {
+      const res = await api.get('/documents/stats');
+      
+      setStats(res.data);
+    };
+
+    fetchStats();
+  }, []);
+
   return (
     <main className="relative flex-1 overflow-hidden bg-[#F5F7F2]">
       {/* ====================================== */}
@@ -100,9 +112,7 @@ export default function DocumentsPage() {
 
         <div className="space-y-8 p-8">
           <DocumentsStats
-            documents={
-              documents
-            }
+            stats={stats}
           />
 
           <DocumentsTabs

@@ -28,6 +28,9 @@ export default function OutgoingDocumentsPage() {
   const [meta, setMeta] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [stats, setStats] = useState<any>(null);
+
 
 
   useEffect(() => {
@@ -54,7 +57,7 @@ export default function OutgoingDocumentsPage() {
               {
                 params: {
                   page,
-                  limit: 10,
+                  limit: 5,
                   search:
                     debouncedSearch,
                 },
@@ -81,7 +84,8 @@ export default function OutgoingDocumentsPage() {
           setDocuments(
             normalized,
           );
-
+          console.log('outgoing:', response.data)
+          //setStats(response.data.stats);
           setMeta(
             response.data.meta,
           );
@@ -105,6 +109,16 @@ export default function OutgoingDocumentsPage() {
 
     void load();
   }, [fetchOutgoingDocuments]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const res = await api.get('/documents/stats');
+      console.log('outgoing stats:', res.data)
+      setStats(res.data);
+    };
+
+    fetchStats();
+  }, []);
 
   return (
     <main className="relative flex-1 overflow-hidden bg-[#F5F7F2]">
@@ -175,7 +189,7 @@ export default function OutgoingDocumentsPage() {
 
                   <h2 className="mt-3 text-5xl font-black text-[#102418]">
                     {
-                      documents.length
+                      stats?.outgoing ?? 0
                     }
                   </h2>
 
@@ -184,6 +198,9 @@ export default function OutgoingDocumentsPage() {
 
                     Active dispatches
                   </Badge>
+                  <p className="mt-3 text-xs text-slate-400">
+                    Documents that have been dispatched and are currently leaving the system or office.
+                  </p>
                 </div>
 
                 <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-emerald-600 to-green-600 text-white shadow-xl">
@@ -205,12 +222,15 @@ export default function OutgoingDocumentsPage() {
                   </p>
 
                   <h2 className="mt-3 text-5xl font-black text-[#102418]">
-                    18
+                    {stats?.outgoingActiveRoute ?? 0}
                   </h2>
 
                   <Badge className="mt-5 rounded-full bg-cyan-100 px-4 py-1 text-cyan-700">
                     Workflow processing
                   </Badge>
+                  <p className="mt-3 text-xs text-slate-400">
+                    Ongoing workflow processes showing how many documents are currently being routed.
+                  </p>
                 </div>
 
                 <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-cyan-600 to-blue-600 text-white shadow-xl">

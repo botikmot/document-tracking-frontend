@@ -28,6 +28,8 @@ export default function PendingDocumentsPage() {
   const [meta, setMeta] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
     const timer =
@@ -63,6 +65,7 @@ export default function PendingDocumentsPage() {
           setDocuments(
             response.data.data,
           );
+          console.log('pending:', response.data.data)
 
           setMeta(
             response.data.meta,
@@ -87,6 +90,17 @@ export default function PendingDocumentsPage() {
 
     void load();
   }, [fetchPendingDocuments]);
+
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const res = await api.get('/documents/stats');
+      console.log('pending stats:', res.data)
+      setStats(res.data);
+    };
+
+    fetchStats();
+  }, []);
 
   return (
     <main className="relative flex-1 overflow-hidden bg-[#F5F7F2]">
@@ -157,7 +171,7 @@ export default function PendingDocumentsPage() {
 
                   <h2 className="mt-3 text-5xl font-black text-[#102418]">
                     {
-                      documents.length
+                      stats?.pending ?? 0
                     }
                   </h2>
 
@@ -166,6 +180,9 @@ export default function PendingDocumentsPage() {
 
                     Awaiting action
                   </Badge>
+                  <p className="mt-3 text-xs text-slate-400">
+                    Documents waiting for action such as review, approval, or forwarding.
+                  </p>
                 </div>
 
                 <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-xl">
@@ -187,12 +204,15 @@ export default function PendingDocumentsPage() {
                   </p>
 
                   <h2 className="mt-3 text-5xl font-black text-[#102418]">
-                    08
+                    {stats?.urgent ?? 0}
                   </h2>
 
                   <Badge className="mt-5 rounded-full bg-red-100 px-4 py-1 text-red-700">
                     High priority queue
                   </Badge>
+                  <p className="mt-3 text-xs text-slate-400">
+                    High-priority documents that require immediate attention or processing.
+                  </p>
                 </div>
 
                 <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-red-500 to-orange-600 text-white shadow-xl">

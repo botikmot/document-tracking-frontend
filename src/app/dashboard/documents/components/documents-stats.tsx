@@ -15,43 +15,21 @@ import {
 import { Badge } from '@/components/ui/badge';
 
 export function DocumentsStats({
-  documents,
+  stats,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  documents: any[];
+  stats: {
+    total: number;
+    pending: number;
+    approved: number;
+    archived: number;
+  };
 }) {
-  const total =
-    documents.length;
-
-  const pending =
-    documents.filter(
-      (doc) =>
-        doc.currentStatus
-          ?.name ===
-        'PENDING',
-    ).length;
-
-  const approved =
-    documents.filter(
-      (doc) =>
-        doc.currentStatus
-          ?.name ===
-        'APPROVED',
-    ).length;
-
-  const completed =
-    documents.filter(
-      (doc) =>
-        doc.currentStatus
-          ?.name ===
-        'COMPLETED',
-    ).length;
-
-  const stats = [
+  
+  const statsData = [
     {
       label:
         'Total Documents',
-      value: total,
+      value: stats?.total,
       icon: FileText,
       color:
         'from-blue-500 to-cyan-500',
@@ -63,7 +41,7 @@ export function DocumentsStats({
     {
       label:
         'Pending',
-      value: pending,
+      value: stats?.pending,
       icon: Clock3,
       color:
         'from-amber-500 to-orange-500',
@@ -75,7 +53,7 @@ export function DocumentsStats({
     {
       label:
         'Approved',
-      value: approved,
+      value: stats?.approved,
       icon: CheckCircle2,
       color:
         'from-emerald-500 to-green-500',
@@ -87,7 +65,7 @@ export function DocumentsStats({
     {
       label:
         'Completed',
-      value: completed,
+      value: stats?.archived,
       icon: Archive,
       color:
         'from-slate-700 to-slate-900',
@@ -100,7 +78,7 @@ export function DocumentsStats({
 
   return (
     <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-      {stats.map(
+      {statsData.map(
         (stat) => {
           const Icon =
             stat.icon;

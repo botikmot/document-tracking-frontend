@@ -76,6 +76,8 @@ export default function IncomingPage() {
   const [page, setPage] = useState(1);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [meta, setMeta] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [stats, setStats] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -115,7 +117,7 @@ export default function IncomingPage() {
                 },
               },
             );
-
+            console.log('incoming:',response.data)
           setDocuments(
             response.data.data,
           );
@@ -123,6 +125,7 @@ export default function IncomingPage() {
           setMeta(
             response.data.meta,
           );
+          setStats(response.data.stats)
         } catch (error) {
           console.error(error);
         } finally {
@@ -321,6 +324,9 @@ export default function IncomingPage() {
                     <TrendingDown className="mr-1 h-4 w-4" />
                     Active receiving
                   </Badge>
+                  <p className="mt-3 text-xs text-slate-400">
+                    Documents currently being received and queued for processing within the system.
+                  </p>
                 </div>
 
                 <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-xl">
@@ -343,20 +349,15 @@ export default function IncomingPage() {
                   </p>
 
                   <h2 className="mt-3 text-5xl font-black text-[#102418]">
-                    {
-                      documents.filter(
-                        (
-                          doc,
-                        ) =>
-                          doc.status ===
-                          'PENDING',
-                      ).length
-                    }
+                    {stats?.pending ?? 0}
                   </h2>
 
                   <Badge className="mt-5 rounded-full bg-emerald-100 px-4 py-1 text-emerald-700">
                     Live office routing
                   </Badge>
+                  <p className="mt-3 text-xs text-slate-400">
+                    Documents actively moving between offices and undergoing workflow routing.
+                  </p>
                 </div>
 
                 <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-xl">
