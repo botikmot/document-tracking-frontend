@@ -17,10 +17,287 @@ import {
 } from '@/components/ui/card';
 
 import { Button } from '@/components/ui/button';
-
 import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@/components/ui/avatar';
+import {
+  Camera,
+  Upload,
+  Loader2,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { api } from '@/lib/axios';
+import {
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 export default function SettingsPage() {
+  const [profileOpen, setProfileOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [user, setUser] = useState<any>(null);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  const fetchProfile = async () => {
+    try {
+      const { data } =
+        await api.get(
+          '/users/profile/me',
+        );
+
+      console.log('profile:', data)
+      setUser(data);
+
+      setFirstName(
+        data.firstName,
+      );
+
+      setLastName(
+        data.lastName,
+      );
+
+      setEmail(data.email);
+
+      setUsername(
+        data.username,
+      );
+
+      setMobileNumber(
+        data.mobileNumber ??
+          '',
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    const load =
+      async () => {
+        await fetchProfile();
+      };
+
+    void load();
+  }, []);
+
+
+  const handleUpdateProfile =
+    async () => {
+      try {
+        setLoading(true);
+
+        await api.patch(
+          '/users/profile',
+          {
+            firstName,
+            lastName,
+            email,
+            username,
+            mobileNumber,
+          },
+        );
+
+        toast.success(
+          'Profile updated',
+        );
+
+        await fetchProfile();
+
+        setProfileOpen(false);
+      } catch {
+        toast.error(
+          'Failed to update profile',
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+
+  const handlePhotoUpload =
+    async (
+      e: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+      const file =
+        e.target.files?.[0];
+
+      if (!file) return;
+
+      setPreviewImage(URL.createObjectURL(file),);
+
+      try {
+        setUploadingPhoto(true);
+
+        /**
+         * Delete old photo first
+         */
+        if (
+          user?.profileImageId
+        ) {
+          await fetch(
+            '/api/upload/delete',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type':
+                  'application/json',
+              },
+              body: JSON.stringify({
+                publicId:
+                  user.profileImageId,
+              }),
+            },
+          );
+        }
+
+        /**
+         * Upload new image
+         */
+        const formData =
+          new FormData();
+
+        formData.append(
+          'file',
+          file,
+        );
+
+        formData.append(
+          'folder',
+          'users/profile-pictures',
+        );
+
+        const uploadRes =
+          await fetch(
+            '/api/upload',
+            {
+              method: 'POST',
+              body: formData,
+            },
+          );
+
+        const uploadData =
+          await uploadRes.json();
+        console.log(uploadData)
+        /**
+         * Save image to user
+         */
+        await api.patch(
+          '/users/profile',
+          {
+            profileImageUrl:
+              uploadData.url,
+
+            profileImageId:
+              uploadData.public_id,
+          },
+        );
+
+        toast.success(
+          'Profile photo updated',
+        );
+
+        await fetchProfile();
+      } catch (error) {
+        console.error(error);
+
+        toast.error(
+          'Failed to upload photo',
+        );
+      } finally {
+        setUploadingPhoto(false);
+
+        if (
+          fileInputRef.current
+        ) {
+          fileInputRef.current.value =
+            '';
+        }
+      }
+    };
+
+  const handleChangePassword =
+    async () => {
+      if (
+        newPassword !==
+        confirmPassword
+      ) {
+        toast.error(
+          'Passwords do not match',
+        );
+
+        return;
+      }
+
+      try {
+        setChangingPassword(
+          true,
+        );
+
+        await api.patch(
+          '/users/change-password',
+          {
+            currentPassword,
+            newPassword,
+          },
+        );
+
+        toast.success(
+          'Password changed successfully',
+        );
+
+        setCurrentPassword(
+          '',
+        );
+
+        setNewPassword('');
+
+        setConfirmPassword(
+          '',
+        );
+
+        setPasswordOpen(
+          false,
+        );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        toast.error(
+          error?.response?.data
+            ?.message ||
+            'Failed to change password',
+        );
+      } finally {
+        setChangingPassword(
+          false,
+        );
+      }
+    };
+
+  const passwordStrength =
+    newPassword.length >= 12
+      ? 'Strong'
+      : newPassword.length >= 8
+        ? 'Medium'
+        : 'Weak';
+
   return (
     <main className="relative flex-1 overflow-hidden bg-[#F5F7F2]">
       {/* BACKGROUND */}
@@ -70,18 +347,68 @@ export default function SettingsPage() {
             </CardHeader>
 
             <CardContent className="space-y-6">
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
-                <p className="font-semibold text-slate-900">
-                  Profile Information
-                </p>
+              <div className="flex rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                 <div className="relative">
+                    <Avatar className="h-32 w-32 border-4 border-green-100">
+                      <AvatarImage
+                        src={
+                          previewImage ||
+                          user?.profileImageUrl
+                        }
+                      />
 
-                <p className="mt-2 text-sm text-slate-500">
-                  Update your account information and office details.
-                </p>
+                      <AvatarFallback className="bg-green-600 text-3xl text-white">
+                        {user?.firstName?.[0]}
+                        {user?.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
 
-                <Button className="mt-5 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600">
-                  Update Profile
-                </Button>
+                    <Button
+                      size="icon"
+                      disabled={uploadingPhoto}
+                      className="
+                        absolute
+                        bottom-5
+                        right-1
+                        rounded-full
+                        bg-green-600
+                        hover:bg-green-700
+                      "
+                      onClick={() =>
+                        fileInputRef.current?.click()
+                      }
+                    >
+                      {uploadingPhoto ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Camera className="h-4 w-4" />
+                      )}
+                    </Button>
+
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={
+                        handlePhotoUpload
+                      }
+                    />
+                  </div>
+
+                <div className="p-5">
+                  <p className="font-semibold text-slate-900">
+                    Profile Information
+                  </p>
+
+                  <p className="mt-2 text-sm text-slate-500">
+                    Update your account information and office details.
+                  </p>
+
+                  <Button onClick={() => setProfileOpen(true)} className="mt-5 rounded-2xl bg-gradient-to-r cursor-pointer from-green-600 to-emerald-600">
+                    Update Profile
+                  </Button>
+                </div>
               </div>
 
               <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
@@ -95,7 +422,10 @@ export default function SettingsPage() {
 
                 <Button
                   variant="outline"
-                  className="mt-5 rounded-2xl"
+                  className="mt-5 rounded-2xl cursor-pointer"
+                  onClick={() =>
+                    setPasswordOpen(true)
+                  }
                 >
                   Change Password
                 </Button>
@@ -242,6 +572,164 @@ export default function SettingsPage() {
           </Card>
         </div>
       </div>
+
+      <Dialog
+        open={profileOpen}
+        onOpenChange={setProfileOpen}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              Update Profile
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                placeholder="First Name"
+                value={firstName}
+                onChange={(e) =>
+                  setFirstName(
+                    e.target.value,
+                  )
+                }
+              />
+
+              <Input
+                placeholder="Last Name"
+                value={lastName}
+                onChange={(e) =>
+                  setLastName(
+                    e.target.value,
+                  )
+                }
+              />
+            </div>
+
+            <Input
+              placeholder="Email"
+              value={email}
+              onChange={(e) =>
+                setEmail(
+                  e.target.value,
+                )
+              }
+            />
+
+            <Input
+              placeholder="Username"
+              value={username}
+              onChange={(e) =>
+                setUsername(
+                  e.target.value,
+                )
+              }
+            />
+
+            <Input
+              placeholder="Mobile Number"
+              value={mobileNumber}
+              onChange={(e) =>
+                setMobileNumber(
+                  e.target.value,
+                )
+              }
+            />
+
+            <Button
+              disabled={loading}
+              onClick={
+                handleUpdateProfile
+              }
+              className="w-full bg-gradient-to-r from-green-600 to-emerald-600"
+            >
+              {loading
+                ? 'Saving...'
+                : 'Save Changes'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={passwordOpen}
+        onOpenChange={
+          setPasswordOpen
+        }
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Change Password
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <Input
+              type="password"
+              placeholder="Current Password"
+              value={
+                currentPassword
+              }
+              onChange={(e) =>
+                setCurrentPassword(
+                  e.target.value,
+                )
+              }
+            />
+
+            <Input
+              type="password"
+              placeholder="New Password"
+              value={
+                newPassword
+              }
+              onChange={(e) =>
+                setNewPassword(
+                  e.target.value,
+                )
+              }
+            />
+
+            <Input
+              type="password"
+              placeholder="Confirm Password"
+              value={
+                confirmPassword
+              }
+              onChange={(e) =>
+                setConfirmPassword(
+                  e.target.value,
+                )
+              }
+            />
+
+            <p className="text-sm text-slate-500">
+              Password Strength:
+              <span className="font-medium">
+                {' '}
+                {passwordStrength}
+              </span>
+            </p>
+
+            <Button
+              disabled={
+                changingPassword
+              }
+              onClick={
+                handleChangePassword
+              }
+              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 cursor-pointer"
+            >
+              {changingPassword
+                ? 'Updating...'
+                : 'Update Password'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </main>
   );
 }

@@ -17,6 +17,7 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
 
     const buffer = Buffer.from(bytes);
+    const folder = formData.get('folder')?.toString() ?? 'documents';
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: any = await new Promise(
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
         cloudinary.uploader
           .upload_stream(
             {
-              folder: 'documents',
+              folder,
             },
             (error, result) => {
               if (error) reject(error);

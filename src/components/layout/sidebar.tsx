@@ -19,10 +19,13 @@ import {
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-
 import { Button } from '@/components/ui/button';
-
 import { useAuthStore } from '@/store/auth.store';
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@/components/ui/avatar';
 
 export function Sidebar() {
   const pathname =
@@ -124,8 +127,20 @@ export function Sidebar() {
       <div className="border-b border-white/10 p-6">
         <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-500/20">
-              <ShieldCheck className="h-7 w-7 text-green-300" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500/20">
+              {/* <ShieldCheck className="h-7 w-7 text-green-300" /> */}
+              <Avatar className="h-12 w-12 ">
+                <AvatarImage
+                  src={
+                    user?.profileImageUrl
+                  }
+                />
+
+                <AvatarFallback className="bg-green-600 text-3xl text-white">
+                  {user?.firstName?.[0]}
+                  {user?.lastName?.[0]}
+                </AvatarFallback>
+              </Avatar>
             </div>
 
             <div className="min-w-0 flex-1">
