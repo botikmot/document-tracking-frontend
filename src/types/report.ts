@@ -1,0 +1,88 @@
+export interface ReportFilters {
+  type:
+    | 'monthly'
+    | 'quarterly'
+    | 'annual'
+    | 'custom';
+
+  year?: number;
+  month?: number;
+  quarter?: number;
+  startDate?: string;
+  endDate?: string;
+  officeIds?: string[];
+  documentTypeId?: string;
+  status?: string;
+}
+
+export type ReportSummary = {
+  totalDocuments: number;
+  incomingDocuments: number;
+  outgoingDocuments: number,
+  pendingDocuments: number,
+  completedDocuments: number,
+  overdueDocuments: number;
+  averageProcessingHours: number;
+};
+
+export interface Report {
+  reportPeriod: {
+    type: string;
+    startDate: string;
+    endDate: string;
+  };
+
+  summary: {
+    totalDocuments: number;
+    incomingDocuments: number;
+    outgoingDocuments: number;
+    pendingDocuments: number;
+    completedDocuments: number;
+    overdueDocuments: number;
+    completionRate: number;
+    averageProcessingHours: number;
+  };
+
+  statusBreakdown: {
+    statusId: string;
+    statusName: string;
+    count: number;
+  }[];
+
+  documentTypeBreakdown: {
+    documentTypeId: string;
+    documentTypeName: string;
+    count: number;
+  }[];
+
+  byPriority: Array<{
+    priority: string | null;
+    _count: {
+      priority: number;
+    };
+  }>;
+
+  monthlyTrend: Array<{
+    month: string;
+    created: number;
+    completed: number;
+  }>;
+
+  analytics: {
+    averageProcessingHours: number;
+  };
+
+  documents: {
+    id: string;
+    trackingNumber: string;
+    title: string;
+    documentType: string;
+    status: string;
+    office: string;
+    priority?: string;
+    createdAt: string;
+    deadline?: string;
+  }[];
+
+  generatedAt: string;
+}

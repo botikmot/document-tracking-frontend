@@ -15,7 +15,7 @@ import {
   Building2,
   LogOut,
   FileText,
-  ShieldCheck,
+  ChartColumn,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -84,6 +84,12 @@ export function Sidebar() {
       href:
         '/dashboard/archived',
       icon: Archive,
+    },
+    {
+      label: 'Reports',
+      href:
+        '/dashboard/reports',
+      icon: ChartColumn,
     },
     {
       label: 'Settings',
