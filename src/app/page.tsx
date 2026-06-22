@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from 'next/navigation';
 
 import {
   ArrowRight,
@@ -22,6 +23,7 @@ import { Input } from "@/components/ui/input";
 
 export default function HomePage() {
   const [trackingNumber, setTrackingNumber] = useState("");
+  const router = useRouter();
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#F5F7F2]">
@@ -75,7 +77,7 @@ export default function HomePage() {
           </div>
 
           <Link href="/login">
-            <Button className="rounded-2xl bg-green-600 px-6 hover:bg-green-700">
+            <Button className="rounded-2xl cursor-pointer bg-green-600 px-6 hover:bg-green-700">
               <Lock className="mr-2 h-4 w-4" />
               Login
             </Button>
@@ -127,21 +129,25 @@ export default function HomePage() {
 
             {/* CTA */}
             <div className="mt-10 flex flex-wrap gap-4">
+              <Link href="/track">
               <Button
                 size="lg"
-                className="h-14 rounded-2xl bg-green-600 px-8 text-base font-semibold shadow-2xl transition-all hover:scale-[1.02] hover:bg-green-700"
+                className="h-14 cursor-pointer rounded-2xl bg-green-600 px-8 text-base font-semibold shadow-2xl transition-all hover:scale-[1.02] hover:bg-green-700"
               >
                 Track Document
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
+              </Link>
 
-              <Button
-                size="lg"
-                variant="outline"
-                className="h-14 rounded-2xl border-green-300/30 bg-white/10 px-8 text-base text-white backdrop-blur-md hover:bg-white/20"
-              >
-                Learn More
-              </Button>
+              <Link href="#features">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-14 cursor-pointer rounded-2xl border-green-300/30 bg-white/10 px-8 text-base text-white backdrop-blur-md hover:bg-white/20"
+                >
+                  Learn More
+                </Button>
+              </Link>
             </div>
 
             {/* STATS */}
@@ -210,13 +216,25 @@ export default function HomePage() {
                       onChange={(e) =>
                         setTrackingNumber(e.target.value)
                       }
-                      placeholder="e.g. EDATS-2026-0001"
-                      className="h-14 rounded-2xl border border-white/10 bg-white/10 pl-12 text-white placeholder:text-green-100/50 focus-visible:ring-2 focus-visible:ring-green-500"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          router.push(`/track?tracking=${encodeURIComponent(trackingNumber)}`);
+                        }
+                      }}
+                      placeholder="e.g. DOC-2026-000001"
+                      className="h-14 rounded-2xl mt-2 border border-white/10 bg-white/10 pl-12 text-white placeholder:text-green-100/50 focus-visible:ring-2 focus-visible:ring-green-500"
                     />
                   </div>
                 </div>
 
-                <Button className="h-14 w-full rounded-2xl bg-green-600 text-base font-bold hover:bg-green-700">
+                <Button 
+                  onClick={() => {
+                    if (!trackingNumber.trim()) return;
+
+                    router.push(`/track?tracking=${encodeURIComponent(trackingNumber)}`);
+                  }}
+                  className="h-14 w-full cursor-pointer rounded-2xl bg-green-600 text-base font-bold hover:bg-green-700"
+                >
                   Search Document
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -470,7 +488,7 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 px-6 py-8 text-center md:flex-row">
           <div>
             <h4 className="font-black text-[#102418]">
-              eDATS
+              eDATS+
             </h4>
 
             <p className="mt-1 text-sm text-slate-500">

@@ -131,7 +131,7 @@ export default function CreateDocumentDialog(
         const res = await api.post('/documents', payload);
 
         console.log('created: ', res)
-        const trackingUrl = `${window.location.origin}/track/${res.data.trackingNumber}`;
+        const trackingUrl = `${window.location.origin}/track?tracking=${res.data.trackingNumber}`;
 
         const qrCode =
           await QRCode.toDataURL(

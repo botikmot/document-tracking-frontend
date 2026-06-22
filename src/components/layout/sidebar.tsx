@@ -106,7 +106,7 @@ export function Sidebar() {
       {/* ====================================== */}
       <div className="border-b border-white/10 p-6">
         <div className="flex items-center gap-4">
-          <div className="rounded-full bg-white p-1 shadow-2xl">
+          <div className="rounded-full bg-white p-1">
             <Image
               src="/images/logo_denr.png"
               alt="DENR"
@@ -117,11 +117,11 @@ export function Sidebar() {
 
           <div>
             <h1 className="text-2xl font-black tracking-wide text-white">
-              eDATS
+              eDATS+
             </h1>
 
             <p className="text-xs text-green-100/70">
-              Document Tracking
+              Document Action Tracking System
             </p>
           </div>
         </div>

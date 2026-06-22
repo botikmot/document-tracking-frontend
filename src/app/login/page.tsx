@@ -230,6 +230,11 @@ export default function LoginPage() {
                         e.target.value,
                       )
                     }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleLogin();
+                      }
+                    }}
                   />
 
                   <button
