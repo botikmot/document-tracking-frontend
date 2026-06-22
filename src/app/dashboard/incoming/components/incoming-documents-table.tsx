@@ -30,8 +30,8 @@ import {
 } from '@/components/ui/input';
 
 import { api } from '@/lib/axios';
-
 import { RouteDocumentDialog } from '../../documents/components/route-document-dialog';
+import { useNotificationStore } from '@/store/notification.store';
 
 export function IncomingDocumentsTable({
   routes,
@@ -64,6 +64,12 @@ export function IncomingDocumentsTable({
   ] = useState<
     string | null
   >(null);
+
+
+  const { markAsRead, notifications } = useNotificationStore();
+
+
+
 
   if (loading) {
     return (
@@ -255,6 +261,14 @@ export function IncomingDocumentsTable({
                             `/documents/${route.documentId}/receive`,
                           );
 
+                          const notification = notifications.find(n => n.documentId === route.documentId);
+                          if(notification) {
+                            await api.patch(
+                              `/notifications/${notification.id}/read`,
+                            );
+                            markAsRead(notification.id);
+                          }
+                          
                           onRefresh();
                         } catch (
                           error

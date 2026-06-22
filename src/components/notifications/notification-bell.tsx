@@ -25,23 +25,32 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useNotificationStore } from '@/store/notification.store';
+
+type NotificationType =
+  | 'DEADLINE'
+  | 'ROUTED'
+  | 'APPROVED';
 
 type Notification = {
   id: string;
   title: string;
   message: string;
-  type: string;
+  type: NotificationType;
   isRead: boolean;
+  documentId: string;
   createdAt: string;
 };
 
 export function NotificationBell() {
-  const [
+  const {
     notifications,
+    unreadCounts,
     setNotifications,
-  ] = useState<
-    Notification[]
-  >([]);
+    addNotification,
+    markAsRead: removeNotification,
+    markAllAsRead: markAllNotificationsAsRead,
+  } = useNotificationStore();
 
   const notificationAudio =
     useRef<HTMLAudioElement | null>(
@@ -68,6 +77,8 @@ export function NotificationBell() {
           await api.get(
             '/notifications',
           );
+
+        console.log('notifications', response.data)
 
         setNotifications(
           response.data,
@@ -152,13 +163,8 @@ export function NotificationBell() {
          | ADD TO STATE
          |-------------------------------------------------------
          */
+        addNotification(data);
 
-        setNotifications(
-          (prev) => [
-            data,
-            ...prev,
-          ],
-        );
       },
     );
 
@@ -189,17 +195,8 @@ export function NotificationBell() {
         | REMOVE FROM STATE
         |-------------------------------------------------------
         */
+         removeNotification(id);
 
-        setNotifications(
-          (prev) =>
-            prev.filter(
-              (
-                notification,
-              ) =>
-                notification.id !==
-                id,
-            ),
-        );
       } catch (error) {
         console.error(error);
       }
@@ -217,18 +214,7 @@ export function NotificationBell() {
         await api.patch(
           '/notifications/read-all',
         );
-
-        setNotifications(
-          (prev) =>
-            prev.map(
-              (
-                notification,
-              ) => ({
-                ...notification,
-                isRead: true,
-              }),
-            ),
-        );
+        markAllNotificationsAsRead();
 
         toast.success(
           'All notifications marked as read',
@@ -245,10 +231,9 @@ export function NotificationBell() {
    */
 
   const unreadCount =
-    notifications.filter(
-      (notification) =>
-        !notification.isRead,
-    ).length;
+    unreadCounts.DEADLINE +
+    unreadCounts.ROUTED +
+    unreadCounts.APPROVED;
 
     useEffect(() => {
         const unlockAudio =
@@ -343,9 +328,7 @@ export function NotificationBell() {
           {unreadCount >
             0 && (
             <div className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow">
-              {
-                unreadCount
-              }
+              {unreadCount > 9 ? '9+' : unreadCount}
             </div>
           )}
         </Button>

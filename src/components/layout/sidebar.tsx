@@ -26,6 +26,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from '@/components/ui/avatar';
+import { useNotificationStore } from '@/store/notification.store';
 
 export function Sidebar() {
   const pathname =
@@ -98,6 +99,12 @@ export function Sidebar() {
       icon: Settings,
     },
   ];
+
+  const unreadCounts =
+    useNotificationStore(
+      (state) =>
+        state.unreadCounts,
+    );
 
   return (
     <aside className="sticky top-0 hidden h-screen w-80 flex-col border-r border-white/10 bg-[#07150d] lg:flex">
@@ -185,26 +192,50 @@ export function Sidebar() {
                 key={menu.href}
                 href={menu.href}
                 className={cn(
-                  'group flex items-center gap-4 rounded-2xl px-5 py-2 text-sm font-semibold transition-all duration-300',
+                  'group flex items-center justify-between gap-4 rounded-2xl px-5 py-2 text-sm font-semibold transition-all duration-300',
                   active
                     ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-2xl'
                     : 'text-green-50/70 hover:bg-white/5 hover:text-white',
                 )}
               >
-                <div
-                  className={cn(
-                    'flex h-11 w-11 items-center justify-center rounded-2xl transition-all',
-                    active
-                      ? 'bg-white/10'
-                      : 'bg-white/5 group-hover:bg-white/10',
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
+                <div className="flex items-center gap-4">
+                  <div
+                    className={cn(
+                      'flex h-11 w-11 items-center justify-center rounded-2xl transition-all',
+                      active
+                        ? 'bg-white/10'
+                        : 'bg-white/5 group-hover:bg-white/10',
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </div>
+
+                  <span>
+                    {menu.label}
+                  </span>
                 </div>
 
-                <span>
-                  {menu.label}
-                </span>
+                {menu.href ===
+                  '/dashboard/pending' &&
+                  unreadCounts.DEADLINE >
+                    0 && (
+                    <span className="ml-auto flex h-6 min-w-6 items-center justify-center rounded-full bg-red-500 px-2 text-xs font-bold text-white">
+                      {unreadCounts.DEADLINE > 9
+                          ? '9+'
+                          : unreadCounts.DEADLINE}
+                    </span>
+                )}
+
+                {menu.href ===
+                  '/dashboard/incoming' &&
+                  unreadCounts.ROUTED >
+                    0 && (
+                    <span className="ml-auto flex h-6 min-w-6 items-center justify-center rounded-full bg-red-500 px-2 text-xs font-bold text-white">
+                      {unreadCounts.ROUTED > 9
+                        ? '9+'
+                        : unreadCounts.ROUTED}
+                    </span>
+                )}
               </Link>
             );
           })}

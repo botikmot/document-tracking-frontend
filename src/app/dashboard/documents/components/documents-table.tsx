@@ -33,6 +33,7 @@ import { RouteDocumentDialog } from './route-document-dialog';
 import { DocumentTimelineDrawer } from './document-timeline-drawer';
 import { DocumentDetailsDrawer } from './document-details-drawer';
 import { toast } from 'sonner';
+import { useNotificationStore } from '@/store/notification.store';
 
 export function DocumentsTable({
   documents,
@@ -79,6 +80,8 @@ export function DocumentsTable({
     'APPROVED',
     'COMPLETED',
   ];
+
+  const { markAsRead, notifications } = useNotificationStore();
 
   const handleStatusChange =
     async (
@@ -280,10 +283,18 @@ export function DocumentsTable({
             return (
               <div
                 key={i}
-                onClick={() => {
+                onClick={async () => {
                   setSelectedDocument(
                     doc,
                   );
+
+                  const notification = notifications.find(n => n.documentId === doc.id);
+                  if(notification) {
+                    await api.patch(
+                      `/notifications/${notification.id}/read`,
+                    );
+                    markAsRead(notification.id);
+                  }
 
                   setOpenDetails(
                     true,
