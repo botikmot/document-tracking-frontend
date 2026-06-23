@@ -40,7 +40,7 @@ type Office = {
 // ✅ helper
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getInitialForm = (user?: any) => ({
-  employeeId: user?.employeeId ?? '',
+  //employeeId: user?.employeeId ?? '',
   firstName: user?.firstName ?? '',
   lastName: user?.lastName ?? '',
   email: user?.email ?? '',
@@ -111,7 +111,7 @@ export function UserDialog({
       setLoading(true);
 
       const payload = {
-        employeeId: form.employeeId,
+        //employeeId: form.employeeId,
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,
@@ -156,7 +156,7 @@ export function UserDialog({
         </DialogHeader>
 
         <div className="space-y-5 py-4">
-          <div>
+          {/* <div>
             <Label>Employee ID</Label>
             <Input
               value={form.employeeId}
@@ -164,7 +164,7 @@ export function UserDialog({
                 setForm({ ...form, employeeId: e.target.value })
               }
             />
-          </div>
+          </div> */}
 
           <div className="grid grid-cols-2 gap-4">
             <div>

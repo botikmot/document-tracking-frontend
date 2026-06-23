@@ -21,6 +21,7 @@ import SearchParamsContent from './search-params-content';
 
 export default function PublicTrackingPage() {
   const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [document, setDocument] = useState<any>(null);
   const [error, setError] = useState('');
 
