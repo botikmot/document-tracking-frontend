@@ -29,6 +29,7 @@ type Props = {
     sender: string;
     classification: string;
     priority: string;
+    addressee: string;
     createdAt: string;
     qrCode: string;
   };
