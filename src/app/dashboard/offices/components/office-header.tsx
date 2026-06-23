@@ -10,6 +10,7 @@ import {
 
 import OfficeDialog from './office-dialog';
 import { CreateOrganizationDialog } from './create-organization-dialog';
+import { MobileSidebar } from '@/components/layout/mobile-sidebar';
 
 export function OfficeHeader({
   offices,
@@ -21,9 +22,12 @@ export function OfficeHeader({
     <div className="border-b bg-white">
       <div className="flex flex-col gap-5 px-8 py-6 lg:flex-row lg:items-center lg:justify-between">
         {/* LEFT */}
+        <div className="flex justify-end lg:hidden">
+                        <MobileSidebar />
+                  </div>
         <div>
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-100">
+            <div className="hidden md:flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-100">
               <Building2 className="h-8 w-8 text-blue-600" />
             </div>
 

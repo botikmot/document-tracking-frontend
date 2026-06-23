@@ -28,6 +28,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/axios';
 import { NotificationBell } from '@/components/notifications/notification-bell';
+import { MobileSidebar } from '@/components/layout/mobile-sidebar';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -169,6 +170,11 @@ export default function DashboardPage() {
       <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
         <div className="flex flex-col gap-6 px-8 py-6 xl:flex-row xl:items-center xl:justify-between">
           {/* LEFT */}
+
+          <div className="flex justify-end lg:hidden">
+              <MobileSidebar />
+          </div>
+
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-700">
               DENR eDATS

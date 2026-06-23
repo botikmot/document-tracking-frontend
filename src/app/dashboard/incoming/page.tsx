@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/card';
 
 import { IncomingDocumentsTable } from './components/incoming-documents-table';
+import { MobileSidebar } from '@/components/layout/mobile-sidebar';
 
 type IncomingDocument = {
   id: string;
@@ -263,8 +264,12 @@ export default function IncomingPage() {
           <div className="flex flex-col gap-6 px-8 py-6 xl:flex-row xl:items-center xl:justify-between">
             {/* LEFT */}
 
+            <div className="flex justify-end lg:hidden">
+                  <MobileSidebar />
+            </div>
+
             <div className="flex items-center gap-5">
-              <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-2xl">
+              <div className="hidden md:flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-2xl">
                 <Inbox className="h-10 w-10" />
               </div>
 

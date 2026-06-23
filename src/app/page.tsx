@@ -93,7 +93,7 @@ export default function HomePage() {
         <div className="absolute inset-0">
           <Image
             src="/images/forest-bg.jpg"
-            alt="DENR Background"
+            alt=""
             fill
             priority
             className="object-cover"

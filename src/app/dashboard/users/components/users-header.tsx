@@ -3,6 +3,7 @@
 import { Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { UserDialog } from './user-dialog';
+import { MobileSidebar } from '@/components/layout/mobile-sidebar';
 
 type Props = {
   onCreated: () => void;
@@ -14,8 +15,11 @@ export function UsersHeader({
   return (
     <div className="border-b bg-white">
       <div className="flex flex-col gap-5 px-8 py-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex justify-end lg:hidden">
+                <MobileSidebar />
+          </div>
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-100">
+          <div className="hidden md:flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-100">
             <Users className="h-8 w-8 text-blue-600" />
           </div>
 

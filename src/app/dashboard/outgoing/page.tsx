@@ -19,6 +19,7 @@ import {
 import { api } from '@/lib/axios';
 
 import { DocumentsTable } from '../documents/components/documents-table';
+import { MobileSidebar } from '@/components/layout/mobile-sidebar';
 
 export default function OutgoingDocumentsPage() {
   const [documents, setDocuments] = useState([]);
@@ -138,8 +139,11 @@ export default function OutgoingDocumentsPage() {
         <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
           <div className="flex flex-col gap-6 px-8 py-6 xl:flex-row xl:items-center xl:justify-between">
             {/* LEFT */}
+            <div className="flex justify-end lg:hidden">
+                  <MobileSidebar />
+            </div>
             <div className="flex items-center gap-5">
-              <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-emerald-600 to-green-600 text-white shadow-2xl">
+              <div className="hidden md:flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-emerald-600 to-green-600 text-white shadow-2xl">
                 <Send className="h-10 w-10" />
               </div>
 
