@@ -29,8 +29,15 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/axios';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import { MobileSidebar } from '@/components/layout/mobile-sidebar';
+import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [query, setQuery] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [results, setResults] = useState<any[]>([]);
+  const [open, setOpen] = useState(false);
+
   const [stats, setStats] = useState({
     incomingDocuments: 0,
     outgoingDocuments: 0,
@@ -73,6 +80,29 @@ export default function DashboardPage() {
   
       void load();
     }, []);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setResults([]);
+      setOpen(false);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await api.get(`/documents/search?q=${encodeURIComponent(query)}`);
+        console.log('search results:', res)
+        setResults(res.data);
+        setOpen(true);
+      } catch (err) {
+        console.error(err);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [query]);
+
 
   const getStatusColor = (
     status: string,
@@ -198,8 +228,34 @@ export default function DashboardPage() {
 
               <Input
                 placeholder="Search documents..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
                 className="h-12 rounded-2xl border-0 bg-white pl-12 shadow-sm focus-visible:ring-2 focus-visible:ring-green-500"
               />
+
+              {open && results.length > 0 && (
+                <div className="absolute z-50 mt-2 w-full rounded-xl bg-white shadow-lg border overflow-hidden">
+                  {results.map((doc) => (
+                    <div
+                      key={doc.id}
+                      onClick={() => {
+                        router.push(
+                          `/track?tracking=${encodeURIComponent(doc.trackingNumber)}`
+                        );
+                        setOpen(false);
+                        setQuery('');
+                      }}
+                      className="cursor-pointer px-4 py-3 hover:bg-slate-100"
+                    >
+                      <div className="font-medium">{doc.title}</div>
+                      <div className="text-xs text-slate-500">
+                        {doc.trackingNumber}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
             </div>
 
             {/* ACTIONS */}

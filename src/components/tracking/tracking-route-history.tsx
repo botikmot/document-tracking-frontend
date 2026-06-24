@@ -61,27 +61,19 @@ function statusBadge(status: string) {
   }
 }
 
-function getDuration(
-  sentAt: string,
-  receivedAt?: string,
-) {
-  if (!receivedAt)
-    return 'Still in transit';
+function getDuration(sentAt: string, receivedAt?: string) {
+  if (!receivedAt) return 'Still in transit';
 
-  const diff =
-    new Date(receivedAt).getTime() -
-    new Date(sentAt).getTime();
+  const diff = new Date(receivedAt).getTime() - new Date(sentAt).getTime();
 
-  const hours = Math.floor(
-    diff / 1000 / 60 / 60,
-  );
+  const minutes = Math.floor(diff / (1000 * 60));
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
 
-  if (hours < 24)
-    return `${hours} hr`;
+  if (days > 0) return `${days} day(s)`;
+  if (hours > 0) return `${hours} hr ${minutes % 60} min`;
 
-  return `${Math.floor(
-    hours / 24,
-  )} day(s)`;
+  return `${minutes} min`;
 }
 
 export function TrackingRouteHistory({

@@ -25,6 +25,7 @@ import {
 import {
   ScrollArea,
 } from '@/components/ui/scroll-area';
+import { useState } from 'react';
 
 type Props = {
   open: boolean;
@@ -41,11 +42,37 @@ export function DocumentTimelineDrawer({
   onOpenChange,
   document,
 }: Props) {
+  console.log('timeline:',document)
+  
   if (!document) {
     return null;
   }
 
-  console.log('timeline:',document)
+  const STUCK_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const enrichedRoutes = document.routes?.map((route: any, index: number) => {
+    const nextRoute = document.routes?.[index + 1];
+
+    const start = new Date(route.sentAt).getTime();
+    const end = nextRoute
+      ? new Date(nextRoute.sentAt).getTime()
+      : now;
+
+    const durationMs = end - start;
+
+    const isStuck =
+      document.currentStatus.name !== 'COMPLETED' && durationMs > STUCK_THRESHOLD_MS;
+
+    return {
+      ...route,
+      durationMs,
+      isStuck,
+    };
+  });
 
   return (
     <Sheet
@@ -209,7 +236,7 @@ export function DocumentTimelineDrawer({
                 </div>
 
                 {/* ROUTES */}
-                {document.routes?.map(
+                {enrichedRoutes?.map(
                   (
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     route: any,
@@ -230,7 +257,11 @@ export function DocumentTimelineDrawer({
                         )}
                       </div>
 
-                      <div className="rounded-2xl border bg-white p-4 shadow-sm">
+                      <div 
+                        className={`rounded-2xl border bg-white p-4 shadow-sm ${
+                          route.isStuck ? 'border-red-300 bg-red-50' : ''
+                        }`}
+                      >
                         <div className="flex items-center justify-between">
                           <h4 className="font-bold">
                             {
@@ -284,13 +315,22 @@ export function DocumentTimelineDrawer({
                             </p>
                           )}
 
-                          <p className="flex items-center gap-2">
-                            <Clock3 className="h-4 w-4" />
+                          <div className="flex justify-between items-center">
+                            <p className="flex items-center gap-2">
+                              <Clock3 className="h-4 w-4" />
 
-                            {new Date(
-                              route.sentAt,
-                            ).toLocaleString()}
-                          </p>
+                              {new Date(
+                                route.sentAt,
+                              ).toLocaleString()}
+                            </p>
+                            <p className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+                              <Clock3 className="h-4 w-4" />
+                              Stayed in office:{" "}
+                              <span className="font-semibold text-slate-700">
+                                {formatDuration(route.durationMs)}
+                              </span>
+                            </p>
+                          </div>
 
                           {route.remarks && (
                             <div className="mt-3 rounded-xl bg-slate-50 p-3 text-slate-700">
@@ -298,6 +338,11 @@ export function DocumentTimelineDrawer({
                                 route.remarks
                               }
                             </div>
+                          )}
+                          {route.isStuck && (
+                            <p className="mt-2 text-right text-xs font-semibold text-red-600">
+                              ⚠ Pending for more than 3 days
+                            </p>
                           )}
                         </div>
                       </div>
@@ -311,4 +356,14 @@ export function DocumentTimelineDrawer({
       </SheetContent>
     </Sheet>
   );
+}
+
+function formatDuration(ms: number) {
+  const minutes = Math.floor(ms / (1000 * 60));
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${days}d ${hours % 24}h`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m`;
+  return `${minutes}m`;
 }

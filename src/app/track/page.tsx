@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, ArrowLeft } from 'lucide-react';
 
 import { api } from '@/lib/axios';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import { TrackingRouteHistory } from '@/components/tracking/tracking-route-histo
 
 import Link from 'next/link';
 import SearchParamsContent from './search-params-content';
+import { useRouter } from 'next/navigation';
 
 export default function PublicTrackingPage() {
   const [loading, setLoading] = useState(false);
@@ -26,7 +27,7 @@ export default function PublicTrackingPage() {
   const [error, setError] = useState('');
 
   const [trackingNumber, setTrackingNumber] = useState('');
-
+  const router = useRouter();
   /*
   |--------------------------------------------------------------------------
   | TRACK
@@ -69,6 +70,14 @@ export default function PublicTrackingPage() {
       </div>
 
       <div className="relative mx-auto max-w-7xl px-6 py-16">
+        <Button
+          variant="ghost"
+          onClick={() => router.back()}
+          className="rounded-xl px-3 cursor-pointer text-slate-700 mb-1"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
         {/* HERO */}
         <Card className="overflow-hidden rounded-[36px] border-0 bg-gradient-to-br from-[#102418] via-[#173b27] to-[#1e5738] text-white shadow-2xl">
           <CardContent className="p-12">
@@ -142,7 +151,7 @@ export default function PublicTrackingPage() {
             <TrackingSummary document={document} />
 
             <div className="grid gap-8 xl:grid-cols-[420px,1fr]">
-              <TrackingTimeline routes={document.routes} />
+              <TrackingTimeline routes={document.routes} document={document}/>
               <TrackingDetails document={document} />
             </div>
 

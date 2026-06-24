@@ -18,6 +18,8 @@ import { Badge } from '@/components/ui/badge';
 type Props = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   routes: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  document: any;
 };
 
 function getStatusColor(status: string) {
@@ -58,7 +60,44 @@ function getStatusColor(status: string) {
 
 export function TrackingTimeline({
   routes,
+  document,
 }: Props) {
+
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
+
+  function formatDuration(ms: number) {
+    const minutes = Math.floor(ms / (1000 * 60));
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d ${hours % 24}h`;
+    if (hours > 0) return `${hours}h ${minutes % 60}m`;
+    return `${minutes}m`;
+  }
+
+   const STUCK_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+
+  const enrichedRoutes = routes.map((route, index) => {
+    const nextRoute = routes[index + 1];
+
+    const start = new Date(route.sentAt).getTime();
+
+    const end = nextRoute
+      ? new Date(nextRoute.sentAt).getTime()
+      : now;
+
+    const durationMs = end - start;
+    const isStuck =
+      document.currentStatus.name !== 'COMPLETED' && durationMs > STUCK_THRESHOLD_MS;
+
+    return {
+      ...route,
+      durationMs,
+      isStuck,
+    };
+  });
+
   return (
     <Card className="rounded-[32px] border-0 shadow-xl">
 
@@ -82,7 +121,7 @@ export function TrackingTimeline({
 
         <div className="relative">
 
-          {routes.map(
+          {enrichedRoutes.map(
             (
               route,
               index,
@@ -314,6 +353,22 @@ export function TrackingTimeline({
                         </p>
 
                       </div>
+
+                      <div className="mt-6 rounded-2xl bg-slate-50 p-4">
+                        <p className="text-xs uppercase tracking-wider text-slate-400">
+                          Stayed in Office
+                        </p>
+
+                        <p className="mt-1 font-semibold text-slate-900">
+                          {formatDuration(route.durationMs)}
+                        </p>
+                      </div>
+
+                      {route.isStuck && (
+                        <p className="mt-2 flex items-center font-semibold text-red-600">
+                          ⚠ Pending for more than 3 days
+                        </p>
+                      )}
 
                     </div>
 
