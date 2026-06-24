@@ -144,7 +144,7 @@ export function RouteDocumentDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger asChild>
-        <Button className="rounded-xl cursor-pointer">
+        <Button className="rounded-xl cursor-pointer w-full">
           <Send className="mr-2 h-4 w-4" />
           Route
         </Button>

@@ -6,8 +6,9 @@ import {
 
 import { Badge } from '@/components/ui/badge';
 
-import CreateDocumentDialog from './create-document-dialog';
+//import CreateDocumentDialog from './create-document-dialog';
 import { MobileSidebar } from '@/components/layout/mobile-sidebar';
+import DocumentDialog from './document-dialog';
 
 export function DocumentsHeader({
   onCreated,
@@ -55,7 +56,8 @@ export function DocumentsHeader({
           </Badge>
 
           <div className="rounded-2xl">
-            <CreateDocumentDialog onCreated={onCreated}/>
+            {/* <CreateDocumentDialog onCreated={onCreated}/> */}
+            <DocumentDialog mode="create" onSuccess={onCreated}/>
           </div>
         </div>
       </div>

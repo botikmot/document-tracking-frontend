@@ -34,6 +34,7 @@ import { DocumentTimelineDrawer } from './document-timeline-drawer';
 import { DocumentDetailsDrawer } from './document-details-drawer';
 import { toast } from 'sonner';
 import { useNotificationStore } from '@/store/notification.store';
+import DocumentDialog from './document-dialog';
 
 export function DocumentsTable({
   documents,
@@ -149,10 +150,10 @@ export function DocumentsTable({
         return 'bg-green-100 text-green-700 border-green-200';
 
       case 'COMPLEX':
-        return 'bg-red-100 text-red-700 border-red-200';
+        return 'bg-orange-100 text-orange-700 border-orange-200';
 
       case 'TECHNICAL':
-        return 'bg-slate-200 text-slate-700 border-slate-300';
+        return 'bg-red-200 text-red-700 border-red-300';
 
       default:
         return 'bg-amber-100 text-amber-700 border-amber-200';
@@ -280,6 +281,13 @@ export function DocumentsTable({
                 doc.deadline,
               );
 
+            const canUpdate = [
+                'DRAFT'
+              ].includes(
+                doc.currentStatus
+                  ?.name,
+              );
+
             return (
               <div
                 key={i}
@@ -371,7 +379,7 @@ export function DocumentsTable({
                             )}`}
                           >
                             {
-                              doc.classification
+                              doc.classification === 'TECHNICAL' ? 'HIGHLY TECHNICAL' : doc.classification
                             }
                           </Badge>
                         </div>
@@ -494,6 +502,7 @@ export function DocumentsTable({
                               true,
                             );
                           }}
+                          className="cursor-pointer"
                         >
                           View Details
                         </DropdownMenuItem>
@@ -511,14 +520,19 @@ export function DocumentsTable({
                               true,
                             );
                           }}
+                          className="cursor-pointer"
                         >
                           View Timeline
                         </DropdownMenuItem>
 
+                        {canUpdate && (
+                          <DocumentDialog mode="edit" document={doc} onSuccess={onRefresh}/>
+                        )}
+
                         {/* ROUTE */}
                         {canRoute && (
                           <div
-                            className="px-2 py-1"
+                            className="px-2 py-1 w-full"
                             onClick={(e) =>
                               e.stopPropagation()
                             }

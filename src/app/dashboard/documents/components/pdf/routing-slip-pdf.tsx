@@ -419,7 +419,7 @@ export default function RoutingSlipPDF({
                 styles.infoValue
               }
             >
-              {classification}
+              {classification === 'TECHNICAL' ? 'HIGHLY TECHNICAL' : classification }
             </Text>
           </View>
 
