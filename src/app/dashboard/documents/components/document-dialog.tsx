@@ -32,6 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { api } from '@/lib/axios';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { downloadRoutingSlip } from '@/lib/download-routing-slip';
+import { toast } from 'sonner';
 
 type Attachment = {
   fileName: string;
@@ -134,9 +135,25 @@ export default function DocumentDialog({
         const response = await api.get('/documents/next-tracking-number');
           setTrackingNumber(response.data.trackingNumber);
 
-        const types = await api.get('/document-types');
+        const typesRes = await api.get('/document-types');
+        const types = typesRes.data;
         console.log('doc types:', types)
-        setDocumentTypes(types.data);
+        setDocumentTypes(types);
+
+        // Auto-select Memorandum for create mode
+        if (mode === 'create') {
+          const memorandum = types.find(
+            (type: { id: string; name: string }) =>
+              type.name.toLowerCase() === 'memorandum'
+          );
+
+          if (memorandum) {
+            setFormData((prev) => ({
+              ...prev,
+              documentTypeId: memorandum.id,
+            }));
+          }
+        }
 
         const meRes = await api.get('/auth/me');
         console.log('meRes:', meRes)
@@ -162,6 +179,11 @@ export default function DocumentDialog({
       e: React.FormEvent,
     ) => {
       e.preventDefault();
+
+      if(!formData.title?.trim()) {
+        toast.error('Please provide a document title.')
+        return
+      }
 
       try {
         setLoading(true);
