@@ -99,6 +99,11 @@ export default function ReportsPage() {
             year={filters.year}
             month={filters.month}
             quarter={filters.quarter}
+            incoming={report.summary.incomingDocuments}
+            outgoing={report.summary.outgoingDocuments}
+            pending={report.summary.pendingDocuments}
+            completed={report.summary.completedDocuments}
+            overdue={report.summary.overdueDocuments}
           />
 
         </div>

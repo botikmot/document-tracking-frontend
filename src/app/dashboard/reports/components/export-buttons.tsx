@@ -25,14 +25,28 @@ type Props = {
   year?: number;
   month?: number;
   quarter?: number;
+  incoming?: number;
+  outgoing?: number;
+  pending?: number;
+  completed?: number;
+  overdue?: number;
 };
 
 export function ExportButtons({
   documents,
   reportName,
+  reportType,
+  year,
+  month,
+  quarter,
+  incoming = 0,
+  outgoing = 0,
+  pending = 0,
+  completed = 0,
+  overdue = 0,
 }: Props) {
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap gap-3 justify-end">
 
       {/* PDF */}
 
@@ -42,6 +56,15 @@ export function ExportButtons({
             documents={
               documents
             }
+            reportType={reportType}
+            year={year}
+            month={month}
+            quarter={quarter}
+            incoming={incoming}
+            outgoing={outgoing}
+            pending={pending}
+            completed={completed}
+            overdue={overdue}
           />
         }
         fileName={`${reportName}.pdf`}
@@ -49,7 +72,7 @@ export function ExportButtons({
         {({
           loading,
         }) => (
-          <Button className="rounded-2xl bg-red-600 hover:bg-red-700">
+          <Button className="rounded-2xl cursor-pointer bg-red-600 hover:bg-red-700">
 
             <FileText className="mr-2 h-4 w-4" />
 
@@ -63,7 +86,7 @@ export function ExportButtons({
 
       {/* Excel */}
 
-      <Button
+      {/* <Button
         className="rounded-2xl bg-emerald-600 hover:bg-emerald-700"
         onClick={() =>
           exportExcel(
@@ -75,11 +98,11 @@ export function ExportButtons({
         <FileSpreadsheet className="mr-2 h-4 w-4" />
 
         Export Excel
-      </Button>
+      </Button> */}
 
       {/* CSV */}
 
-      <Button
+      {/* <Button
         className="rounded-2xl bg-blue-600 hover:bg-blue-700"
         onClick={() =>
           exportCSV(
@@ -91,7 +114,7 @@ export function ExportButtons({
         <Table className="mr-2 h-4 w-4" />
 
         Export CSV
-      </Button>
+      </Button> */}
 
       {/* Future */}
 
