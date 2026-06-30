@@ -23,6 +23,11 @@ export function useReports() {
       year: currentYear,
     });
 
+  const emptyDocumentSummary = {
+    count: 0,
+    documents: [],
+  };
+
   const emptyReport: Report = {
     reportPeriod: {
         type: 'monthly',
@@ -31,14 +36,14 @@ export function useReports() {
     },
 
     summary: {
-        totalDocuments: 0,
-        incomingDocuments: 0,
-        outgoingDocuments: 0,
-        pendingDocuments: 0,
-        completedDocuments: 0,
-        overdueDocuments: 0,
-        completionRate: 0,
-        averageProcessingHours: 0,
+      totalDocuments: emptyDocumentSummary,
+      incomingDocuments: emptyDocumentSummary,
+      outgoingDocuments: emptyDocumentSummary,
+      pendingDocuments: emptyDocumentSummary,
+      completedDocuments: emptyDocumentSummary,
+      overdueDocuments: emptyDocumentSummary,
+      completionRate: 0,
+      averageProcessingHours: 0,
     },
     statusBreakdown: [],
     documentTypeBreakdown: [],

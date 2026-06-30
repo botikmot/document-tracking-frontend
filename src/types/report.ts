@@ -15,13 +15,32 @@ export interface ReportFilters {
   status?: string;
 }
 
+export type ReportDocument = {
+  id: string;
+  trackingNumber: string;
+  title: string;
+  documentType: string;
+  status: string;
+  office: string;
+  classification: string | null;
+  priority: string | null;
+  createdAt: string;
+  deadline: string | null;
+};
+
+export type DocumentSummary = {
+  count: number;
+  documents: ReportDocument[];
+};
+
 export type ReportSummary = {
-  totalDocuments: number;
-  incomingDocuments: number;
-  outgoingDocuments: number,
-  pendingDocuments: number,
-  completedDocuments: number,
-  overdueDocuments: number;
+  totalDocuments: DocumentSummary;
+  incomingDocuments: DocumentSummary;
+  outgoingDocuments: DocumentSummary;
+  pendingDocuments: DocumentSummary;
+  completedDocuments: DocumentSummary;
+  overdueDocuments: DocumentSummary;
+  completionRate: number;
   averageProcessingHours: number;
 };
 
@@ -32,16 +51,7 @@ export interface Report {
     endDate: string;
   };
 
-  summary: {
-    totalDocuments: number;
-    incomingDocuments: number;
-    outgoingDocuments: number;
-    pendingDocuments: number;
-    completedDocuments: number;
-    overdueDocuments: number;
-    completionRate: number;
-    averageProcessingHours: number;
-  };
+  summary: ReportSummary;
 
   statusBreakdown: {
     statusId: string;

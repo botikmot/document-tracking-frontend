@@ -18,13 +18,29 @@ import {
 
 import { Badge } from '@/components/ui/badge';
 
+type DocumentSummary = {
+  count: number;
+  documents: {
+    id: string;
+    trackingNumber: string;
+    title: string;
+    documentType: string;
+    status: string;
+    office: string;
+    classification: string | null;
+    priority: string | null;
+    createdAt: string;
+    deadline: string | null;
+  }[];
+};
+
 type ReportSummary = {
-  totalDocuments: number;
-  incomingDocuments: number;
-  outgoingDocuments: number,
-  completedDocuments: number;
-  pendingDocuments: number;
-  overdueDocuments: number;
+  totalDocuments: DocumentSummary;
+  incomingDocuments: DocumentSummary;
+  outgoingDocuments: DocumentSummary;
+  completedDocuments: DocumentSummary;
+  pendingDocuments: DocumentSummary;
+  overdueDocuments: DocumentSummary;
   completionRate: number;
   averageProcessingHours: number;
 };
@@ -36,13 +52,19 @@ type Props = {
 export function ReportCards({
   summary,
 }: Props) {
+
+  const emptyDocumentSummary = {
+    count: 0,
+    documents: [],
+  };
+
   const data = summary ?? {
-    totalDocuments: 0,
-    incomingDocuments: 0,
-    outgoingDocuments: 0,
-    completedDocuments: 0,
-    pendingDocuments: 0,
-    overdueDocuments: 0,
+    totalDocuments: emptyDocumentSummary,
+    incomingDocuments: emptyDocumentSummary,
+    outgoingDocuments: emptyDocumentSummary,
+    completedDocuments: emptyDocumentSummary,
+    pendingDocuments: emptyDocumentSummary,
+    overdueDocuments: emptyDocumentSummary,
     completionRate: 0,
     averageProcessingHours: 0,
   };
@@ -64,7 +86,7 @@ export function ReportCards({
               </p>
 
               <h2 className="mt-3 text-5xl font-black text-[#102418]">
-                {data.totalDocuments}
+                {data.totalDocuments.count}
               </h2>
 
               <Badge className="mt-5 rounded-full bg-blue-100 px-4 py-1 text-blue-700">
@@ -91,7 +113,7 @@ export function ReportCards({
               </p>
 
               <h2 className="mt-3 text-5xl font-black text-[#102418]">
-                {data.incomingDocuments}
+                {data.incomingDocuments.count}
               </h2>
 
               <Badge className="mt-5 rounded-full bg-cyan-100 px-4 py-1 text-cyan-700">
@@ -117,7 +139,7 @@ export function ReportCards({
               </p>
 
               <h2 className="mt-3 text-5xl font-black text-[#102418]">
-                {data.outgoingDocuments}
+                {data.outgoingDocuments.count}
               </h2>
 
               <Badge className="mt-5 rounded-full bg-indigo-100 px-4 py-1 text-indigo-700">
@@ -147,7 +169,7 @@ export function ReportCards({
               </p>
 
               <h2 className="mt-3 text-5xl font-black text-[#102418]">
-                {data.completedDocuments}
+                {data.completedDocuments.count}
               </h2>
 
               <Badge className="mt-5 rounded-full bg-emerald-100 px-4 py-1 text-emerald-700">
@@ -178,7 +200,7 @@ export function ReportCards({
               </p>
 
               <h2 className="mt-3 text-5xl font-black text-[#102418]">
-                {data.pendingDocuments}
+                {data.pendingDocuments.count}
               </h2>
 
               <Badge className="mt-5 rounded-full bg-amber-100 px-4 py-1 text-amber-700">
@@ -208,7 +230,7 @@ export function ReportCards({
               </p>
 
               <h2 className="mt-3 text-5xl font-black text-[#102418]">
-                {data.overdueDocuments}
+                {data.overdueDocuments.count}
               </h2>
 
               <Badge className="mt-5 rounded-full bg-red-100 px-4 py-1 text-red-700">

@@ -117,66 +117,6 @@ export function NotificationBell() {
 
   /*
    |-------------------------------------------------------------
-   | REALTIME SOCKET
-   |-------------------------------------------------------------
-   */
-
-  useEffect(() => {
-    socket.on('notification', async (data: Notification) => {
-        /*
-         |-------------------------------------------------------
-         | PLAY SOUND
-         |-------------------------------------------------------
-         */
-
-        if (
-            audioEnabled &&
-            notificationAudio.current
-            ) {
-            try {
-                notificationAudio.current.currentTime = 0;
-                await notificationAudio.current.play();
-            } catch (error) {
-                console.error(
-                'Sound play failed',
-                error,
-                );
-            }
-            }
-
-        /*
-         |-------------------------------------------------------
-         | TOAST
-         |-------------------------------------------------------
-         */
-
-        toast.success(
-          data.title,
-          {
-            description:
-              data.message,
-          },
-        );
-
-        /*
-         |-------------------------------------------------------
-         | ADD TO STATE
-         |-------------------------------------------------------
-         */
-        addNotification(data);
-
-      },
-    );
-
-    return () => {
-      socket.off(
-        'notification',
-      );
-    };
-  }, [audioEnabled]);
-
-  /*
-   |-------------------------------------------------------------
    | MARK AS READ
    |-------------------------------------------------------------
    */
