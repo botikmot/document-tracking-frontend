@@ -141,9 +141,9 @@ export function ReportFilters({
                   Annual
                 </SelectItem>
 
-                <SelectItem value="custom">
+                {/* <SelectItem value="custom">
                   Custom
-                </SelectItem>
+                </SelectItem> */}
               </SelectContent>
             </Select>
           </div>
