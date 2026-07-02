@@ -39,6 +39,12 @@ import {
 } from 'react';
 import { MobileSidebar } from '@/components/layout/mobile-sidebar';
 
+type UserSettings = {
+  emailNotifications: boolean;
+  smsNotifications: boolean;
+  darkMode: boolean;
+};
+
 export default function SettingsPage() {
   const [profileOpen, setProfileOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -57,6 +63,12 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
+  const [settings, setSettings] =
+    useState<UserSettings>({
+      emailNotifications: true,
+      smsNotifications: false,
+      darkMode: false,
+    });
 
   const fetchProfile = async () => {
     try {
@@ -91,14 +103,48 @@ export default function SettingsPage() {
     }
   };
 
+  const fetchSettings = async () => {
+    try {
+      const { data } = await api.get('/settings/me');
+
+      console.log('settings:', data);
+
+      setSettings({
+        emailNotifications: data.emailNotifications,
+        smsNotifications: data.smsNotifications,
+        darkMode: data.darkMode,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     const load =
       async () => {
-        await fetchProfile();
+        await Promise.all([
+          fetchProfile(),
+          fetchSettings(),
+        ]);
       };
 
     void load();
   }, []);
+
+
+  const updateSetting = async (
+    key: keyof UserSettings,
+    value: boolean,
+  ) => {
+    const updated = {
+      ...settings,
+      [key]: value,
+    };
+
+    setSettings(updated);
+
+    await api.patch('/settings', updated);
+  };
 
 
   const handleUpdateProfile =
@@ -461,21 +507,40 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                <Switch />
+                <Switch
+                  defaultChecked
+                  checked={settings.emailNotifications}
+                  onCheckedChange={(checked) =>
+                      updateSetting(
+                          'emailNotifications',
+                          checked,
+                      )
+                  }
+                  className="cursor-pointer"
+                />
               </div>
 
               <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-5">
                 <div>
                   <p className="font-semibold text-slate-900">
-                    Security Monitoring
+                    SMS Notifications
                   </p>
 
                   <p className="mt-1 text-sm text-slate-500">
-                    Enable audit and security tracking.
+                    Receive document deadline reminders via SMS.
                   </p>
                 </div>
 
-                <Switch defaultChecked />
+                <Switch 
+                  checked={settings.smsNotifications}
+                  onCheckedChange={(checked) =>
+                      updateSetting(
+                          'smsNotifications',
+                          checked,
+                      )
+                  }
+                  className="cursor-pointer"
+                />
               </div>
 
               <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-5">
@@ -489,7 +554,16 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                <Switch />
+                <Switch 
+                  checked={settings.darkMode}
+                  onCheckedChange={(checked) =>
+                      updateSetting(
+                          'darkMode',
+                          checked,
+                      )
+                  }
+                  className="cursor-pointer"
+                />
               </div>
             </CardContent>
           </Card>

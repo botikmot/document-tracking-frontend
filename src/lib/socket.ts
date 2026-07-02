@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 
 export const socket = io(
-  'https://deliver-means-editorial-gadgets.trycloudflare.com', //'http://localhost:4000',
+  'http://localhost:4000', //'https://deliver-means-editorial-gadgets.trycloudflare.com', 
 
   {
     autoConnect: false,
