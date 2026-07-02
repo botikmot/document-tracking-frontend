@@ -150,9 +150,9 @@ export function RouteDocumentDialog({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="rounded-3xl sm:max-w-lg">
+      <DialogContent className="rounded-3xl border border-slate-200 bg-white transition-colors dark:border-[#214234] dark:bg-[#07150D] sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black">
+          <DialogTitle className="text-2xl font-black text-slate-900 dark:text-[#F3F8F3]">
             Route Document
           </DialogTitle>
         </DialogHeader>
@@ -160,7 +160,7 @@ export function RouteDocumentDialog({
         <div className="space-y-5 py-4">
           {/* OFFICE */}
           <div>
-            <Label>
+            <Label className="font-semibold text-slate-700 dark:text-[#D7E8DD]">
               Route To Office
             </Label>
 
@@ -182,11 +182,11 @@ export function RouteDocumentDialog({
                 )
               }
             >
-              <SelectTrigger className="mt-2 h-11 rounded-xl">
+              <SelectTrigger className="mt-2 h-11 w-full rounded-xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
                 <SelectValue placeholder="Select office" />
               </SelectTrigger>
 
-              <SelectContent>
+              <SelectContent className="border-slate-200 bg-white dark:border-[#214234] dark:bg-[#102418]">
                 {offices.map(
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   (office: any) => (
@@ -197,6 +197,7 @@ export function RouteDocumentDialog({
                       value={
                         office.id
                       }
+                      className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white"
                     >
                       {
                         office.officeName
@@ -210,7 +211,7 @@ export function RouteDocumentDialog({
 
           {/* REMARKS */}
           <div>
-            <Label>
+            <Label className="font-semibold text-slate-700 dark:text-[#D7E8DD]">
               Remarks
             </Label>
 
@@ -233,7 +234,7 @@ export function RouteDocumentDialog({
                   }),
                 )
               }
-              className="mt-2 rounded-xl"
+              className="mt-2 rounded-xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:placeholder:text-[#7FA18E]"
               placeholder="Optional remarks..."
             />
           </div>
@@ -242,7 +243,7 @@ export function RouteDocumentDialog({
           <div className="flex justify-end gap-3 pt-4">
             <Button
               variant="outline"
-              className="rounded-xl"
+              className="rounded-xl cursor-pointer dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
               onClick={() =>
                 setOpen(
                   false,
@@ -259,7 +260,7 @@ export function RouteDocumentDialog({
               disabled={
                 loading
               }
-              className="rounded-xl bg-slate-900 hover:bg-slate-800"
+              className="rounded-xl cursor-pointer bg-green-700 text-white transition-colors hover:bg-green-800 dark:bg-green-700 dark:hover:bg-green-600"
             >
               {
                 loading

@@ -97,17 +97,17 @@ export default function ArchivedDocumentsPage() {
       : 0;
 
   return (
-    <main className="relative flex-1 overflow-hidden bg-[#F5F7F2]">
+    <main className="relative flex-1 overflow-hidden bg-[#F5F7F2] transition-colors dark:bg-[#07150D]">
       {/* BACKGROUND */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute right-0 top-0 h-[450px] w-[450px] rounded-full bg-slate-500/5 blur-3xl" />
+        <div className="absolute right-0 top-0 h-[450px] w-[450px] rounded-full bg-slate-500/5 blur-3xl dark:bg-green-400/10" />
 
-        <div className="absolute bottom-0 left-0 h-[350px] w-[350px] rounded-full bg-zinc-500/5 blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-[350px] w-[350px] rounded-full bg-zinc-500/5 blur-3xl dark:bg-emerald-400/10" />
       </div>
 
       <div className="relative z-10">
         {/* HEADER */}
-        <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl transition-colors dark:border-slate-800 dark:bg-[#0B1F14]/90">
           <div className="flex flex-col gap-6 px-8 py-6 xl:flex-row xl:items-center xl:justify-between">
 
             <div className="flex justify-end lg:hidden">
@@ -120,15 +120,15 @@ export default function ArchivedDocumentsPage() {
               </div>
 
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.3em] text-slate-700">
+                <p className="text-sm font-bold uppercase tracking-[0.3em] text-slate-700 dark:text-slate-400">
                   DENR eDATS
                 </p>
 
-                <h1 className="mt-2 text-4xl font-black tracking-tight text-[#102418]">
+                <h1 className="mt-2 text-4xl font-black tracking-tight text-[#102418] dark:text-white">
                   Archived Documents
                 </h1>
 
-                <p className="mt-2 text-slate-600">
+                <p className="mt-2 text-slate-600 dark:text-slate-400">
                   Securely store and manage completed and archived
                   official records and documents.
                 </p>
@@ -149,17 +149,17 @@ export default function ArchivedDocumentsPage() {
 
         {/* STATS */}
         <div className="grid gap-6 p-8 md:grid-cols-3">
-          <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-slate-100/30">
+          <Card className="overflow-hidden rounded-[32px] border-0 bg-white dark:bg-[#102418] shadow-xl shadow-slate-100/30">
             <CardContent className="relative p-7">
               <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-slate-500/10 blur-3xl" />
 
               <div className="relative flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-500">
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                     Archived Records
                   </p>
 
-                  <h2 className="mt-3 text-5xl font-black text-[#102418]">
+                  <h2 className="mt-3 text-5xl font-black text-[#102418] dark:text-white">
                     {
                       documents.length
                     }
@@ -180,17 +180,17 @@ export default function ArchivedDocumentsPage() {
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-zinc-100/30">
+          <Card className="overflow-hidden rounded-[32px] border-0 bg-white dark:bg-[#102418] shadow-xl shadow-zinc-100/30">
             <CardContent className="relative p-7">
               <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-zinc-500/10 blur-3xl" />
 
               <div className="relative flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-500">
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                     Secure Storage
                   </p>
 
-                  <h2 className="mt-3 text-5xl font-black text-[#102418]">
+                  <h2 className="mt-3 text-5xl font-black text-[#102418] dark:text-white">
                     {secureStorageRate}%
                   </h2>
 

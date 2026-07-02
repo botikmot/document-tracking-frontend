@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/avatar';
 import {
   Camera,
-  Upload,
+  //Upload,
   Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -38,11 +38,14 @@ import {
   useState,
 } from 'react';
 import { MobileSidebar } from '@/components/layout/mobile-sidebar';
+import { useTheme } from 'next-themes';
+import { useSettingsStore } from '@/store/settings.store';
 
 type UserSettings = {
   emailNotifications: boolean;
   smsNotifications: boolean;
   darkMode: boolean;
+  notificationSounds: boolean;
 };
 
 export default function SettingsPage() {
@@ -63,12 +66,13 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
-  const [settings, setSettings] =
-    useState<UserSettings>({
-      emailNotifications: true,
-      smsNotifications: false,
-      darkMode: false,
-    });
+  
+  const {
+    settings,
+    setSettings,
+  } = useSettingsStore();
+
+  const { setTheme } = useTheme();
 
   const fetchProfile = async () => {
     try {
@@ -113,7 +117,9 @@ export default function SettingsPage() {
         emailNotifications: data.emailNotifications,
         smsNotifications: data.smsNotifications,
         darkMode: data.darkMode,
+        notificationSounds: data.notificationSounds,
       });
+      setTheme(data.darkMode ? 'dark' : 'light');
     } catch (error) {
       console.error(error);
     }
@@ -142,6 +148,10 @@ export default function SettingsPage() {
     };
 
     setSettings(updated);
+
+    if (key === 'darkMode') {
+      setTheme(value ? 'dark' : 'light');
+    }
 
     await api.patch('/settings', updated);
   };
@@ -346,17 +356,17 @@ export default function SettingsPage() {
         : 'Weak';
 
   return (
-    <main className="relative flex-1 overflow-hidden bg-[#F5F7F2]">
+    <main className="relative flex-1 overflow-hidden bg-[#F5F7F2] transition-colors dark:bg-[#07150D]">
       {/* BACKGROUND */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute right-0 top-0 h-[450px] w-[450px] rounded-full bg-green-500/5 blur-3xl" />
+        <div className="absolute right-0 top-0 h-[450px] w-[450px] rounded-full bg-green-500/5 blur-3xl dark:bg-green-400/10" />
 
-        <div className="absolute bottom-0 left-0 h-[350px] w-[350px] rounded-full bg-blue-500/5 blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-[350px] w-[350px] rounded-full bg-blue-500/5 blur-3xl dark:bg-emerald-400/10" />
       </div>
 
       <div className="relative z-10">
         {/* HEADER */}
-        <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl transition-colors dark:border-slate-800 dark:bg-[#0B1F14]/90">
           <div className="flex flex-col gap-6 px-8 py-6 xl:flex-row xl:items-center xl:justify-between">
 
             <div className="flex justify-end lg:hidden">
@@ -373,11 +383,11 @@ export default function SettingsPage() {
                   DENR eDATS
                 </p>
 
-                <h1 className="mt-2 text-4xl font-black tracking-tight text-[#102418]">
+                <h1 className="mt-2 text-4xl font-black tracking-tight text-[#102418] dark:text-white">
                   System Settings
                 </h1>
 
-                <p className="mt-2 text-slate-600">
+                <p className="mt-2 text-slate-600 dark:text-slate-400">
                   Manage system preferences, security, notifications,
                   and user configurations.
                 </p>
@@ -389,9 +399,9 @@ export default function SettingsPage() {
         {/* CONTENT */}
         <div className="grid gap-6 p-8 lg:grid-cols-2">
           {/* PROFILE */}
-          <Card className="rounded-[32px] border-0 bg-white shadow-xl">
+          <Card className="rounded-[32px] border-0 bg-white shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-2xl font-black text-[#102418]">
+              <CardTitle className="flex items-center gap-3 text-2xl font-black text-[#102418] dark:text-[#F3F8F3]">
                 <User className="h-6 w-6 text-green-600" />
 
                 Profile Settings
@@ -399,9 +409,9 @@ export default function SettingsPage() {
             </CardHeader>
 
             <CardContent className="space-y-6">
-              <div className="flex rounded-2xl border border-slate-100 bg-slate-50 p-5">
+              <div className="flex rounded-2xl border border-slate-100 bg-slate-50 p-5 transition-colors dark:border-[#214234] dark:bg-[#173227]">
                  <div className="relative">
-                    <Avatar className="h-32 w-32 border-4 border-green-100">
+                    <Avatar className="h-32 w-32 border-4 border-green-100 dark:border-green-900/40">
                       <AvatarImage
                         src={
                           previewImage ||
@@ -449,11 +459,11 @@ export default function SettingsPage() {
                   </div>
 
                 <div className="p-5">
-                  <p className="font-semibold text-slate-900">
+                  <p className="font-semibold text-slate-900 dark:text-[#F3F8F3]">
                     Profile Information
                   </p>
 
-                  <p className="mt-2 text-sm text-slate-500">
+                  <p className="mt-2 text-sm text-slate-500 dark:text-[#A9C5B6]">
                     Update your account information and office details.
                   </p>
 
@@ -463,18 +473,18 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
-                <p className="font-semibold text-slate-900">
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5 transition-colors dark:border-[#214234] dark:bg-[#173227]">
+                <p className="font-semibold text-slate-900 dark:text-[#F3F8F3]">
                   Password & Security
                 </p>
 
-                <p className="mt-2 text-sm text-slate-500">
+                <p className="mt-2 text-sm text-slate-500 dark:text-[#A9C5B6]">
                   Manage account password and login security.
                 </p>
 
                 <Button
                   variant="outline"
-                  className="mt-5 rounded-2xl cursor-pointer"
+                  className="mt-5 rounded-2xl cursor-pointer dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
                   onClick={() =>
                     setPasswordOpen(true)
                   }
@@ -486,9 +496,9 @@ export default function SettingsPage() {
           </Card>
 
           {/* SYSTEM */}
-          <Card className="rounded-[32px] border-0 bg-white shadow-xl">
+          <Card className="rounded-[32px] border-0 bg-white shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-2xl font-black text-[#102418]">
+              <CardTitle className="flex items-center gap-3 text-2xl font-black text-[#102418] dark:text-[#F3F8F3]">
                 <Shield className="h-6 w-6 text-blue-600" />
 
                 System Preferences
@@ -496,13 +506,13 @@ export default function SettingsPage() {
             </CardHeader>
 
             <CardContent className="space-y-6">
-              <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-5">
+              <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-5 transition-colors dark:border-[#214234] dark:bg-[#173227]">
                 <div>
-                  <p className="font-semibold text-slate-900">
+                  <p className="font-semibold text-slate-900 dark:text-[#F3F8F3]">
                     Email Notifications
                   </p>
 
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-slate-500 dark:text-[#A9C5B6]">
                     Receive workflow and routing alerts.
                   </p>
                 </div>
@@ -520,13 +530,13 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-5">
+              <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-5 transition-colors dark:border-[#214234] dark:bg-[#173227]">
                 <div>
-                  <p className="font-semibold text-slate-900">
+                  <p className="font-semibold text-slate-900 dark:text-[#F3F8F3]">
                     SMS Notifications
                   </p>
 
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-slate-500 dark:text-[#A9C5B6]">
                     Receive document deadline reminders via SMS.
                   </p>
                 </div>
@@ -543,13 +553,13 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-5">
+              <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-5 transition-colors dark:border-[#214234] dark:bg-[#173227]">
                 <div>
-                  <p className="font-semibold text-slate-900">
+                  <p className="font-semibold text-slate-900 dark:text-[#F3F8F3]">
                     Dark Mode
                   </p>
 
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-slate-500 dark:text-[#A9C5B6]">
                     Switch dashboard appearance theme.
                   </p>
                 </div>
@@ -569,9 +579,9 @@ export default function SettingsPage() {
           </Card>
 
           {/* SECURITY */}
-          <Card className="rounded-[32px] border-0 bg-white shadow-xl">
+          <Card className="rounded-[32px] border-0 bg-white shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-2xl font-black text-[#102418]">
+              <CardTitle className="flex items-center gap-3 text-2xl font-black text-[#102418] dark:text-[#F3F8F3]">
                 <Lock className="h-6 w-6 text-red-500" />
 
                 Security & Compliance
@@ -579,23 +589,23 @@ export default function SettingsPage() {
             </CardHeader>
 
             <CardContent className="space-y-5">
-              <div className="rounded-2xl border border-red-100 bg-red-50 p-5">
-                <p className="font-semibold text-red-700">
+              <div className="rounded-2xl border border-red-100 bg-red-50 p-5 transition-colors dark:border-red-900/40 dark:bg-red-950/30">
+                <p className="font-semibold text-red-700 dark:text-red-300">
                   Audit Logging
                 </p>
 
-                <p className="mt-2 text-sm text-red-600">
+                <p className="mt-2 text-sm text-red-600 dark:text-red-200">
                   All system activities are securely logged for
                   compliance monitoring.
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
-                <p className="font-semibold text-emerald-700">
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 transition-colors dark:border-green-900/40 dark:bg-green-950/30">
+                <p className="font-semibold text-emerald-700 dark:text-green-300">
                   Backup Status
                 </p>
 
-                <p className="mt-2 text-sm text-emerald-600">
+                <p className="mt-2 text-sm text-emerald-600 dark:text-green-200">
                   Automated backup systems are currently operational.
                 </p>
               </div>
@@ -603,9 +613,9 @@ export default function SettingsPage() {
           </Card>
 
           {/* APPEARANCE */}
-          <Card className="rounded-[32px] border-0 bg-white shadow-xl">
+          <Card className="rounded-[32px] border-0 bg-white shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-2xl font-black text-[#102418]">
+              <CardTitle className="flex items-center gap-3 text-2xl font-black text-[#102418] dark:text-[#F3F8F3]">
                 <Palette className="h-6 w-6 text-purple-600" />
 
                 Appearance & Interface
@@ -613,30 +623,39 @@ export default function SettingsPage() {
             </CardHeader>
 
             <CardContent className="space-y-5">
-              <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-5">
+              <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-5 transition-colors dark:border-[#214234] dark:bg-[#173227]">
                 <div className="flex items-center gap-4">
                   <Bell className="h-5 w-5 text-blue-600" />
 
                   <div>
-                    <p className="font-semibold text-slate-900">
+                    <p className="font-semibold text-slate-900 dark:text-[#F3F8F3]">
                       Notification Sounds
                     </p>
 
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
                       Enable workflow notification sounds.
                     </p>
                   </div>
                 </div>
 
-                <Switch />
+                <Switch
+                  checked={settings.notificationSounds}
+                  onCheckedChange={(checked) =>
+                    updateSetting(
+                      'notificationSounds',
+                      checked,
+                    )
+                  }
+                  className="cursor-pointer"
+                />
               </div>
 
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
-                <p className="font-semibold text-slate-900">
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5 transition-colors dark:border-[#214234] dark:bg-[#173227]">
+                <p className="font-semibold text-slate-900 dark:text-[#F3F8F3]">
                   Dashboard Theme
                 </p>
 
-                <p className="mt-2 text-sm text-slate-500">
+                <p className="mt-2 text-sm text-slate-500 dark:text-[#A9C5B6]">
                   DENR enterprise interface theme enabled.
                 </p>
 
@@ -657,7 +676,7 @@ export default function SettingsPage() {
         open={profileOpen}
         onOpenChange={setProfileOpen}
       >
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg dark:border-[#214234] dark:bg-[#102418]">
           <DialogHeader>
             <DialogTitle>
               Update Profile
@@ -738,7 +757,7 @@ export default function SettingsPage() {
           setPasswordOpen
         }
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md dark:border-[#214234] dark:bg-[#102418]">
           <DialogHeader>
             <DialogTitle>
               Change Password

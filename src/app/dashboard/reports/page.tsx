@@ -25,12 +25,12 @@ export default function ReportsPage() {
   console.log('reports-->', report)
 
   return (
-    <main className="relative flex-1 overflow-hidden bg-[#F5F7F2]">
+    <main className="relative flex-1 overflow-hidden bg-[#F5F7F2] transition-colors dark:bg-[#07150D]">
       {/* Background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute right-0 top-0 h-[500px] w-[500px] rounded-full bg-green-500/5 blur-3xl" />
+        <div className="absolute right-0 top-0 h-[500px] w-[500px] rounded-full bg-green-500/5 blur-3xl dark:bg-green-400/10" />
 
-        <div className="absolute bottom-0 left-0 h-[450px] w-[450px] rounded-full bg-emerald-500/5 blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-[450px] w-[450px] rounded-full bg-emerald-500/5 blur-3xl dark:bg-emerald-400/10" />
       </div>
 
       <div className="relative z-10">

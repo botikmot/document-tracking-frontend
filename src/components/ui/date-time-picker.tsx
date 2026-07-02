@@ -104,9 +104,9 @@ export function DateTimePicker({
           type="button"
           variant="outline"
           disabled={disabled}
-          className="h-12 w-full justify-start rounded-2xl border-slate-200 bg-slate-50 text-left font-normal hover:bg-slate-100"
+          className="h-12 w-full justify-start rounded-2xl border-slate-200 bg-slate-50 text-left font-normal hover:bg-slate-100 dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
         >
-          <CalendarDays className="mr-3 h-5 w-5 text-slate-500" />
+          <CalendarDays className="mr-3 h-5 w-5 text-slate-500 dark:text-[#A9C5B6]" />
 
           {value ? (
             <span className="flex items-center gap-2">
@@ -117,11 +117,11 @@ export function DateTimePicker({
                 )}
               </span>
 
-              <span className="text-slate-400">
+              <span className="text-slate-400 dark:text-[#6C9A83]">
                 |
               </span>
 
-              <span className="flex items-center gap-1 text-slate-600">
+              <span className="flex items-center gap-1 text-slate-600 dark:text-[#A9C5B6]">
                 <Clock3 className="h-4 w-4" />
 
                 {format(
@@ -131,7 +131,7 @@ export function DateTimePicker({
               </span>
             </span>
           ) : (
-            <span className="text-slate-400">
+            <span className="text-slate-400 dark:text-[#7FA18E]">
               {placeholder}
             </span>
           )}
@@ -139,7 +139,7 @@ export function DateTimePicker({
       </PopoverTrigger>
 
       <PopoverContent
-        className="w-auto rounded-3xl border border-slate-200 p-4 shadow-2xl"
+        className="w-auto rounded-3xl border border-slate-200 p-4 shadow-2xl transition-colors dark:border-[#214234] dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]"
         align="start"
       >
         <div className="space-y-4">
@@ -153,8 +153,8 @@ export function DateTimePicker({
           />
 
           {/* TIME */}
-          <div className="border-t border-slate-200 pt-4">
-            <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <div className="border-t border-slate-200 pt-4 dark:border-[#214234]">
+            <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
               <Clock3 className="h-4 w-4" />
 
               Select Time
@@ -182,7 +182,7 @@ export function DateTimePicker({
                   e.target.value
                 )
               }
-              className="h-11 rounded-2xl border-slate-200 bg-slate-50"
+              className="h-11 rounded-2xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]"
             />
           </div>
         </div>

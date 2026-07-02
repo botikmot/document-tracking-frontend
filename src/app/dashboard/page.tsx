@@ -184,20 +184,20 @@ export default function DashboardPage() {
 
 
   return (
-    <main className="relative flex-1 overflow-hidden bg-[#F5F7F2]">
+    <main className="relative flex-1 overflow-hidden bg-[#F5F7F2] transition-colors dark:bg-[#07150D]">
       {/* ====================================== */}
       {/* BACKGROUND GLOW */}
       {/* ====================================== */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute right-0 top-0 h-[500px] w-[500px] rounded-full bg-green-500/5 blur-3xl" />
+        <div className="absolute right-0 top-0 h-[500px] w-[500px] rounded-full bg-green-500/5 blur-3xl dark:bg-green-400/10" />
 
-        <div className="absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-emerald-500/5 blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-emerald-500/5 blur-3xl dark:bg-emerald-400/10" />
       </div>
 
       {/* ====================================== */}
       {/* TOP NAVBAR */}
       {/* ====================================== */}
-      <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl transition-colors dark:border-slate-800 dark:bg-[#0B1F14]/90">
         <div className="flex flex-col gap-6 px-8 py-6 xl:flex-row xl:items-center xl:justify-between">
           {/* LEFT */}
 
@@ -210,11 +210,11 @@ export default function DashboardPage() {
               DENR eDATS
             </p>
 
-            <h1 className="mt-2 text-4xl font-black tracking-tight text-[#102418]">
+            <h1 className="mt-2 text-4xl font-black tracking-tight text-[#102418] dark:text-white">
               Good Morning, {user?.firstName ?? 'Employee'}
             </h1>
 
-            <p className="mt-2 text-slate-600">
+            <p className="mt-2 text-slate-600 dark:text-slate-400">
               Here’s today’s document workflow summary and
               operational overview.
             </p>
@@ -230,11 +230,11 @@ export default function DashboardPage() {
                 placeholder="Search documents..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="h-12 rounded-2xl border-0 bg-white pl-12 shadow-sm focus-visible:ring-2 focus-visible:ring-green-500"
+                className="h-12 rounded-2xl border-0 bg-white pl-12 shadow-sm focus-visible:ring-2 focus-visible:ring-green-500 dark:bg-[#07150D] dark:text-white dark:placeholder:text-slate-400"
               />
 
               {open && results.length > 0 && (
-                <div className="absolute z-50 mt-2 w-full rounded-xl bg-white shadow-lg border overflow-hidden">
+                <div className="absolute z-50 mt-2 w-full rounded-xl bg-white shadow-lg border overflow-hidden dark:bg-[#07150D]">
                   {results.map((doc) => (
                     <div
                       key={doc.id}
@@ -245,7 +245,7 @@ export default function DashboardPage() {
                         setOpen(false);
                         setQuery('');
                       }}
-                      className="cursor-pointer px-4 py-3 hover:bg-slate-100"
+                      className="cursor-pointer px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800"
                     >
                       <div className="font-medium">{doc.title}</div>
                       <div className="text-xs text-slate-500">
@@ -262,13 +262,13 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3">
               <NotificationBell />
 
-              <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2 shadow-sm">
+              <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2 shadow-sm dark:border-slate-700 dark:bg-[#07150D]">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-green-600 to-emerald-600 text-white">
                   <User2 className="h-5 w-5" />
                 </div>
 
                 <div>
-                  <p className="text-sm font-bold capitalize text-[#102418]">
+                  <p className="text-sm font-bold capitalize text-[#102418] dark:text-white">
                     {user?.offices[0]?.officeName ?? 'Secretary'}
                   </p>
 
@@ -353,7 +353,7 @@ export default function DashboardPage() {
             return (
               <Card
                 key={i}
-                className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-green-100/30 transition-all duration-300 hover:-translate-y-1"
+                className="overflow-hidden rounded-[32px] border-0 bg-white dark:bg-[#102418] shadow-xl shadow-green-100/30 transition-all duration-300 hover:-translate-y-1"
               >
                 <CardContent className="relative p-7">
                   {/* GLOW */}
@@ -363,11 +363,11 @@ export default function DashboardPage() {
 
                   <div className="relative flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium text-slate-500">
+                      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                         {item.title}
                       </p>
 
-                      <h2 className="mt-3 text-5xl font-black tracking-tight text-[#102418]">
+                      <h2 className="mt-3 text-5xl font-black tracking-tight text-[#102418] dark:text-white">
                         {item.value.toLocaleString()}
                       </h2>
 
@@ -399,19 +399,19 @@ export default function DashboardPage() {
           {/* ====================================== */}
           {/* RECENT ACTIVITY */}
           {/* ====================================== */}
-          <Card className="rounded-[32px] border-0 bg-white shadow-xl shadow-green-100/30 xl:col-span-2">
+          <Card className="rounded-[32px] border-0 bg-white dark:bg-[#102418] shadow-xl shadow-green-100/30 xl:col-span-2">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-3xl font-black text-[#102418]">
+                <CardTitle className="text-3xl font-black text-[#102418] dark:text-[#F3F8F3]">
                   Recent Activity
                 </CardTitle>
 
-                <Button
+                {/* <Button
                   variant="ghost"
                   className="rounded-2xl text-green-700 hover:bg-green-50"
                 >
                   View All
-                </Button>
+                </Button> */}
               </div>
             </CardHeader>
 
@@ -422,7 +422,7 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={i}
-                    className="group flex flex-col gap-5 rounded-3xl border border-slate-100 bg-slate-50/70 p-5 transition-all duration-300 hover:border-green-200 hover:bg-white md:flex-row md:items-center md:justify-between"
+                    className="group flex flex-col gap-5 rounded-3xl border border-slate-100 bg-slate-50/70 transition-colors dark:border-[#214234] dark:bg-[#173227] p-5 transition-all duration-300 hover:border-green-200 hover:bg-white dark:hover:bg-slate-800 md:flex-row md:items-center md:justify-between"
                   >
                     <div className="flex items-start gap-4">
                       <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-lg">
@@ -430,11 +430,11 @@ export default function DashboardPage() {
                       </div>
 
                       <div>
-                        <h3 className="text-lg font-bold text-[#102418]">
+                        <h3 className="text-lg font-bold text-[#102418] dark:text-[#F3F8F3]">
                           {doc.title}
                         </h3>
 
-                        <p className="mt-1 text-sm text-slate-500">
+                        <p className="mt-1 text-sm text-slate-500 dark:text-[#A9C5B6]">
                           Tracking No:{' '}
                           {doc.trackingNumber}
                         </p>

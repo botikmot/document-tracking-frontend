@@ -75,17 +75,17 @@ export function ReportCards({
       {/* TOTAL DOCUMENTS */}
       {/* ===================================================== */}
 
-      <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-blue-100/30">
+      <Card className="overflow-hidden rounded-[32px] border-0 bg-white dark:bg-[#102418] shadow-blue-100/30">
         <CardContent className="relative p-7">
           <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-blue-500/10 blur-3xl" />
 
           <div className="relative flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Total Documents
               </p>
 
-              <h2 className="mt-3 text-5xl font-black text-[#102418]">
+              <h2 className="mt-3 text-5xl font-black text-[#102418] dark:text-white">
                 {data.totalDocuments.count}
               </h2>
 
@@ -102,17 +102,17 @@ export function ReportCards({
         </CardContent>
       </Card>
 
-      <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-cyan-100/30">
+      <Card className="overflow-hidden rounded-[32px] border-0 bg-white dark:bg-[#102418] shadow-cyan-100/30">
         <CardContent className="relative p-7">
           <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-cyan-500/10 blur-3xl" />
 
           <div className="relative flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Incoming
               </p>
 
-              <h2 className="mt-3 text-5xl font-black text-[#102418]">
+              <h2 className="mt-3 text-5xl font-black text-[#102418] dark:text-white">
                 {data.incomingDocuments.count}
               </h2>
 
@@ -128,17 +128,17 @@ export function ReportCards({
         </CardContent>
       </Card>
 
-      <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-indigo-100/30">
+      <Card className="overflow-hidden rounded-[32px] border-0 bg-white dark:bg-[#102418] shadow-indigo-100/30">
         <CardContent className="relative p-7">
           <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-indigo-500/10 blur-3xl" />
 
           <div className="relative flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Outgoing
               </p>
 
-              <h2 className="mt-3 text-5xl font-black text-[#102418]">
+              <h2 className="mt-3 text-5xl font-black text-[#102418] dark:text-white">
                 {data.outgoingDocuments.count}
               </h2>
 
@@ -158,17 +158,17 @@ export function ReportCards({
       {/* COMPLETED */}
       {/* ===================================================== */}
 
-      <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-green-100/30">
+      <Card className="overflow-hidden rounded-[32px] border-0 bg-white dark:bg-[#102418] shadow-green-100/30">
         <CardContent className="relative p-7">
           <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-green-500/10 blur-3xl" />
 
           <div className="relative flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Completed
               </p>
 
-              <h2 className="mt-3 text-5xl font-black text-[#102418]">
+              <h2 className="mt-3 text-5xl font-black text-[#102418] dark:text-white">
                 {data.completedDocuments.count}
               </h2>
 
@@ -189,17 +189,17 @@ export function ReportCards({
       {/* PENDING */}
       {/* ===================================================== */}
 
-      <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-amber-100/30">
+      <Card className="overflow-hidden rounded-[32px] border-0 bg-white dark:bg-[#102418] shadow-amber-100/30">
         <CardContent className="relative p-7">
           <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-amber-500/10 blur-3xl" />
 
           <div className="relative flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Pending
               </p>
 
-              <h2 className="mt-3 text-5xl font-black text-[#102418]">
+              <h2 className="mt-3 text-5xl font-black text-[#102418] dark:text-white">
                 {data.pendingDocuments.count}
               </h2>
 
@@ -219,17 +219,17 @@ export function ReportCards({
       {/* OVERDUE */}
       {/* ===================================================== */}
 
-      <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-red-100/30">
+      <Card className="overflow-hidden rounded-[32px] border-0 bg-white dark:bg-[#102418] shadow-red-100/30">
         <CardContent className="relative p-7">
           <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-red-500/10 blur-3xl" />
 
           <div className="relative flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Overdue
               </p>
 
-              <h2 className="mt-3 text-5xl font-black text-[#102418]">
+              <h2 className="mt-3 text-5xl font-black text-[#102418] dark:text-white">
                 {data.overdueDocuments.count}
               </h2>
 
@@ -249,17 +249,17 @@ export function ReportCards({
       {/* AVG PROCESSING */}
       {/* ===================================================== */}
 
-      <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-violet-100/30">
+      <Card className="overflow-hidden rounded-[32px] border-0 bg-white dark:bg-[#102418] shadow-violet-100/30">
         <CardContent className="relative p-7">
           <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-violet-500/10 blur-3xl" />
 
           <div className="relative flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Avg. Processing
               </p>
 
-              <h2 className="mt-3 text-5xl font-black text-[#102418]">
+              <h2 className="mt-3 text-5xl font-black text-[#102418] dark:text-white">
                 {data.averageProcessingHours}
               </h2>
 

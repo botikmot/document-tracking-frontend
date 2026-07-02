@@ -16,7 +16,7 @@ export function DocumentsHeader({
   onCreated: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl transition-colors dark:border-slate-800 dark:bg-[#0B1F14]/90">
       <div className="flex flex-col gap-6 px-8 py-6 xl:flex-row xl:items-center xl:justify-between">
         {/* LEFT */}
         <div className="flex justify-end lg:hidden">
@@ -34,11 +34,11 @@ export function DocumentsHeader({
               DENR eDATS
             </p>
 
-            <h1 className="mt-2 text-4xl font-black tracking-tight text-[#102418]">
+            <h1 className="mt-2 text-4xl font-black tracking-tight text-[#102418] dark:text-white">
               Documents Registry
             </h1>
 
-            <p className="mt-2 text-slate-600">
+            <p className="mt-2 text-slate-600 dark:text-slate-400">
               Track, route, monitor, and manage official documents
               across departments and offices.
             </p>

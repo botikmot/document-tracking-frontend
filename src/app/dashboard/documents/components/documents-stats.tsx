@@ -88,7 +88,7 @@ export function DocumentsStats({
               key={
                 stat.label
               }
-              className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-green-100/30 transition-all duration-300 hover:-translate-y-1"
+              className="overflow-hidden rounded-[32px] border-0 bg-white dark:bg-[#102418] shadow-xl shadow-green-100/30 transition-all duration-300 hover:-translate-y-1"
             >
               <CardContent className="relative p-7">
                 <div
@@ -97,13 +97,13 @@ export function DocumentsStats({
 
                 <div className="relative flex items-start justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-500">
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                       {
                         stat.label
                       }
                     </p>
 
-                    <h2 className="mt-3 text-5xl font-black tracking-tight text-[#102418]">
+                    <h2 className="mt-3 text-5xl font-black tracking-tight text-[#102418] dark:text-white">
                       {
                         stat.value
                       }

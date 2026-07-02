@@ -73,8 +73,8 @@ export function IncomingDocumentsTable({
 
   if (loading) {
     return (
-      <Card className="rounded-[32px] border-0 bg-white shadow-xl">
-        <CardContent className="p-16 text-center text-slate-500">
+      <Card className="rounded-[32px] border-0 bg-white shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_30px_rgba(34,197,94,0.10)]">
+        <CardContent className="p-16 text-center text-slate-500 dark:text-[#A9C5B6]">
           Loading incoming documents...
         </CardContent>
       </Card>
@@ -82,18 +82,18 @@ export function IncomingDocumentsTable({
   }
 
   return (
-    <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-green-100/30">
+    <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl shadow-green-100/30 transition-colors dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">
       {/* ====================================== */}
       {/* HEADER */}
       {/* ====================================== */}
-      <CardHeader className="border-b border-slate-100 pb-6">
+      <CardHeader className="border-b border-slate-100 pb-6 transition-colors dark:border-[#214234]">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <CardTitle className="text-3xl font-black text-[#102418]">
+            <CardTitle className="text-3xl font-black text-[#102418] dark:text-[#F3F8F3]">
               Incoming Registry
             </CardTitle>
 
-            <p className="mt-2 text-slate-500">
+            <p className="mt-2 text-slate-500 dark:text-[#A9C5B6]">
               Receive, monitor, and manage routed documents from
               connected offices.
             </p>
@@ -101,11 +101,11 @@ export function IncomingDocumentsTable({
 
           {/* SEARCH */}
           <div className="relative w-full xl:w-[360px]">
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 dark:text-[#7FA18E]" />
 
             <Input
               placeholder="Search incoming documents..."
-              className="h-14 rounded-2xl border-0 bg-slate-100 pl-12 shadow-sm focus-visible:ring-2 focus-visible:ring-green-500"
+              className="h-14 rounded-2xl border-0 bg-slate-100 pl-12 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-green-500 dark:bg-[#173227] dark:text-[#F3F8F3] dark:placeholder:text-[#7FA18E]"
               value={search}
               onChange={(e) => {
                 setSearch(
@@ -144,19 +144,19 @@ export function IncomingDocumentsTable({
           return (
             <div
               key={route.id}
-              className="group rounded-[30px] border border-slate-100 bg-slate-50/60 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:bg-white hover:shadow-xl"
+              className="group rounded-[30px] border border-slate-100 bg-slate-50/60 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:bg-white hover:shadow-xl dark:border-[#214234] dark:bg-[#173227] dark:hover:border-green-700 dark:hover:bg-[#102418] dark:hover:shadow-[0_0_30px_rgba(34,197,94,0.15)]"
             >
               <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
                 {/* LEFT */}
                 <div className="flex items-start gap-5">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-xl">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-xl transition-all dark:shadow-[0_0_30px_rgba(59,130,246,0.35)]">
                     <FileText className="h-10 w-10" />
                   </div>
 
                   <div>
                     {/* TITLE */}
                     <div className="flex flex-wrap items-center gap-3">
-                      <h3 className="text-2xl font-black text-[#102418]">
+                      <h3 className="text-2xl font-black text-[#102418] dark:text-[#F3F8F3]">
                         {doc.title}
                       </h3>
 
@@ -170,8 +170,8 @@ export function IncomingDocumentsTable({
                     </div>
 
                     {/* META */}
-                    <div className="mt-4 flex flex-wrap items-center gap-6 text-sm text-slate-500">
-                      <div className="rounded-full bg-slate-200 px-4 py-1 font-medium text-slate-700">
+                    <div className="mt-4 flex flex-wrap items-center gap-6 text-sm text-slate-500 dark:text-[#A9C5B6]">
+                      <div className="rounded-full bg-slate-200 px-4 py-1 font-medium text-slate-700 dark:bg-[#214234] dark:text-[#D7E8DD]">
                         {
                           doc.trackingNumber
                         }
@@ -206,8 +206,8 @@ export function IncomingDocumentsTable({
 
                     {/* REMARKS */}
                     {route.remarks && (
-                      <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50 px-5 py-4 text-sm text-slate-700">
-                        <span className="font-bold text-blue-700">
+                      <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50 px-5 py-4 text-sm text-slate-700 transition-colors dark:border-blue-700 dark:bg-blue-900/20 dark:text-[#D7E8DD]">
+                        <span className="font-bold text-blue-700 dark:text-blue-300">
                           Remarks:
                         </span>
                         {' '}
@@ -221,7 +221,7 @@ export function IncomingDocumentsTable({
 
                 {/* RIGHT */}
                 <div className="flex flex-wrap items-center gap-3">
-                  <Badge className="rounded-full bg-amber-100 px-5 py-2 text-sm font-semibold text-amber-700">
+                  <Badge className="rounded-full bg-amber-100 px-5 py-2 text-sm font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
                     FOR RECEIVING
                   </Badge>
 
@@ -250,7 +250,7 @@ export function IncomingDocumentsTable({
                         receivingId ===
                         route.documentId
                       }
-                      className="h-12 rounded-2xl cursor-pointer bg-gradient-to-r from-green-600 to-emerald-600 px-6 text-white shadow-lg hover:from-green-700 hover:to-emerald-700"
+                      className="h-12 cursor-pointer rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 px-6 text-white shadow-lg transition-all hover:from-green-700 hover:to-emerald-700 dark:shadow-[0_0_20px_rgba(34,197,94,0.25)]"
                       onClick={async () => {
                         try {
                           setReceivingId(
@@ -297,8 +297,8 @@ export function IncomingDocumentsTable({
       </CardContent>
 
       {/* PAGINATION */}
-      <div className="flex items-center justify-between border-t border-slate-100 p-6">
-        <p className="text-sm text-slate-500">
+      <div className="flex items-center justify-between border-t border-slate-100 p-6 transition-colors dark:border-[#214234]">
+        <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
           Page {meta?.page ?? 1} of{' '}
           {meta?.totalPages ?? 1}
         </p>
@@ -312,6 +312,7 @@ export function IncomingDocumentsTable({
             onClick={() =>
               setPage(page - 1)
             }
+            className="dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
           >
             Previous
           </Button>
@@ -326,6 +327,7 @@ export function IncomingDocumentsTable({
             onClick={() =>
               setPage(page + 1)
             }
+            className="dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
           >
             Next
           </Button>

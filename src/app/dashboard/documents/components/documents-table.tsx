@@ -113,8 +113,8 @@ export function DocumentsTable({
 
   if (loading) {
     return (
-      <Card className="rounded-[28px] border-0 bg-white shadow-sm">
-        <CardContent className="p-16 text-center text-slate-500">
+      <Card className="rounded-[32px] border-0 bg-white shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_30px_rgba(34,197,94,0.10)]">
+        <CardContent className="p-16 text-center text-slate-500 dark:text-[#A9C5B6]">
           Loading documents...
         </CardContent>
       </Card>
@@ -226,27 +226,27 @@ export function DocumentsTable({
 
   return (
     <>
-      <Card className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm">
+      <Card className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm transition-colors dark:border-[#214234] dark:bg-[#102418]">
         {/* HEADER */}
-        <CardHeader className="border-b border-slate-100 bg-white">
+        <CardHeader className="border-b border-slate-100 bg-white transition-colors dark:border-[#214234] dark:bg-[#102418]">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <CardTitle className="text-3xl font-black text-[#102418]">
+              <CardTitle className="text-3xl font-black text-[#102418] dark:text-[#F3F8F3]">
                 Documents Registry
               </CardTitle>
 
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-slate-500 dark:text-[#A9C5B6]">
                 Monitor and manage all incoming and outgoing documents.
               </p>
             </div>
 
             {/* SEARCH */}
             <div className="relative w-full lg:w-[320px]">
-              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-[#7FA18E]" />
 
               <Input
                 placeholder="Search documents..."
-                className="pl-10"
+                className="pl-10 dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:placeholder:text-[#7FA18E]"
                 value={search ?? ''}
                 onChange={(e) => {
                   setSearch?.(
@@ -308,11 +308,11 @@ export function DocumentsTable({
                     true,
                   );
                 }}
-                className={`group cursor-pointer rounded-3xl border p-5 transition-all duration-300 hover:border-green-200 hover:bg-slate-50 hover:shadow-md ${
+                className={`group cursor-pointer rounded-3xl border p-5 transition-all duration-300 hover:border-green-200 hover:bg-slate-50 hover:shadow-md dark:hover:border-green-600 dark:hover:bg-[#173227] ${
                   deadlineInfo?.text ===
                   'Overdue'
-                    ? 'border-red-200 bg-red-50/30'
-                    : 'border-slate-200 bg-white'
+                    ? 'border-red-200 bg-red-50/30 dark:border-red-900 dark:bg-red-950/30'
+                    : 'border-slate-200 bg-white dark:border-[#214234] dark:bg-[#102418]'
                 }`}
               >
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
@@ -327,17 +327,17 @@ export function DocumentsTable({
                     <div className="min-w-0">
                       {/* TITLE */}
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="truncate text-xl font-bold text-[#102418]">
+                        <h3 className="truncate text-xl font-bold text-[#102418] dark:text-[#F3F8F3]">
                           {
                             doc.title
                           }
                         </h3>
 
-                        <span className="text-sm text-slate-400">
+                        <span className="text-sm text-slate-400 dark:text-[#6C9A83]">
                           •
                         </span>
 
-                        <span className="text-sm font-medium text-slate-500">
+                        <span className="text-sm font-medium text-slate-500 dark:text-[#A9C5B6]">
                           {
                             doc
                               .documentType
@@ -347,8 +347,8 @@ export function DocumentsTable({
                       </div>
 
                       {/* META */}
-                      <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-slate-500">
-                        <div className="font-medium text-slate-700">
+                      <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-[#A9C5B6]">
+                        <div className="font-medium text-slate-700 dark:text-[#F3F8F3]">
                           {
                             doc.trackingNumber
                           }
@@ -363,7 +363,7 @@ export function DocumentsTable({
                           doc.addressee && (
                             <div className="flex items-center gap-1.5">
                               <UserCheck className="h-4 w-4 text-slate-500" />
-                              <span className="font-bold">
+                              <span className="font-bold dark:text-[#F3F8F3]">
                                 {doc.addressee}
                               </span>
                             </div>
@@ -427,7 +427,7 @@ export function DocumentsTable({
                           <Button
                             size="sm"
                             variant="outline"
-                            className="rounded-xl"
+                            className="rounded-xl dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
                           >
                             Change Status
 
@@ -476,7 +476,7 @@ export function DocumentsTable({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-10 w-10 rounded-xl cursor-pointer"
+                          className="h-10 w-10 rounded-xl cursor-pointer transition-colors dark:text-[#F3F8F3] dark:hover:bg-[#173227]"
                         >
                           <MoreVertical className="h-5 w-5" />
                         </Button>
@@ -484,7 +484,7 @@ export function DocumentsTable({
 
                       <DropdownMenuContent
                         align="end"
-                        className="w-52 rounded-2xl"
+                        className="w-52 rounded-2xl dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]"
                         onClick={(e) =>
                           e.stopPropagation()
                         }
@@ -554,8 +554,8 @@ export function DocumentsTable({
           })}
         </CardContent>
 
-        <div className="flex items-center justify-between border-t border-slate-100 px-6 py-4">
-          <p className="text-sm text-slate-500">
+        <div className="flex items-center justify-between border-t border-slate-100 px-6 py-4 transition-colors dark:border-[#214234]">
+          <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
             Page {meta?.page} of{' '}
             {meta?.totalPages}
           </p>
@@ -567,6 +567,7 @@ export function DocumentsTable({
               onClick={() =>
                 setPage?.(page! - 1)
               }
+              className="dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
             >
               Previous
             </Button>
@@ -580,6 +581,7 @@ export function DocumentsTable({
               onClick={() =>
                 setPage?.(page! + 1)
               }
+              className="dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
             >
               Next
             </Button>

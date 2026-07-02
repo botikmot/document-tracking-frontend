@@ -98,37 +98,37 @@ export function DocumentDetailsDrawer({
     >
       <SheetContent
         side="right"
-        className="w-full overflow-y-auto border-0 sm:!max-w-4xl"
+        className="w-full overflow-y-auto border-0 transition-colors dark:bg-[#07150D] sm:!max-w-4xl"
       >
-        <SheetHeader className="border-b pb-5">
-          <SheetTitle className="text-2xl font-black">
+        <SheetHeader className="border-b border-slate-200 pb-5 transition-colors dark:border-[#214234]">
+          <SheetTitle className="text-2xl font-black text-[#102418] dark:text-[#F3F8F3]">
             Document Details
           </SheetTitle>
         </SheetHeader>
 
         <div className="space-y-8 px-6 py-6 pb-10">
           {/* TITLE */}
-          <div className="rounded-3xl border bg-slate-50 p-6">
+          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 transition-colors dark:border-[#214234] dark:bg-[#102418]">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white">
-                <FileText className="h-7 w-7 text-slate-700" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white transition-colors dark:bg-[#173227]">
+                <FileText className="h-7 w-7 text-slate-700 dark:text-[#A9C5B6]" />
               </div>
 
               <div className="flex-1">
-                <h2 className="text-2xl font-black text-slate-900">
+                <h2 className="text-2xl font-black text-slate-900 dark:text-[#F3F8F3]">
                   {document.title}
                 </h2>
 
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-slate-500 dark:text-[#A9C5B6]">
                   Tracking Number:{' '}
                   {
                     document.trackingNumber
                   }
                 </p>
 
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-slate-500 dark:text-[#A9C5B6]">
                   Sender:{'  '}
-                  <span className="font-bold">
+                  <span className="font-bold dark:text-[#F3F8F3]">
                   {
                     document.senderType === 'OFFICE' ? document.senderOffice.officeName : document.senderName
                   }
@@ -155,7 +155,7 @@ export function DocumentDetailsDrawer({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="ml-auto rounded-xl cursor-pointer"
+                    className="ml-auto rounded-xl cursor-pointer dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
                     onClick={() =>
                       handleDownloadRoutingSlip()
                     }
@@ -169,30 +169,30 @@ export function DocumentDetailsDrawer({
 
           {/* DESCRIPTION */}
           <div>
-            <h3 className="mb-3 text-lg font-bold text-slate-900">
+            <h3 className="mb-3 text-lg font-bold text-slate-900 dark:text-[#F3F8F3]">
               Description
             </h3>
 
-            <div className="rounded-2xl border bg-white p-5 text-sm leading-7 text-slate-600">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm leading-7 text-slate-600 transition-colors dark:border-[#214234] dark:bg-[#102418] dark:text-[#A9C5B6]">
               {document.description ||
                 'No description'}
             </div>
           </div>
 
-          <Separator />
+          <Separator className="dark:bg-[#214234]" />
 
           {/* DETAILS GRID */}
           <div className="grid gap-5 md:grid-cols-2">
-            <div className="rounded-2xl border p-5">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 transition-colors dark:border-[#214234] dark:bg-[#102418]">
               <div className="flex items-center gap-3">
-                <Building2 className="h-5 w-5 text-slate-500" />
+                <Building2 className="h-5 w-5 text-slate-500 dark:text-[#A9C5B6]" />
 
                 <div>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
                     Current Office
                   </p>
 
-                  <h4 className="font-bold text-slate-900">
+                  <h4 className="font-bold text-slate-900 dark:text-[#F3F8F3]">
                     {
                       document
                         .currentOffice
@@ -205,14 +205,14 @@ export function DocumentDetailsDrawer({
 
             <div className="rounded-2xl border p-5">
               <div className="flex items-center gap-3">
-                <CalendarDays className="h-5 w-5 text-slate-500" />
+                <CalendarDays className="h-5 w-5 text-slate-500 dark:text-[#A9C5B6]" />
 
                 <div>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
                     Deadline
                   </p>
 
-                  <h4 className="font-bold text-slate-900">
+                  <h4 className="font-bold text-slate-900 dark:text-[#F3F8F3]">
                     {document.deadline
                       ? new Date(
                           document.deadline,
@@ -234,14 +234,14 @@ export function DocumentDetailsDrawer({
 
             <div className="rounded-2xl border p-5">
               <div className="flex items-center gap-3">
-                <AlertCircle className="h-5 w-5 text-slate-500" />
+                <AlertCircle className="h-5 w-5 text-slate-500 dark:text-[#A9C5B6]" />
 
                 <div>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
                     Priority
                   </p>
 
-                  <h4 className="font-bold text-slate-900">
+                  <h4 className="font-bold text-slate-900 dark:text-[#F3F8F3]">
                     {
                       document.priority ||
                       'N/A'
@@ -253,14 +253,14 @@ export function DocumentDetailsDrawer({
 
             <div className="rounded-2xl border p-5">
               <div className="flex items-center gap-3">
-                <Shield className="h-5 w-5 text-slate-500" />
+                <Shield className="h-5 w-5 text-slate-500 dark:text-[#A9C5B6]" />
 
                 <div>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
                     Confidentiality
                   </p>
 
-                  <h4 className="font-bold text-slate-900">
+                  <h4 className="font-bold text-slate-900 dark:text-[#F3F8F3]">
                     {
                       document.confidentialityLevel ||
                       'N/A'
@@ -274,7 +274,7 @@ export function DocumentDetailsDrawer({
           {/* ATTACHMENTS (NEW ✨) */}
           {document.attachments?.length > 0 && (
             <div>
-              <h3 className="mb-3 flex items-center gap-2 text-lg font-bold">
+              <h3 className="mb-3 flex items-center gap-2 text-lg font-bold text-[#102418] dark:text-[#F3F8F3]">
                 <Paperclip className="h-5 w-5" />
                 Attachments
               </h3>
@@ -285,12 +285,12 @@ export function DocumentDetailsDrawer({
                 document.attachments.map((file: any, idx: number) => (
                   <div
                     key={idx}
-                    className="rounded-2xl border bg-white p-4 hover:bg-slate-50"
+                    className="rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:bg-slate-50 dark:border-[#214234] dark:bg-[#102418] dark:hover:bg-[#173227]"
                   >
-                    <p className="font-medium text-slate-900">
+                    <p className="font-medium text-slate-900 dark:text-[#F3F8F3]">
                       {file.fileName}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 dark:text-[#A9C5B6]">
                       {file.type || 'File'}
                     </p>
 
@@ -298,7 +298,7 @@ export function DocumentDetailsDrawer({
                     <Button
                       size="sm"
                       variant="outline"
-                      className="mt-3 cursor-pointer"
+                      className="mt-3 cursor-pointer dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
                       onClick={() => window.open(file.filePath)}
                     >
                       Preview

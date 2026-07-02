@@ -261,9 +261,9 @@ export function NotificationBell() {
         <Button
           size="icon"
           variant="outline"
-          className="relative h-12 w-12 rounded-2xl border-slate-200 bg-white shadow-sm"
+          className="relative h-12 w-12 rounded-2xl border-slate-200 bg-white shadow-sm transition-colors hover:bg-slate-50 dark:border-[#214234] dark:bg-[#102418] dark:hover:bg-[#173227]"
         >
-          <Bell className="h-5 w-5 text-slate-700" />
+          <Bell className="h-5 w-5 text-slate-700 dark:text-[#F3F8F3]" />
 
           {unreadCount >
             0 && (
@@ -276,16 +276,16 @@ export function NotificationBell() {
 
       <PopoverContent
         align="end"
-        className="w-[420px] rounded-3xl border-0 p-0 shadow-2xl"
+        className="w-[420px] rounded-3xl border-0 p-0 shadow-2xl dark:border-[#214234] dark:bg-[#102418] dark:shadow-[0_0_40px_rgba(34,197,94,0.12)]"
       >
         {/* HEADER */}
-        <div className="flex items-center justify-between border-b border-slate-100 p-5">
+        <div className="flex items-center justify-between border-b border-slate-100 p-5 dark:border-[#214234]">
           <div>
-            <h3 className="text-lg font-black text-slate-900">
+            <h3 className="text-lg font-black text-slate-900 dark:text-[#F3F8F3]">
               Notifications
             </h3>
 
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
               Real-time document updates
             </p>
           </div>
@@ -312,13 +312,13 @@ export function NotificationBell() {
           {notifications.length ===
           0 ? (
             <div className="flex flex-col items-center justify-center p-10 text-center">
-              <Bell className="mb-3 h-10 w-10 text-slate-300" />
+              <Bell className="mb-3 h-10 w-10 text-slate-300 dark:text-[#6C9A83]" />
 
-              <h4 className="font-bold text-slate-700">
+              <h4 className="font-bold text-slate-700 dark:text-[#F3F8F3]">
                 No notifications yet
               </h4>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-slate-500 dark:text-[#A9C5B6]">
                 You&apos;re all caught up
               </p>
             </div>
@@ -336,9 +336,9 @@ export function NotificationBell() {
                       notification.id,
                     )
                   }
-                  className={`flex w-full items-start gap-4 border-b border-slate-100 p-5 text-left transition hover:bg-slate-50 ${
+                  className={`flex w-full items-start gap-4 border-b border-slate-100 p-5 text-left transition hover:bg-slate-50 dark:border-[#214234] dark:hover:bg-[#173227] ${
                     !notification.isRead
-                      ? 'bg-blue-50/40'
+                      ? 'bg-blue-50/40 dark:bg-green-500/10'
                       : ''
                   }`}
                 >
@@ -352,7 +352,7 @@ export function NotificationBell() {
                   {/* CONTENT */}
                   <div className="flex-1">
                     <div className="flex items-start justify-between gap-3">
-                      <h4 className="text-sm font-bold text-slate-900">
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-[#F3F8F3]">
                         {
                           notification.title
                         }
@@ -363,13 +363,13 @@ export function NotificationBell() {
                       )}
                     </div>
 
-                    <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                    <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-[#A9C5B6]">
                       {
                         notification.message
                       }
                     </p>
 
-                    <p className="mt-3 text-xs text-slate-400">
+                    <p className="mt-3 text-xs text-slate-400 dark:text-[#7FA18E]">
                       {new Date(
                         notification.createdAt,
                       ).toLocaleString()}
@@ -383,7 +383,7 @@ export function NotificationBell() {
 
           {/* SEE MORE */}
           {notifications.length > 5 && (
-            <div className="border-t border-slate-100 p-3">
+            <div className="border-t border-slate-100 p-3 dark:border-[#214234]">
               <Button
                 variant="ghost"
                 className="w-full rounded-2xl"

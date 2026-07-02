@@ -28,7 +28,7 @@ export function TypeChart({
   data: TypeData[];
 }) {
   return (
-    <Card className="rounded-[32px] border-0 shadow-xl">
+    <Card className="rounded-[32px] border-0 shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">
       <CardHeader>
         <CardTitle>
           Documents by Type

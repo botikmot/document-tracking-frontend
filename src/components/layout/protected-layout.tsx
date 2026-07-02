@@ -63,9 +63,15 @@ export function ProtectedLayout({
 
   if (!hydrated) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100">
-        <div className="rounded-2xl bg-white px-6 py-4 shadow">
-          Loading...
+      <div className="flex min-h-screen items-center justify-center bg-[#F5F7F2] transition-colors dark:bg-[#07130C]">
+        <div className="rounded-3xl border border-slate-200 bg-white px-8 py-6 shadow-xl transition-colors dark:border-[#1F4D36] dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">
+          <div className="flex items-center gap-4">
+            <div className="h-5 w-5 animate-spin rounded-full border-[3px] border-green-200 border-t-green-600 dark:border-[#1F4D36] dark:border-t-green-500" />
+
+            <span className="font-semibold text-slate-700 dark:text-slate-200">
+              Loading...
+            </span>
+          </div>
         </div>
       </div>
     );
@@ -85,7 +91,7 @@ export function ProtectedLayout({
     <>
     <SocketProvider userId={user.userId} />
      <NotificationListener />
-    <div className="flex min-h-screen bg-[#F5F7F2]">
+    <div className="flex min-h-screen bg-[#F5F7F2] transition-colors dark:bg-[#07130C]">
       <Sidebar />
 
       <main className="flex-1 overflow-hidden">

@@ -72,7 +72,7 @@ export function ExportButtons({
         {({
           loading,
         }) => (
-          <Button className="rounded-2xl cursor-pointer bg-red-600 hover:bg-red-700">
+          <Button className="rounded-2xl cursor-pointer bg-red-600 hover:bg-red-700 dark:text-white">
 
             <FileText className="mr-2 h-4 w-4" />
 

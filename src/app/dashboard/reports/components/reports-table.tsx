@@ -159,9 +159,9 @@ export function ReportsTable({
   }
 
   return (
-    <Card className="rounded-[32px] border-0 shadow-xl">
+    <Card className="rounded-[32px] border-0 shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-2xl font-black">
+        <CardTitle className="text-2xl font-black text-[#102418] dark:text-[#F3F8F3]">
           Report Documents
         </CardTitle>
 
@@ -174,11 +174,12 @@ export function ReportsTable({
               )
             }
             placeholder="Search..."
-            className="w-72 rounded-xl"
+            className="w-72 rounded-xl border-slate-200 bg-white transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:placeholder:text-[#7FA18E]"
           />
 
           <Button
             variant="outline"
+            className="dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
             onClick={() =>
               setSortAsc(
                 !sortAsc,
@@ -194,39 +195,39 @@ export function ReportsTable({
 
       <CardContent>
 
-        <div className="overflow-x-auto rounded-2xl border">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white transition-colors dark:border-[#214234] dark:bg-[#173227]">
 
-          <table className="w-full">
+          <table className="w-full text-slate-900 dark:text-[#F3F8F3]">
 
-            <thead className="bg-slate-50">
+            <thead className="bg-slate-50 transition-colors dark:bg-[#102418]">
 
               <tr>
 
-                <th className="px-5 py-4 text-left">
+                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
                   Tracking
                 </th>
 
-                <th className="px-5 py-4 text-left">
+                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
                   Title
                 </th>
 
-                <th className="px-5 py-4 text-left">
+                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
                   Type
                 </th>
 
-                <th className="px-5 py-4 text-left">
+                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
                   Office
                 </th>
 
-                <th className="px-5 py-4 text-left">
+                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
                   Status
                 </th>
 
-                <th className="px-5 py-4 text-left">
+                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
                   Priority
                 </th>
 
-                <th className="px-5 py-4 text-left">
+                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
                   Deadline
                 </th>
 
@@ -244,10 +245,10 @@ export function ReportsTable({
 
                 <tr
                   key={doc.id}
-                  className="border-t hover:bg-slate-50"
+                  className="border-t border-slate-200 transition-colors hover:bg-slate-50 dark:border-[#214234] dark:hover:bg-[#102418]"
                 >
 
-                  <td className="px-5 py-4 font-semibold">
+                  <td className="px-5 py-4 font-semibold text-[#102418] dark:text-[#F3F8F3]">
                     {doc.trackingNumber}
                   </td>
 

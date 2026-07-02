@@ -75,7 +75,7 @@ export function ReportFilters({
   };
 
   return (
-    <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl">
+    <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">
       <CardContent className="p-8">
 
         {/* Header */}
@@ -83,22 +83,22 @@ export function ReportFilters({
         <div className="mb-8 flex items-start justify-between">
           <div className="flex items-center gap-4">
 
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100">
-              <FileBarChart2 className="h-7 w-7 text-indigo-600" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 transition-colors dark:from-blue-900/30 dark:to-indigo-900/30">
+              <FileBarChart2 className="h-7 w-7 text-indigo-600 dark:text-indigo-300" />
             </div>
 
             <div>
-              <h2 className="text-2xl font-black text-[#102418]">
+              <h2 className="text-2xl font-black text-[#102418] dark:text-[#F3F8F3]">
                 Reports Generator
               </h2>
 
-              <p className="text-slate-500">
+              <p className="text-slate-500 dark:text-[#A9C5B6]">
                 Generate document tracking analytics and export reports.
               </p>
             </div>
           </div>
 
-          <div className="hidden rounded-full bg-green-50 px-4 py-2 text-sm font-medium text-green-700 md:block">
+          <div className="hidden rounded-full bg-green-50 px-4 py-2 text-sm font-medium text-green-700 transition-colors dark:bg-green-900/30 dark:text-green-300 md:block">
             Analytics Report
           </div>
         </div>
@@ -110,7 +110,7 @@ export function ReportFilters({
           {/* Report Type */}
 
           <div className="lg:col-span-2">
-            <label className="mb-2 block text-sm font-semibold">
+            <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
               Report Type
             </label>
 
@@ -124,20 +124,20 @@ export function ReportFilters({
                 }))
               }
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full border-slate-200 bg-white transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
                 <SelectValue />
               </SelectTrigger>
 
-              <SelectContent>
-                <SelectItem value="monthly">
+              <SelectContent className="border-slate-200 bg-white dark:border-[#214234] dark:bg-[#102418]">
+                <SelectItem className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white" value="monthly">
                   Monthly
                 </SelectItem>
 
-                <SelectItem value="quarterly">
+                <SelectItem className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white" value="quarterly">
                   Quarterly
                 </SelectItem>
 
-                <SelectItem value="annual">
+                <SelectItem className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white" value="annual">
                   Annual
                 </SelectItem>
 
@@ -151,7 +151,7 @@ export function ReportFilters({
           {/* Year */}
 
           <div className="lg:col-span-2">
-            <label className="mb-2 block text-sm font-semibold">
+            <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
               Year
             </label>
 
@@ -174,7 +174,7 @@ export function ReportFilters({
           {filters.type ===
             'monthly' && (
             <div className="lg:col-span-2">
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                 Month
               </label>
 
@@ -196,11 +196,11 @@ export function ReportFilters({
                   )
                 }
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full border-slate-200 bg-white transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
                   <SelectValue />
                 </SelectTrigger>
 
-                <SelectContent>
+                <SelectContent className="border-slate-200 bg-white dark:border-[#214234] dark:bg-[#102418]">
                   {MONTHS.map(
                     (
                       month,
@@ -214,6 +214,7 @@ export function ReportFilters({
                           index +
                             1,
                         )}
+                         className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white"
                       >
                         {month}
                       </SelectItem>
@@ -229,7 +230,7 @@ export function ReportFilters({
           {filters.type ===
             'quarterly' && (
             <div className="lg:col-span-2">
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                 Quarter
               </label>
 
@@ -251,24 +252,24 @@ export function ReportFilters({
                   )
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full border-slate-200 bg-white transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
                   <SelectValue />
                 </SelectTrigger>
 
-                <SelectContent>
-                  <SelectItem value="1">
+                <SelectContent className="border-slate-200 bg-white dark:border-[#214234] dark:bg-[#102418]">
+                  <SelectItem className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white" value="1">
                     Q1
                   </SelectItem>
 
-                  <SelectItem value="2">
+                  <SelectItem className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white" value="2">
                     Q2
                   </SelectItem>
 
-                  <SelectItem value="3">
+                  <SelectItem className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white" value="3">
                     Q3
                   </SelectItem>
 
-                  <SelectItem value="4">
+                  <SelectItem className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white" value="4">
                     Q4
                   </SelectItem>
                 </SelectContent>
@@ -282,7 +283,7 @@ export function ReportFilters({
             'custom' && (
             <>
               <div className="lg:col-span-3">
-                <label className="mb-2 block text-sm font-semibold">
+                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                   Start Date
                 </label>
 
@@ -308,7 +309,7 @@ export function ReportFilters({
               </div>
 
               <div className="lg:col-span-3">
-                <label className="mb-2 block text-sm font-semibold">
+                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                   End Date
                 </label>
 
@@ -342,7 +343,7 @@ export function ReportFilters({
             <Button
               type="button"
               variant="outline"
-              className="rounded-xl"
+              className="rounded-xl cursor-pointer dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
               onClick={resetFilters}
             >
               <RotateCcw className="mr-2 h-4 w-4" />
@@ -355,7 +356,7 @@ export function ReportFilters({
               onClick={() => {
                 void onGenerate();
               }}
-              className="rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600"
+              className="rounded-xl cursor-pointer bg-gradient-to-r from-green-600 to-emerald-600 transition-all hover:from-green-700 hover:to-emerald-700 dark:shadow-[0_0_20px_rgba(34,197,94,0.25)]"
             >
               <Search className="mr-2 h-4 w-4" />
 
@@ -368,11 +369,11 @@ export function ReportFilters({
 
         {/* Footer Info */}
 
-        <div className="mt-6 flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-          <CalendarDays className="h-4 w-4" />
+        <div className="mt-6 flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600 transition-colors dark:bg-[#173227] dark:text-[#A9C5B6]">
+          <CalendarDays className="h-4 w-4 text-slate-500 dark:text-[#A9C5B6]" />
 
           Reporting Period:
-          <span className="font-semibold text-slate-900">
+          <span className="font-semibold text-slate-900 dark:text-[#F3F8F3]">
             {filters.type ===
               'monthly' &&
               `${MONTHS[(filters.month ?? 1) - 1]} ${filters.year}`}

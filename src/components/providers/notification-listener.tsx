@@ -4,55 +4,88 @@ import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { socket } from '@/lib/socket';
 import { useNotificationStore, type Notification as AppNotification } from '@/store/notification.store';
+import { useSettingsStore } from '@/store/settings.store';
 
 export function NotificationListener() {
   const { addNotification } =
     useNotificationStore();
 
+  const { settings } =
+    useSettingsStore();
+
   const audioRef =
-    useRef<HTMLAudioElement | null>(
-      null,
-    );
+    useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    /*
+    |----------------------------------------------------
+    | INITIALIZE AUDIO
+    |----------------------------------------------------
+    */
     audioRef.current = new Audio(
       '/sounds/notification.mp3',
     );
 
-    const handleNotification = async (
-      data: AppNotification,
-    ) => {
-      /*
-       |----------------------------------------------------
-       | SOUND
-       |----------------------------------------------------
-       */
+    /*
+    |----------------------------------------------------
+    | UNLOCK AUDIO AFTER FIRST USER INTERACTION
+    |----------------------------------------------------
+    */
+    const unlockAudio = async () => {
+      if (!audioRef.current) return;
 
       try {
-        audioRef.current!.currentTime = 0;
-        await audioRef.current!.play();
+        audioRef.current.muted = true;
+
+        await audioRef.current.play();
+
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.muted = false;
       } catch (error) {
         console.error(
-          'Failed to play notification sound',
+          'Failed to unlock audio',
           error,
         );
       }
 
-      /*
-       |----------------------------------------------------
-       | TOAST
-       |----------------------------------------------------
-       */
+      window.removeEventListener(
+        'pointerdown',
+        unlockAudio,
+      );
+    };
+
+    window.addEventListener(
+      'pointerdown',
+      unlockAudio,
+    );
+
+    /*
+    |----------------------------------------------------
+    | SOCKET LISTENER
+    |----------------------------------------------------
+    */
+    const handleNotification = async (
+      data: AppNotification,
+    ) => {
+      if (
+        settings.notificationSounds &&
+        audioRef.current
+      ) {
+        try {
+          audioRef.current.currentTime = 0;
+          await audioRef.current.play();
+        } catch (error) {
+          console.error(
+            'Failed to play notification sound',
+            error,
+          );
+        }
+      }
 
       toast.success(data.title, {
         description: data.message,
       });
-
-      /*
-       |----------------------------------------------------
-       | UPDATE STORE
-       |----------------------------------------------------
-       */
 
       addNotification(data);
     };
@@ -67,8 +100,16 @@ export function NotificationListener() {
         'notification',
         handleNotification,
       );
+
+      window.removeEventListener(
+        'pointerdown',
+        unlockAudio,
+      );
     };
-  }, [addNotification]);
+  }, [
+    addNotification,
+    settings.notificationSounds,
+  ]);
 
   return null;
 }

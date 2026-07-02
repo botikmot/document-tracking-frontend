@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { Toaster } from "sonner"
+import { Providers } from "./providers";
 
 const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
 
@@ -33,10 +34,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", figtree.variable)}
     >
       <body className="min-h-full flex flex-col">
-        <AuthProvider>{children}</AuthProvider>
+        <Providers>
+          <AuthProvider>{children}</AuthProvider>
+        </Providers>
         <Toaster />
       </body>
     </html>

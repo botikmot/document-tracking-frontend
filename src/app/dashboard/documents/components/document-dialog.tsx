@@ -392,7 +392,7 @@ const handleFileUpload = async (
         <Button 
             className={
                 mode === 'edit'
-                ? 'cursor-pointer bg-white text-gray-700 hover:bg-gray-100 w-full justify-start'
+                ? 'cursor-pointer bg-white text-gray-700 hover:bg-gray-100 w-full justify-start dark:bg-[#102418] dark:text-[#F3F8F3]'
                 : 'h-12 rounded-2xl cursor-pointer px-8 font-semibold bg-gradient-to-r from-green-700 to-emerald-600 shadow-lg shadow-green-700/20 transition-all hover:scale-[1.02] hover:from-green-800 hover:to-emerald-700'
             }
         >
@@ -403,11 +403,11 @@ const handleFileUpload = async (
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-h-[95vh] overflow-y-auto rounded-[32px] border-0 bg-[#F8FAF6] p-0 shadow-2xl sm:max-w-4xl">
+      <DialogContent className="max-h-[95vh] overflow-y-auto rounded-[32px] border-0 bg-[#F8FAF6] p-0 shadow-2xl transition-colors dark:border-[#214234] dark:bg-[#07150D] sm:max-w-4xl">
         {/* ===================================== */}
         {/* HEADER */}
         {/* ===================================== */}
-        <DialogHeader className="relative overflow-hidden border-b border-slate-200 bg-white px-8 py-7">
+        <DialogHeader className="relative overflow-hidden border-b border-slate-200 bg-white px-8 py-7 transition-colors dark:border-[#214234] dark:bg-[#102418]">
           <div className="absolute right-0 top-0 h-44 w-44 rounded-full bg-green-500/10 blur-3xl" />
 
           <div className="relative flex items-center gap-5">
@@ -420,11 +420,11 @@ const handleFileUpload = async (
                 DENR eDATS
               </p>
 
-              <DialogTitle className="mt-2 text-4xl font-black tracking-tight text-[#102418]">
+              <DialogTitle className="mt-2 text-4xl font-black tracking-tight text-[#102418] dark:text-[#F3F8F3]">
                 {mode === 'edit' ? 'Update Document' : 'Create Document'}
               </DialogTitle>
 
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-2 text-sm text-slate-600 dark:text-[#A9C5B6]">
                 {mode === 'edit'
                     ? 'Modify document details, routing, and metadata for this record.'
                     : 'Register and route official government documents across connected DENR offices and departments.'}
@@ -443,18 +443,18 @@ const handleFileUpload = async (
           {/* ===================================== */}
           {/* DOCUMENT INFORMATION */}
           {/* ===================================== */}
-          <section className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-sm">
+          <section className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-sm transition-colors dark:border-[#214234] dark:bg-[#102418]">
             <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-100">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-100 dark:bg-green-900/40">
                 <FolderOpen className="h-6 w-6 text-green-700" />
               </div>
 
               <div>
-                <h2 className="text-xl font-black text-[#102418]">
+                <h2 className="text-xl font-black text-[#102418] dark:text-[#F3F8F3]">
                   Document Information
                 </h2>
 
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
                   Basic document metadata and identification.
                 </p>
               </div>
@@ -463,13 +463,13 @@ const handleFileUpload = async (
             <div className="grid gap-6 lg:grid-cols-2">
               {/* TITLE */}
               <div className="lg:col-span-2">
-                <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                   Document Title
                 </Label>
 
                 <Input
                   placeholder="Enter document title..."
-                  className="h-12 rounded-2xl border-slate-200 bg-slate-50"
+                  className="h-12 rounded-2xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:placeholder:text-[#7FA18E]"
                   value={formData.title}
                   onChange={(e) =>
                     setFormData({
@@ -482,13 +482,13 @@ const handleFileUpload = async (
 
               {/* DESCRIPTION */}
               <div className="lg:col-span-2">
-                <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                   Description
                 </Label>
 
                 <Textarea
                   placeholder="Enter document description..."
-                  className="min-h-[120px] rounded-2xl border-slate-200 bg-slate-50"
+                  className="min-h-[120px] rounded-2xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:placeholder:text-[#7FA18E]"
                   value={formData.description}
                   onChange={(e) =>
                     setFormData({
@@ -501,7 +501,7 @@ const handleFileUpload = async (
 
               {/* TRACKING NUMBER */}
               <div>
-                <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                   Tracking Number
                 </Label>
 
@@ -511,7 +511,7 @@ const handleFileUpload = async (
                   <Input
                     value={trackingNumber}
                     readOnly
-                    className="h-12 rounded-2xl border-green-200 bg-green-50 pl-12 font-semibold tracking-wide text-green-800"
+                    className="h-12 rounded-2xl border-green-200 bg-green-50 pl-12 font-semibold tracking-wide text-green-800 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:placeholder:text-[#7FA18E]"
                   />
                 </div>
 
@@ -522,7 +522,7 @@ const handleFileUpload = async (
 
               {/* DEADLINE */}
               <div>
-                <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                   Deadline
                 </Label>
 
@@ -547,18 +547,18 @@ const handleFileUpload = async (
           {/* ===================================== */}
           {/* SENDER INFORMATION */}
           {/* ===================================== */}
-          <section className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-sm">
+          <section className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-sm transition-colors dark:border-[#214234] dark:bg-[#102418]">
             <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 dark:bg-blue-900/40">
                 <FileText className="h-6 w-6 text-blue-700" />
               </div>
 
               <div>
-                <h2 className="text-xl font-black text-[#102418]">
+                <h2 className="text-xl font-black text-[#102418] dark:text-[#F3F8F3]">
                   Sender Information
                 </h2>
 
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
                   Identify where the document originated from.
                 </p>
               </div>
@@ -567,7 +567,7 @@ const handleFileUpload = async (
             <div className="grid gap-6 lg:grid-cols-2">
               {/* SENDER TYPE */}
               <div className="lg:col-span-2">
-                <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                   Sender Type
                 </Label>
 
@@ -589,11 +589,11 @@ const handleFileUpload = async (
                   })
                 }
                 >
-                  <SelectTrigger className="h-12 w-1/2 rounded-2xl border-slate-200 bg-slate-50">
+                  <SelectTrigger className="h-12 w-1/2 rounded-2xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
                     <SelectValue placeholder="Select sender type" />
                   </SelectTrigger>
 
-                  <SelectContent>
+                  <SelectContent className="dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]">
                     <SelectItem value="OFFICE">
                       Office
                     </SelectItem>
@@ -621,12 +621,12 @@ const handleFileUpload = async (
                 'OFFICE' &&
                 currentOffice && (
                   <div className="lg:col-span-2">
-                    <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                    <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                       Originating Office
                     </Label>
 
-                    <div className="flex h-12 items-center rounded-2xl border border-green-200 bg-green-50 px-4">
-                      <p className="font-semibold text-green-800">
+                    <div className="flex h-12 items-center rounded-2xl border border-green-200 bg-green-50 px-4 transition-colors dark:border-green-700 dark:bg-green-900/20">
+                      <p className="font-semibold text-green-800 dark:text-green-300">
                         {
                           currentOffice.officeName
                         }
@@ -648,13 +648,13 @@ const handleFileUpload = async (
                 'CLIENT' && (
                 <>
                   <div>
-                    <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                    <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                       Client Name
                     </Label>
 
                     <Input
                       placeholder="Enter client name"
-                      className="h-12 rounded-2xl border-slate-200 bg-slate-50"
+                      className="h-12 rounded-2xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:placeholder:text-[#7FA18E]"
                       value={
                         formData.senderName
                       }
@@ -669,13 +669,13 @@ const handleFileUpload = async (
                   </div>
 
                   <div>
-                    <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                    <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                       Contact Number
                     </Label>
 
                     <Input
                       placeholder="09XXXXXXXXX"
-                      className="h-12 rounded-2xl border-slate-200 bg-slate-50"
+                      className="h-12 rounded-2xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:placeholder:text-[#7FA18E]"
                       value={
                         formData.senderContact
                       }
@@ -701,13 +701,13 @@ const handleFileUpload = async (
                   'COMPANY') && (
                 <>
                   <div>
-                    <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                    <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                       Organization Name
                     </Label>
 
                     <Input
                       placeholder="Enter organization"
-                      className="h-12 rounded-2xl border-slate-200 bg-slate-50"
+                      className="h-12 rounded-2xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:placeholder:text-[#7FA18E]"
                       value={
                         formData.senderOrganization
                       }
@@ -722,13 +722,13 @@ const handleFileUpload = async (
                   </div>
 
                   <div>
-                    <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                    <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                       Contact Person
                     </Label>
 
                     <Input
                       placeholder="Enter contact person"
-                      className="h-12 rounded-2xl border-slate-200 bg-slate-50"
+                      className="h-12 rounded-2xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:placeholder:text-[#7FA18E]"
                       value={
                         formData.senderName
                       }
@@ -749,18 +749,18 @@ const handleFileUpload = async (
           {/* ===================================== */}
           {/* CLASSIFICATION */}
           {/* ===================================== */}
-          <section className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-sm">
+          <section className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-sm transition-colors dark:border-[#214234] dark:bg-[#102418]">
             <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 dark:bg-emerald-900/40">
                 <Shield className="h-6 w-6 text-emerald-700" />
               </div>
 
               <div>
-                <h2 className="text-xl font-black text-[#102418]">
+                <h2 className="text-xl font-black text-[#102418] dark:text-[#F3F8F3]">
                   Classification & Routing
                 </h2>
 
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
                   Configure workflow, routing, and confidentiality.
                 </p>
               </div>
@@ -770,7 +770,7 @@ const handleFileUpload = async (
               {/* DOCUMENT CLASSIFICATION */}
 
             <div>
-              <Label className="mb-2 block text-sm font-semibold text-slate-700">
+              <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                 Classification
               </Label>
 
@@ -786,11 +786,11 @@ const handleFileUpload = async (
                   })
                 }
               >
-                <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50">
+                <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
                   <SelectValue placeholder="Select classification" />
                 </SelectTrigger>
 
-                <SelectContent>
+                <SelectContent className="dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]">
                   <SelectItem value="SIMPLE">
                     Simple
                   </SelectItem>
@@ -805,7 +805,7 @@ const handleFileUpload = async (
             </div>
               {/* DOCUMENT TYPE */}
               <div>
-                <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                   Document Type
                 </Label>
 
@@ -820,11 +820,11 @@ const handleFileUpload = async (
                     })
                   }
                 >
-                  <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50">
+                  <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
 
-                  <SelectContent>
+                  <SelectContent className="dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]">
                     {documentTypes.map((type) => (
                       <SelectItem
                         key={type.id}
@@ -839,7 +839,7 @@ const handleFileUpload = async (
 
               {/* PRIORITY */}
               <div>
-                <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                   Priority Level
                 </Label>
 
@@ -852,11 +852,11 @@ const handleFileUpload = async (
                     })
                   }
                 >
-                  <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50">
+                  <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
 
-                  <SelectContent>
+                  <SelectContent className="dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]">
                     <SelectItem value="LOW">
                       Low
                     </SelectItem>
@@ -878,7 +878,7 @@ const handleFileUpload = async (
 
               {/* CONFIDENTIALITY */}
               <div>
-                <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                   Confidentiality
                 </Label>
 
@@ -894,11 +894,11 @@ const handleFileUpload = async (
                     })
                   }
                 >
-                  <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50">
+                  <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
                     <SelectValue placeholder="Select level" />
                   </SelectTrigger>
 
-                  <SelectContent>
+                  <SelectContent className="dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]">
                     <SelectItem value="PUBLIC">
                       Public
                     </SelectItem>
@@ -916,13 +916,13 @@ const handleFileUpload = async (
 
               {/* Addressee */}
               <div>
-                <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                   Addressee
                 </Label>
 
                 <Input
                   placeholder="Enter Addressee..."
-                  className="rounded-2xl border-slate-200 bg-slate-50"
+                  className="rounded-2xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:placeholder:text-[#7FA18E]"
                   value={formData.addressee}
                   onChange={(e) =>
                     setFormData({
@@ -935,11 +935,11 @@ const handleFileUpload = async (
 
               {/* STATUS */}
               <div>
-                <Label className="mb-2 block text-sm font-semibold text-slate-700">
+                <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                   Initial Status
                 </Label>
 
-                <div className="flex h-10 items-center rounded-2xl border border-slate-200 bg-slate-50 px-4">
+                <div className="flex h-10 items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 transition-colors dark:border-[#214234] dark:bg-[#173227]">
                   <Badge className="rounded-full bg-amber-100 text-amber-700">
                     Pending Review
                   </Badge>
@@ -951,17 +951,17 @@ const handleFileUpload = async (
           {/* ===================================== */}
           {/* ATTACHMENTS */}
           {/* ===================================== */}
-          <section className="rounded-[28px] border border-dashed border-green-300 bg-green-50/40 p-8">
+          <section className="rounded-[28px] border border-dashed border-green-300 bg-green-50/40 p-8 transition-colors dark:border-green-700 dark:bg-green-900/10">
             <div className="flex flex-col items-center justify-center text-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/40">
                 <Paperclip className="h-10 w-10 text-green-700" />
               </div>
 
-              <h2 className="mt-5 text-2xl font-black text-[#102418]">
+              <h2 className="mt-5 text-2xl font-black text-[#102418] dark:text-[#F3F8F3]">
                 Upload Attachments
               </h2>
 
-              <p className="mt-2 max-w-md text-sm leading-7 text-slate-600">
+              <p className="mt-2 max-w-md text-sm leading-7 text-slate-600 dark:text-[#A9C5B6]">
                 Upload PDF, DOCX, XLSX,
                 images, and other files.
               </p>
@@ -980,7 +980,7 @@ const handleFileUpload = async (
                   type="button"
                   variant="outline"
                   disabled={uploading}
-                  className="mt-6 rounded-2xl border-green-300 bg-white"
+                  className="mt-6 rounded-2xl border-green-300 bg-white transition-colors dark:border-[#214234] dark:bg-[#102418]"
                   asChild
                 >
                   <span>
@@ -998,14 +998,14 @@ const handleFileUpload = async (
                 (file, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4"
+                    className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 transition-colors dark:border-[#214234] dark:bg-[#102418]"
                   >
                     <div>
-                      <p className="font-medium text-slate-800">
+                      <p className="font-medium text-slate-800 dark:text-[#F3F8F3]">
                         {file.fileName}
                       </p>
 
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-500 dark:text-[#A9C5B6]">
                         {(
                           file.fileSize /
                           1024 /
@@ -1036,11 +1036,11 @@ const handleFileUpload = async (
           {/* ===================================== */}
           {/* ACTIONS */}
           {/* ===================================== */}
-          <div className="flex flex-col-reverse cursor-pointer gap-4 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse cursor-pointer gap-4 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end transition-colors dark:border-[#214234]">
             <Button
               type="button"
               variant="outline"
-              className="h-12 rounded-2xl px-6"
+              className="h-12 rounded-2xl px-6 dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
               onClick={() =>
                 setOpen(false)
               }

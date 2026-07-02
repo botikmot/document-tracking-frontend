@@ -32,9 +32,9 @@ export function TrendChart({
   data,
 }: Props) {
   return (
-    <Card className="rounded-3xl border-0 shadow-xl">
+    <Card className="rounded-3xl border-0 bg-white shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">
       <CardHeader>
-        <CardTitle className="text-xl font-black">
+        <CardTitle className="text-[#102418] dark:text-[#F3F8F3]">
           Monthly Document Trend
         </CardTitle>
       </CardHeader>
