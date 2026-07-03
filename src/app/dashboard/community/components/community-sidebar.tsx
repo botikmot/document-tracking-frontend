@@ -14,24 +14,22 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCommunityStore } from '@/store/community.store';
-
-/* const onlineUsers = [
-  'Juan Dela Cruz',
-  'Maria Santos',
-  'Pedro Reyes',
-  'Ana Lopez',
-  'John Lim',
-  'Mark Flores',
-]; */
+import { useAuthStore } from '@/store/auth.store';
 
 export function CommunitySidebar() {
   const [search, setSearch] = useState('');
+
+  const user =
+    useAuthStore(
+      (state) => state.user,
+    );
 
   const {
       communities,
       onlineUsers,
       selectedCommunity,
       selectCommunity,
+      startDirectConversation,
     } = useCommunityStore();
 
   
@@ -165,11 +163,11 @@ export function CommunitySidebar() {
             <div>
 
               <h2 className="text-xl font-black text-[#102418] dark:text-white">
-                Online Personnel
+                Direct Messages
               </h2>
 
               <p className="text-sm text-slate-500">
-                Currently connected
+                Start a conversation
               </p>
 
             </div>
@@ -180,10 +178,19 @@ export function CommunitySidebar() {
 
           <div className="mt-6 space-y-3">
 
-            {onlineUsers.map((user) => (
-              <div
+            {onlineUsers.filter(
+                (u) =>
+                  u.userId !== user?.userId,
+              )
+            .map((user) => (
+              <button
                 key={user.userId}
-                className="flex items-center justify-between rounded-2xl p-3 transition hover:bg-slate-100 dark:hover:bg-[#163122]"
+                onClick={() =>
+                  startDirectConversation(
+                    user.userId,
+                  )
+                }
+                className="flex items-center w-full cursor-pointer justify-between rounded-2xl p-3 transition hover:bg-slate-100 dark:hover:bg-[#163122]"
               >
                 <div className="flex items-center gap-3">
 
@@ -220,7 +227,7 @@ export function CommunitySidebar() {
 
                 </div>
 
-              </div>
+              </button>
             ))}
 
           </div>

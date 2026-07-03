@@ -62,6 +62,9 @@ type CommunityState = {
     id: string,
   ) => Promise<void>;
 
+  startDirectConversation: (
+    targetUserId: string,
+  ) => Promise<void>;
   
 };
 
@@ -289,4 +292,23 @@ export const useCommunityStore =
       set({
         onlineUsers: users,
       }),
+
+    startDirectConversation: async (
+      targetUserId,
+    ) => {
+      const community =
+        await communityService.createDirect(
+          targetUserId,
+        );
+
+      set({
+        selectedCommunity: community,
+      });
+
+      await get().fetchMessages(
+        community.id,
+      );
+    },
+    
+
   }));

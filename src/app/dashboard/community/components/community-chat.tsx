@@ -9,6 +9,7 @@ import {
   Hash,
   Users,
   Wifi,
+  UserCircle,
 } from 'lucide-react';
 
 import { Card } from '@/components/ui/card';
@@ -43,6 +44,17 @@ export function CommunityChat() {
     loadingMessages,
   } = useCommunityStore();
 
+  console.log('selectedCommunity::',selectedCommunity)
+
+  const otherMember =
+    selectedCommunity?.members
+      ?.find(
+        m => m.userId !== user?.userId
+      );
+
+  const isDirect =
+    selectedCommunity?.type ===
+    'DIRECT';
   
   /**
    * ---------------------------------------
@@ -151,49 +163,85 @@ useEffect(() => {
 
             <div className="flex items-center gap-3">
 
-              <Hash className="h-6 w-6 text-green-600" />
+              {
+                isDirect ?
+                <UserCircle className="h-6 w-6 text-blue-600"/>
+                :
+                <Hash className="h-6 w-6 text-green-600"/>
+              }
 
               <h2 className="text-2xl font-black text-[#102418] dark:text-white">
-                {selectedCommunity?.name}
+                {
+                  isDirect
+                  ?
+                  `${otherMember?.user.firstName}
+                  ${otherMember?.user.lastName}`
+                  :
+                  selectedCommunity?.name
+                }
               </h2>
 
             </div>
 
             <p className="mt-2 text-sm text-slate-500">
-              {selectedCommunity?.description}
+              {
+                isDirect
+                ?
+                otherMember?.user?.offices?.[0]?.office?.officeName
+
+                ??
+                "DENR Caraga"
+                :
+                selectedCommunity?.description
+              }
             </p>
 
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3">    
+                  {
+                    !isDirect && (
+                    <>
+                      <div className="rounded-2xl bg-green-100 px-4 py-3 text-green-700">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          <span className="font-semibold">
+                              {selectedCommunity?._count?.members ?? 0} Members
+                            </span>
+                        </div>
+                      </div>
+                      </>
+                    )
+                  }
+                
+                  {
+                    !isDirect && (
+                    <>
+                      <div className="rounded-2xl bg-blue-100 px-4 py-3 text-blue-700">
 
-            <div className="rounded-2xl bg-green-100 px-4 py-3 text-green-700">
+                        <div className="flex items-center gap-2">
+                            <Wifi className="h-4 w-4" />
+                            <span className="font-semibold">
+                            {onlineUsers.length} Online
+                            </span>
+                        </div>
 
-              <div className="flex items-center gap-2">
+                      </div>
+                    </>
+                    )
+                  }
 
-                <Users className="h-4 w-4" />
+                  {
+                    isDirect && (
 
-                <span className="font-semibold">
-                  {selectedCommunity?._count?.members ?? 0} Members
-                </span>
-
-              </div>
-
-            </div>
-
-            <div className="rounded-2xl bg-blue-100 px-4 py-3 text-blue-700">
-
-              <div className="flex items-center gap-2">
-
-                <Wifi className="h-4 w-4" />
-
-                <span className="font-semibold">
-                  {onlineUsers.length} Online
-                </span>
-
-              </div>
-
-            </div>
+                    <div className="rounded-2xl bg-green-100 px-4 py-3 text-green-700">
+                      <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-green-500"/>
+                        <span>Online</span>
+                      </div>
+                    </div>
+                    )
+                  }
 
           </div>
 

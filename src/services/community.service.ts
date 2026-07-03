@@ -99,6 +99,21 @@ class CommunityService {
       `/communities/${communityId}/member/${userId}`,
     );
   }
+
+  async createDirect(
+    targetUserId: string,
+  ) {
+    const { data } =
+      await api.post(
+        '/communities/direct',
+        {
+          targetUserId,
+        },
+      );
+
+    return data;
+  }
+
 }
 
 export default new CommunityService();

@@ -7,6 +7,7 @@ export type Community = {
   ownerId?: string | null;
   createdAt: string;
   active: boolean;
+  type: CommunityType;
 
   members: CommunityMember[];
   _count?: {
@@ -14,6 +15,10 @@ export type Community = {
     messages: number;
   };
 };
+
+export type CommunityType =
+  | 'CHANNEL'
+  | 'DIRECT';
 
 export type Office = {
   id: string;
