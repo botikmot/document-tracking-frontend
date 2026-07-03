@@ -182,6 +182,20 @@ export default function DashboardPage() {
         .processingEfficiency,
     );
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+
+    if (hour < 12) {
+      return 'Good Morning';
+    }
+
+    if (hour < 18) {
+      return 'Good Afternoon';
+    }
+
+    return 'Good Evening';
+  };
+
 
   return (
     <main className="relative flex-1 overflow-hidden bg-[#F5F7F2] transition-colors dark:bg-[#07150D]">
@@ -211,7 +225,7 @@ export default function DashboardPage() {
             </p>
 
             <h1 className="mt-2 text-4xl font-black tracking-tight text-[#102418] dark:text-white">
-              Good Morning, {user?.firstName ?? 'Employee'}
+              {getGreeting()}, {user?.firstName ?? 'Employee'}
             </h1>
 
             <p className="mt-2 text-slate-600 dark:text-slate-400">
