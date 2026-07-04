@@ -7,8 +7,14 @@ import {
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
+import { useCommunityStore } from '@/store/community.store';
 
 export function CommunityHeader() {
+
+  const {
+    onlineUsers,
+  } = useCommunityStore();
+
   return (
     <>
       {/* LEFT */}
@@ -48,7 +54,7 @@ export function CommunityHeader() {
 
           <Users className="mr-2 h-4 w-4" />
 
-          48 Online
+          {onlineUsers.length} Online
 
         </Badge>
 

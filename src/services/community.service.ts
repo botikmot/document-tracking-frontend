@@ -16,6 +16,15 @@ class CommunityService {
     return data;
   }
 
+  async getChatUsers() {
+    const { data } =
+      await api.get(
+        '/communities/users',
+      );
+
+    return data;
+  }
+
   async createCommunity(
     dto: CreateCommunityDto,
   ) {

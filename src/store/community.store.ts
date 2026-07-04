@@ -8,6 +8,15 @@ import type {
   OnlineUser,
 } from '@/types/community';
 
+type ChatUser = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  profileImageUrl?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  offices?: any;
+};
+
 type CommunityState = {
   communities: Community[];
 
@@ -19,10 +28,13 @@ type CommunityState = {
   shouldScrollToBottom: boolean;
 
   onlineUsers: OnlineUser[];
+  chatUsers: ChatUser[];
 
   loading: boolean;
 
   fetchCommunities: () => Promise<void>;
+
+  fetchChatUsers: () => Promise<void>;
 
   selectCommunity: (
     community: Community,
@@ -71,6 +83,7 @@ type CommunityState = {
 export const useCommunityStore =
   create<CommunityState>((set, get) => ({
     communities: [],
+    chatUsers: [],
     selectedCommunity: undefined,
     messages: [],
     hasMoreMessages: true,
@@ -116,6 +129,15 @@ export const useCommunityStore =
           loading: false,
         });
       }
+    },
+
+    fetchChatUsers: async () => {
+        const users =
+          await communityService.getChatUsers();
+        console.log('chat-users::', users)
+        set({
+          chatUsers: users,
+        });
     },
 
     createCommunity: async (

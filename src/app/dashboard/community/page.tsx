@@ -2,7 +2,7 @@
 
 import { MobileSidebar } from '@/components/layout/mobile-sidebar';
 import { CommunityHeader } from './components/community-header';
-import { CommunityStats } from './components/community-stats';
+//import { CommunityStats } from './components/community-stats';
 import { CommunitySidebar } from './components/community-sidebar';
 import { CommunityChat } from './components/community-chat';
 import { useCommunityStore } from '@/store/community.store';
@@ -15,9 +15,15 @@ export default function CommunityPage() {
             (state) => state.fetchCommunities,
         );
 
+    const fetchChatUsers =
+        useCommunityStore(
+            (state) => state.fetchChatUsers,
+        );
+
   useEffect(() => {
     fetchCommunities();
-  }, [fetchCommunities]);
+    fetchChatUsers();
+  }, [fetchCommunities, fetchChatUsers]);
 
   return (
     <main className="relative flex-1 overflow-hidden bg-[#F5F7F2] transition-colors dark:bg-[#07150D]">
@@ -57,17 +63,17 @@ export default function CommunityPage() {
         {/* STATS */}
         {/* ================================= */}
 
-        <div className="p-8">
+        {/* <div className="p-8">
 
           <CommunityStats />
 
-        </div>
+        </div> */}
 
         {/* ================================= */}
         {/* CHAT LAYOUT */}
         {/* ================================= */}
 
-        <div className="px-8 pb-8">
+        <div className="px-8 py-8">
 
           <div className="grid grid-cols-12 gap-6">
 

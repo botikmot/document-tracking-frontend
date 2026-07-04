@@ -9,7 +9,7 @@ import {
   Hash,
   Users,
   Wifi,
-  UserCircle,
+  //UserCircle,
 } from 'lucide-react';
 
 import { Card } from '@/components/ui/card';
@@ -44,7 +44,7 @@ export function CommunityChat() {
     loadingMessages,
   } = useCommunityStore();
 
-  console.log('selectedCommunity::',selectedCommunity)
+  
 
   const otherMember =
     selectedCommunity?.members
@@ -55,7 +55,15 @@ export function CommunityChat() {
   const isDirect =
     selectedCommunity?.type ===
     'DIRECT';
-  
+
+  //console.log('otherMember::',otherMember)
+
+  const onlineUserIds = new Set(
+      onlineUsers.map((u) => u.userId),
+    );
+
+  const isOnline = otherMember ? onlineUserIds.has(otherMember.userId) : false;
+
   /**
    * ---------------------------------------
    * Auto scroll when new message arrives
@@ -151,7 +159,7 @@ useEffect(() => {
   ]);
 
   return (
-    <Card className="flex h-[calc(100vh-240px)] flex-col overflow-hidden rounded-[32px] border-0 bg-white shadow-xl dark:bg-[#102418]">
+    <Card className="flex h-[calc(100vh-240px)] gap-0 flex-col overflow-hidden rounded-[32px] border-0 bg-white shadow-xl dark:bg-[#102418]">
 
       {/* Header */}
 
@@ -165,12 +173,25 @@ useEffect(() => {
 
               {
                 isDirect ?
-                <UserCircle className="h-6 w-6 text-blue-600"/>
+                <>
+                  {otherMember?.user.profileImageUrl ? (
+                    <img
+                      src={otherMember?.user.profileImageUrl}
+                      className="h-10 w-10 rounded-full object-cover"
+                      alt={otherMember?.user.firstName}
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center uppercase justify-center rounded-full bg-gradient-to-br from-green-500 to-emerald-600 text-sm font-bold text-white">
+                      {otherMember?.user.firstName[0]}
+                      {otherMember?.user.lastName[0]}
+                    </div>
+                  )}
+                </>
                 :
                 <Hash className="h-6 w-6 text-green-600"/>
               }
 
-              <h2 className="text-2xl font-black text-[#102418] dark:text-white">
+              <h2 className="text-2xl capitalize font-black text-[#102418] dark:text-white">
                 {
                   isDirect
                   ?
@@ -233,13 +254,27 @@ useEffect(() => {
 
                   {
                     isDirect && (
+                      <div
+                        className={`rounded-2xl px-4 py-3 ${
+                          isOnline
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-slate-100 text-slate-600 dark:bg-[#163122] dark:text-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`h-3 w-3 rounded-full ${
+                              isOnline
+                                ? 'bg-green-500'
+                                : 'bg-slate-400'
+                            }`}
+                          />
 
-                    <div className="rounded-2xl bg-green-100 px-4 py-3 text-green-700">
-                      <div className="flex items-center gap-2">
-                      <div className="h-3 w-3 rounded-full bg-green-500"/>
-                        <span>Online</span>
+                          <span>
+                            {isOnline ? 'Online' : 'Offline'}
+                          </span>
+                        </div>
                       </div>
-                    </div>
                     )
                   }
 
