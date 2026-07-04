@@ -99,7 +99,7 @@ export function CommunitySidebar() {
 
           <TabsList className="grid w-full grid-cols-2 rounded-2xl">
 
-            <TabsTrigger value="channels">
+            <TabsTrigger className="cursor-pointer" value="channels">
 
               Channels
 
@@ -109,7 +109,7 @@ export function CommunitySidebar() {
 
             </TabsTrigger>
 
-            <TabsTrigger value="dm">
+            <TabsTrigger className="cursor-pointer" value="dm">
 
               Direct
 
@@ -144,7 +144,7 @@ export function CommunitySidebar() {
 
             {/* List */}
 
-            <div className="mt-6 h-[340px] space-y-2 overflow-y-auto">
+            <div className="mt-6 h-[340px] space-y-2 overflow-y-auto pr-2">
 
               {communities
                 .filter((community) =>
@@ -152,53 +152,99 @@ export function CommunitySidebar() {
                     .toLowerCase()
                     .includes(search.toLowerCase()),
                 )
-                .map((community) => (
-                  <button
-                    key={community.id}
-                    onClick={() =>
-                      selectCommunity(
-                        community,
-                      )
-                    }
-                    className={`w-full rounded-2xl p-4 text-left transition-all cursor-pointer ${
-                      selectedCommunity?.id ===
-                      community.id
-                        ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg'
-                        : 'hover:bg-slate-100 dark:hover:bg-[#163122]'
-                    }`}
-                  >
+                .map((community) => {
 
-                    <div className="flex items-center justify-between">
+                  const isSelected =
+                    selectedCommunity?.id === community.id;
 
-                      <div className="flex items-center gap-3">
+                  return (
 
-                        <Hash className="h-5 w-5" />
+                    <button
+                      key={community.id}
+                      onClick={() =>
+                        selectCommunity(
+                          community,
+                        )
+                      }
+                      className={`w-full rounded-2xl p-4 text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg'
+                          : 'hover:bg-slate-100 dark:hover:bg-[#163122]'
+                      }`}
+                    >
 
-                        <div>
+                      <div className="flex items-center justify-between">
 
-                          <p className="font-semibold">
-                            {community.name}
-                          </p>
+                        {/* Left */}
 
-                          <p
-                            className={`text-xs ${
-                              selectedCommunity?.id ===
-                              community.id
-                                ? 'text-green-100'
-                                : 'text-slate-500'
-                            }`}
-                          >
-                            {community._count?.members} members
-                          </p>
+                        <div className="flex min-w-0 items-center gap-3">
+
+                          <Hash className="h-5 w-5 shrink-0" />
+
+                          <div className="min-w-0">
+
+                            <p className="truncate font-semibold">
+                              {community.name}
+                            </p>
+
+                            <p
+                              className={`text-xs ${
+                                isSelected
+                                  ? 'text-green-100'
+                                  : 'text-slate-500'
+                              }`}
+                            >
+                              {community._count?.members} members
+                            </p>
+
+                          </div>
+
+                        </div>
+
+                        {/* Right */}
+
+                        <div className="ml-3 flex items-center gap-2">
+
+                          {community.unreadCount > 0 && (
+
+                            <div
+                              className={`flex h-6 min-w-6 items-center justify-center rounded-full px-2 text-xs font-bold ${
+                                isSelected
+                                  ? 'bg-white text-green-700'
+                                  : 'bg-red-600 text-white'
+                              }`}
+                            >
+                              {community.unreadCount > 99
+                                ? '99+'
+                                : community.unreadCount}
+                            </div>
+
+                          )}
+
+                          {isSelected && (
+
+                            <div className="h-2.5 w-2.5 rounded-full bg-white animate-pulse" />
+
+                          )}
 
                         </div>
 
                       </div>
 
-                    </div>
+                    </button>
 
-                  </button>
-                ))}
+                  );
+                })}
+
+              {communities.length === 0 && (
+
+                <div className="py-8 text-center text-sm text-slate-500">
+
+                  No channels found.
+
+                </div>
+
+              )}
 
             </div>
 

@@ -97,6 +97,19 @@ type CommunityState = {
   startDirectConversation: (
     targetUserId: string,
   ) => Promise<void>;
+
+  updateUnread: (
+      communityId: string,
+      unread: number,
+  ) => void;
+
+  incrementUnread: (
+    communityId: string,
+  ) => void;
+
+  clearUnread: (
+    communityId: string,
+  ) => void;
   
 };
 
@@ -304,7 +317,31 @@ export const useCommunityStore =
           community,
       });
 
+      await communityService.markAsRead(
+        community.id,
+      );
+
+      set((state) => ({
+        communities:
+          state.communities.map((c) =>
+            c.id === community.id
+              ? {
+                  ...c,
+                  unreadCount: 0,
+                }
+              : c,
+          ),
+      }));
+
       await get().fetchMessages(
+        community.id,
+      );
+      
+      await communityService.markAsRead(
+        community.id,
+      );
+
+      get().clearUnread(
         community.id,
       );
     },
@@ -456,6 +493,47 @@ export const useCommunityStore =
         community.id,
       );
     },
+
+    updateUnread: (
+        communityId,
+        unread,
+    ) =>
+        set((state) => ({
+            communities:
+                state.communities.map((c) =>
+                    c.id === communityId
+                        ? {
+                              ...c,
+                              unreadCount: unread,
+                          }
+                        : c,
+                ),
+        })),
+
+    incrementUnread: (communityId) =>
+      set((state) => ({
+        communities: state.communities.map((community) =>
+          community.id === communityId
+            ? {
+                ...community,
+                unreadCount:
+                  (community.unreadCount ?? 0) + 1,
+              }
+            : community,
+        ),
+      })),
+
+    clearUnread: (communityId) =>
+      set((state) => ({
+        communities: state.communities.map((community) =>
+          community.id === communityId
+            ? {
+                ...community,
+                unreadCount: 0,
+              }
+            : community,
+        ),
+      })),
     
 
   }));

@@ -69,6 +69,14 @@ class CommunityService {
       );
   }
 
+  markAsRead(
+    communityId: string,
+  ) {
+    return api.post(
+      `/communities/${communityId}/read`,
+    );
+  }
+
   async getMessages(
     communityId: string,
     page = 1,

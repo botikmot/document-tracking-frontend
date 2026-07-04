@@ -14,6 +14,7 @@ export type Community = {
     members: number;
     messages: number;
   };
+  unreadCount: number;
 };
 
 export type CommunityType =

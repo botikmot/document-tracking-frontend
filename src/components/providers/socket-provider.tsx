@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { socket } from '@/lib/socket';
 import { useCommunityStore } from '@/store/community.store';
+import communityService from '@/services/community.service';
 
 export function SocketProvider({
   userId,
@@ -25,6 +26,21 @@ export function SocketProvider({
       (state) => state.setOnlineUsers,
     );
 
+  /* const updateUnread =
+    useCommunityStore(
+        (s) => s.updateUnread,
+    ); */
+
+  const incrementUnread =
+    useCommunityStore(
+      (state) => state.incrementUnread,
+    );
+
+  const clearUnread =
+    useCommunityStore(
+      (state) => state.clearUnread,
+    );
+
   useEffect(() => {
     if (!userId) {
       return;
@@ -41,16 +57,58 @@ export function SocketProvider({
     socket.off('new-message');
     socket.on(
       'new-message',
-      addMessage,
+      async (message) => {
+
+        addMessage(message);
+
+        const current =
+          useCommunityStore.getState()
+            .selectedCommunity;
+
+        if (
+          current?.id === message.communityId
+        ) {
+          await communityService.markAsRead(
+            message.communityId,
+          );
+
+          useCommunityStore
+            .getState()
+            .clearUnread(
+              message.communityId,
+            );
+        }
+      },
     );
 
     socket.on('online-users', (users) => {
       setOnlineUsers(users);
     });
 
+    socket.on(
+      'community-unread',
+      ({ communityId }) => {
+        const current =
+          useCommunityStore.getState()
+            .selectedCommunity;
+
+        if (current?.id === communityId) {
+          return;
+        }
+
+        incrementUnread(
+          communityId,
+        );
+      },
+    );
+
     return () => {
       socket.off(
         'new-message',
+      );
+
+      socket.off(
+          'community-unread',
       );
 
       socket.off(
