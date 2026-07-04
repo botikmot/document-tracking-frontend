@@ -3,6 +3,7 @@
 import {
   useEffect,
   useRef,
+  useState,
 } from 'react';
 
 import {
@@ -20,6 +21,10 @@ import { CommunityMessage } from './community-message';
 
 import { useAuthStore } from '@/store/auth.store';
 import { useCommunityStore } from '@/store/community.store';
+import { CommunityMenu } from './community-menu';
+import { ManageMembersDialog } from './manage-members-dialog';
+import { EditChannelDialog } from './edit-channel-dialog';
+import { DeleteChannelDialog } from './delete-channel-dialog';
 
 export function CommunityChat() {
   const bottomRef =
@@ -44,8 +49,11 @@ export function CommunityChat() {
     loadingMessages,
   } = useCommunityStore();
 
-  
+  const [editOpen, setEditOpen] = useState(false);
+  const [membersOpen, setMembersOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
+  
   const otherMember =
     selectedCommunity?.members
       ?.find(
@@ -56,7 +64,13 @@ export function CommunityChat() {
     selectedCommunity?.type ===
     'DIRECT';
 
-  //console.log('otherMember::',otherMember)
+  const myMember = selectedCommunity?.members.find(
+    (m) => m.userId === user?.userId,
+  );
+
+  const isOwner = myMember?.role === 'OWNER';
+
+  //console.log('selectedCommunity::',selectedCommunity)
 
   const onlineUserIds = new Set(
       onlineUsers.map((u) => u.userId),
@@ -239,15 +253,23 @@ useEffect(() => {
                     !isDirect && (
                     <>
                       <div className="rounded-2xl bg-blue-100 px-4 py-3 text-blue-700">
-
                         <div className="flex items-center gap-2">
                             <Wifi className="h-4 w-4" />
                             <span className="font-semibold">
                             {onlineUsers.length} Online
                             </span>
                         </div>
-
                       </div>
+
+                      {isOwner && selectedCommunity && (
+                        <CommunityMenu
+                          isGeneral={selectedCommunity?.isGeneral}
+                          onEdit={() => setEditOpen(true)}
+                          onMembers={() => setMembersOpen(true)}
+                          onDelete={() => setDeleteOpen(true)}
+                        />
+                      )}
+
                     </>
                     )
                   }
@@ -319,6 +341,15 @@ useEffect(() => {
       </ScrollArea>
 
       <CommunityInput />
+
+      <ManageMembersDialog
+        open={membersOpen}
+        onOpenChange={setMembersOpen}
+      />
+
+      <EditChannelDialog open={editOpen} onOpenChange={setEditOpen} />
+
+      <DeleteChannelDialog open={deleteOpen} onOpenChange={setDeleteOpen} />
 
     </Card>
   );

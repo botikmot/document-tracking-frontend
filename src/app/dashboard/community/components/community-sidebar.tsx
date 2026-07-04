@@ -21,9 +21,11 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
+import { CreateChannelDialog } from './create-channel-dialog';
 
 export function CommunitySidebar() {
   const [search, setSearch] = useState('');
+  const [openCreate, setOpenCreate] = useState(false);
 
   const user =
     useAuthStore(
@@ -71,6 +73,7 @@ export function CommunitySidebar() {
     });
   
   return (
+    <>
     <Card className="rounded-[32px] border-0 bg-white shadow-xl dark:bg-[#102418]">
 
       <div className="p-6">
@@ -199,12 +202,14 @@ export function CommunitySidebar() {
 
             </div>
 
-            <Button className="mt-6 h-12 w-full rounded-2xl">
-
+            <Button 
+              onClick={() =>
+                setOpenCreate(true)
+              }
+              className="mt-6 h-12 w-full cursor-pointer rounded-2xl"
+            >
               <Plus className="mr-2 h-5 w-5" />
-
               Create Channel
-
             </Button>
 
           </TabsContent>
@@ -323,7 +328,14 @@ export function CommunitySidebar() {
         </Tabs>
 
       </div>
-
     </Card>
+
+    <CreateChannelDialog
+        open={openCreate}
+        onOpenChange={setOpenCreate}
+      />
+    
+    </>
+
   );
 }

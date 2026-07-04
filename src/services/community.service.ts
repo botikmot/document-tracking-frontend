@@ -16,6 +16,16 @@ class CommunityService {
     return data;
   }
 
+  async getCommunity(
+    id: string,
+  ): Promise<Community> {
+    const response = await api.get(
+      `/communities/${id}`,
+    );
+
+    return response.data;
+  }
+
   async getChatUsers() {
     const { data } =
       await api.get(
@@ -39,23 +49,24 @@ class CommunityService {
 
   async updateCommunity(
     id: string,
-    dto: Partial<CreateCommunityDto>,
-  ) {
-    const { data } =
-      await api.patch(
-        `/communities/${id}`,
-        dto,
-      );
+    data: {
+      name?: string;
+      description?: string;
+      isPrivate?: boolean;
+    },
+  ): Promise<Community> {
+    const response = await api.patch(
+      `/communities/${id}`,
+      data,
+    );
 
-    return data;
+    return response.data;
   }
 
-  async deleteCommunity(
-    id: string,
-  ) {
-    return api.delete(
-      `/communities/${id}`,
-    );
+  deleteCommunity(id: string) {
+      return api.delete(
+          `/communities/${id}`,
+      );
   }
 
   async getMessages(
@@ -100,12 +111,26 @@ class CommunityService {
     );
   }
 
+  async addMembers(
+    id: string,
+    memberIds: string[],
+  ): Promise<Community> {
+    const response = await api.post(
+      `/communities/${id}/members`,
+      {
+        memberIds,
+      },
+    );
+
+    return response.data;
+  }
+
   async removeMember(
     communityId: string,
-    userId: string,
-  ) {
-    return api.delete(
-      `/communities/${communityId}/member/${userId}`,
+    memberId: string,
+  ): Promise<void> {
+    await api.delete(
+      `/communities/${communityId}/member/${memberId}`,
     );
   }
 

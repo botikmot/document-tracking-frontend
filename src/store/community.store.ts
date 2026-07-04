@@ -67,7 +67,27 @@ type CommunityState = {
       name: string;
       description?: string;
       isPrivate: boolean;
+      memberIds?: string[];
     },
+  ) => Promise<void>;
+
+  updateCommunity: (
+      id: string,
+      data: {
+          name?: string;
+          description?: string;
+          isPrivate?: boolean;
+      },
+  ) => Promise<void>;
+
+  addMembers: (
+      id: string,
+      memberIds: string[],
+  ) => Promise<void>;
+
+  removeMember: (
+      communityId: string,
+      memberId: string,
   ) => Promise<void>;
 
   removeCommunity: (
@@ -154,6 +174,95 @@ export const useCommunityStore =
           community,
         ],
       }));
+    },
+
+    updateCommunity: async (
+        id,
+        data,
+    ) => {
+
+        const updated =
+            await communityService.updateCommunity(
+                id,
+                data,
+            );
+
+        set((state) => ({
+
+            communities:
+                state.communities.map((c) =>
+                    c.id === id
+                        ? updated
+                        : c
+                ),
+
+            selectedCommunity:
+                state.selectedCommunity?.id === id
+                    ? updated
+                    : state.selectedCommunity,
+
+        }));
+
+    },
+
+    addMembers: async (
+        id,
+        memberIds,
+    ) => {
+
+        const updated =
+            await communityService.addMembers(
+                id,
+                memberIds,
+            );
+
+        set((state) => ({
+
+            communities:
+                state.communities.map((c) =>
+                    c.id === id
+                        ? updated
+                        : c
+                ),
+
+            selectedCommunity:
+                state.selectedCommunity?.id === id
+                    ? updated
+                    : state.selectedCommunity,
+
+        }));
+
+    },
+
+    removeMember: async (
+        communityId,
+        memberId,
+    ) => {
+
+        await communityService.removeMember(
+            communityId,
+            memberId,
+        );
+
+        const updated =
+            await communityService.getCommunity(
+                communityId,
+            );
+
+        set((state) => ({
+
+            communities:
+                state.communities.map((c) =>
+                    c.id === communityId
+                        ? updated
+                        : c
+                ),
+
+            selectedCommunity:
+                updated,
+
+        }));
+
     },
 
     removeCommunity: async (
