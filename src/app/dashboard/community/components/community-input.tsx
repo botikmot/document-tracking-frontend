@@ -54,7 +54,7 @@ export function CommunityInput() {
 
       <div className="flex items-end gap-4">
 
-        <Button
+        {/* <Button
           size="icon"
           variant="ghost"
           className="rounded-2xl"
@@ -68,7 +68,7 @@ export function CommunityInput() {
           className="rounded-2xl"
         >
           <Paperclip className="h-5 w-5" />
-        </Button>
+        </Button> */}
 
         <Textarea
           disabled={!selectedCommunity}

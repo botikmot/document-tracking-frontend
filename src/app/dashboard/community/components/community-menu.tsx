@@ -37,6 +37,7 @@ export function CommunityMenu({
           size="icon"
           variant="ghost"
           className="
+            cursor-pointer
             h-10
             w-10
             rounded-xl

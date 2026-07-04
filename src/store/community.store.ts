@@ -160,20 +160,26 @@ export const useCommunityStore =
         });
     },
 
-    createCommunity: async (
-      data,
-    ) => {
+    createCommunity: async (data) => {
       const community =
-        await communityService.createCommunity(
-          data,
+        await communityService.createCommunity(data);
+
+      await get().fetchCommunities();
+
+      const created =
+        get().communities.find(
+          (c) => c.id === community.id,
         );
 
-      set((state) => ({
-        communities: [
-          ...state.communities,
-          community,
-        ],
-      }));
+      if (created) {
+        set({
+          selectedCommunity: created,
+        });
+
+        await get().fetchMessages(
+          created.id,
+        );
+      }
     },
 
     updateCommunity: async (
@@ -265,19 +271,29 @@ export const useCommunityStore =
 
     },
 
-    removeCommunity: async (
-      id,
-    ) => {
-      await communityService.deleteCommunity(
-        id,
+    removeCommunity: async (id) => {
+      await communityService.deleteCommunity(id);
+
+      const state = get();
+
+      const communities = state.communities.filter(
+        (c) => c.id !== id,
       );
 
-      set((state) => ({
-        communities:
-          state.communities.filter(
-            (c) => c.id !== id,
-          ),
-      }));
+      const general =
+        communities.find((c) => c.isGeneral) ??
+        communities[0];
+
+      set({
+        communities,
+        selectedCommunity: general,
+      });
+
+      if (general) {
+        await get().fetchMessages(
+          general.id,
+        );
+      }
     },
 
     selectCommunity: async (
