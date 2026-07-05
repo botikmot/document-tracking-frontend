@@ -16,6 +16,7 @@ import {
   LogOut,
   FileText,
   ChartColumn,
+  MessageSquare,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -27,11 +28,20 @@ import {
   AvatarImage,
 } from '@/components/ui/avatar';
 import { useNotificationStore } from '@/store/notification.store';
+import { useCommunityStore } from '@/store/community.store';
 
 
 export function SidebarContent() {
 
-    const pathname =
+  const communities = useCommunityStore(
+    (state) => state.communities,
+  );
+
+  const chatUsers = useCommunityStore(
+    (state) => state.chatUsers,
+  );
+
+  const pathname =
     usePathname();
 
   const user =
@@ -83,6 +93,11 @@ export function SidebarContent() {
       icon: Clock3,
     },
     {
+      label: 'Community',
+      href: '/dashboard/community',
+      icon: MessageSquare,
+    },
+    {
       label: 'Archived',
       href:
         '/dashboard/archived',
@@ -107,6 +122,19 @@ export function SidebarContent() {
       (state) =>
         state.unreadCounts,
     );
+
+  const totalCommunityUnread = communities.reduce(
+    (sum, community) => sum + (community.unreadCount ?? 0),
+    0,
+  );
+
+  const totalDirectUnread = chatUsers.reduce(
+    (sum, user) => sum + (user.unreadCount ?? 0),
+    0,
+  );
+
+  const totalChatUnread =
+    totalCommunityUnread + totalDirectUnread;
 
    return (
     <>
@@ -238,6 +266,16 @@ export function SidebarContent() {
                         : unreadCounts.ROUTED}
                     </span>
                 )}
+
+                {menu.href === '/dashboard/community' &&
+                  totalChatUnread > 0 && (
+                    <span className="ml-auto flex h-6 min-w-6 items-center justify-center rounded-full bg-red-500 px-2 text-xs font-bold text-white">
+                      {totalChatUnread > 99
+                        ? '99+'
+                        : totalChatUnread}
+                    </span>
+                )}
+
               </Link>
             );
           })}

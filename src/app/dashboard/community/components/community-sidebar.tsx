@@ -45,6 +45,11 @@ export function CommunitySidebar() {
     onlineUsers.map((u) => u.userId),
   );
 
+  const channelUnread = communities.reduce(
+    (total, community) => total + (community.unreadCount ?? 0),
+    0,
+  );
+
   const sortedUsers = chatUsers
     .filter(
       (member) => member.id !== user?.userId,
@@ -71,6 +76,11 @@ export function CommunitySidebar() {
         )
       );
     });
+
+  const directUnread = sortedUsers.reduce(
+    (total, user) => total + (user.unreadCount ?? 0),
+    0,
+  );
   
   return (
     <>
@@ -97,28 +107,73 @@ export function CommunitySidebar() {
           className="w-full"
         >
 
-          <TabsList className="grid w-full grid-cols-2 rounded-2xl">
+          <TabsList className="grid w-full grid-cols-2 rounded-2xl bg-[#163122] dark:bg-[#0d1d13]">
+            <TabsTrigger
+              value="channels"
+              className="
+                relative cursor-pointer rounded-xl
+                data-[state=active]:bg-gradient-to-r
+                data-[state=active]:from-green-600
+                data-[state=active]:to-emerald-600
+                data-[state=active]:text-white
+                data-[state=active]:shadow-lg
+                text-slate-300
+                hover:text-white
+                transition-all
+              "
+            >
+              <span>Channels</span>
 
-            <TabsTrigger className="cursor-pointer" value="channels">
-
-              Channels
-
-              <Badge className="ml-2">
+              <Badge
+                variant="secondary"
+                className="ml-2 rounded-full"
+              >
                 {communities.length}
               </Badge>
 
+              {channelUnread > 0 && (
+                <>
+                  {/* Pulse */}
+                  <span className="absolute right-2 top-2 flex h-3 w-3">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                    <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500" />
+                  </span>
+                </>
+              )}
             </TabsTrigger>
 
-            <TabsTrigger className="cursor-pointer" value="dm">
+            <TabsTrigger
+              value="dm"
+              className="
+                relative cursor-pointer rounded-xl
+                data-[state=active]:bg-gradient-to-r
+                data-[state=active]:from-green-600
+                data-[state=active]:to-emerald-600
+                data-[state=active]:text-white
+                data-[state=active]:shadow-lg
+                text-slate-300
+                hover:text-white
+                transition-all
+              "
+            >
+              <span>Direct</span>
 
-              Direct
-
-              <Badge className="ml-2">
+              <Badge
+                variant="secondary"
+                className="ml-2 rounded-full"
+              >
                 {sortedUsers.length}
               </Badge>
 
+              {directUnread > 0 && (
+                <>
+                  <span className="absolute right-2 top-2 flex h-3 w-3">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                    <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500" />
+                  </span>
+                </>
+              )}
             </TabsTrigger>
-
           </TabsList>
 
           {/* CHANNEL TAB */}
@@ -248,11 +303,25 @@ export function CommunitySidebar() {
 
             </div>
 
-            <Button 
-              onClick={() =>
-                setOpenCreate(true)
-              }
-              className="mt-6 h-12 w-full cursor-pointer rounded-2xl"
+            <Button
+              onClick={() => setOpenCreate(true)}
+              className="
+                mt-6 h-12 w-full cursor-pointer rounded-2xl
+                bg-gradient-to-r from-green-600 to-emerald-600
+                text-white shadow-lg
+                transition-all duration-200
+                hover:from-green-700 hover:to-emerald-700
+                hover:shadow-xl hover:scale-[1.02]
+                active:scale-[0.98]
+                dark:from-[#1f7a3d]
+                dark:to-[#2d9c5d]
+                dark:hover:from-[#236b3b]
+                dark:hover:to-[#2a8c56]
+                focus-visible:ring-2
+                focus-visible:ring-green-500/40
+                focus-visible:ring-offset-2
+                dark:focus-visible:ring-offset-[#102418]
+              "
             >
               <Plus className="mr-2 h-5 w-5" />
               Create Channel

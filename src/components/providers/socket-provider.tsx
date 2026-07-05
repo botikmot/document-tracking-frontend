@@ -51,7 +51,7 @@ export function SocketProvider({
       return;
     }
     socket.connect();
-    socket.emit('join', userId);
+    //socket.emit('join', userId);
     socket.emit('register', userId);
     console.log('SOCKET CONNECTED');
 
@@ -100,6 +100,12 @@ export function SocketProvider({
         if (current?.id === communityId) {
           return;
         }
+
+        console.log(
+          'community-unread received',
+          communityId,
+          unreadCount,
+        );
 
         setUnread(
           communityId,
