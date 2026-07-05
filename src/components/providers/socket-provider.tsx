@@ -36,6 +36,11 @@ export function SocketProvider({
       (state) => state.incrementUnread,
     );
 
+  const setUnread =
+    useCommunityStore(
+      (state) => state.setUnread,
+    );
+
   const clearUnread =
     useCommunityStore(
       (state) => state.clearUnread,
@@ -87,7 +92,7 @@ export function SocketProvider({
 
     socket.on(
       'community-unread',
-      ({ communityId }) => {
+      ({ communityId, unreadCount }) => {
         const current =
           useCommunityStore.getState()
             .selectedCommunity;
@@ -96,8 +101,9 @@ export function SocketProvider({
           return;
         }
 
-        incrementUnread(
+        setUnread(
           communityId,
+          unreadCount,
         );
       },
     );

@@ -285,85 +285,68 @@ export function CommunitySidebar() {
                 .filter((member) =>
                   `${member.firstName} ${member.lastName}`
                     .toLowerCase()
-                    .includes(
-                      search.toLowerCase(),
-                    ),
+                    .includes(search.toLowerCase()),
                 )
                 .map((member) => {
-
-                  const isOnline =
-                    onlineUserIds.has(
-                      member.id,
-                    );
+                  const isOnline = onlineUserIds.has(member.id);
 
                   const office =
-                    member.offices?.[0]
-                      ?.office?.officeName ??
+                    member.offices?.[0]?.office?.officeName ??
                     'No Office Assigned';
 
                   return (
-
                     <button
                       key={member.id}
                       onClick={() =>
-                        startDirectConversation(
-                          member.id,
-                        )
+                        startDirectConversation(member.id)
                       }
-                      className="flex w-full items-center rounded-2xl p-3 transition hover:bg-slate-100 dark:hover:bg-[#163122]"
+                      className="flex w-full cursor-pointer items-center justify-between rounded-2xl p-3 transition hover:bg-slate-100 dark:hover:bg-[#163122]"
                     >
+                      {/* Left */}
+                      <div className="flex items-center gap-3">
+                        <div className="relative">
+                          {member.profileImageUrl ? (
+                            <img
+                              src={member.profileImageUrl}
+                              className="h-10 w-10 rounded-full object-cover"
+                              alt={`${member.firstName} ${member.lastName}`}
+                            />
+                          ) : (
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-emerald-600 text-sm font-bold text-white">
+                              {member.firstName[0]}
+                              {member.lastName[0]}
+                            </div>
+                          )}
 
-                      <div className="relative">
-
-                        {member.profileImageUrl ? (
-
-                          <img
-                            src={
-                              member.profileImageUrl
-                            }
-                            className="h-10 w-10 rounded-full object-cover"
+                          <span
+                            className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-[#102418] ${
+                              isOnline
+                                ? 'bg-green-500'
+                                : 'bg-gray-400'
+                            }`}
                           />
+                        </div>
 
-                        ) : (
+                        <div className="text-left">
+                          <p className="font-semibold text-[#102418] dark:text-white">
+                            {member.firstName} {member.lastName}
+                          </p>
 
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-emerald-600 text-sm font-bold text-white">
-
-                            {member.firstName[0]}
-                            {member.lastName[0]}
-
-                          </div>
-
-                        )}
-
-                        <span
-                          className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-[#102418] ${
-                            isOnline
-                              ? 'bg-green-500'
-                              : 'bg-gray-400'
-                          }`}
-                        />
-
+                          <p className="text-xs text-slate-500">
+                            {office}
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="ml-3 text-left">
-
-                        <p className="font-semibold text-[#102418] dark:text-white">
-
-                          {member.firstName}{' '}
-                          {member.lastName}
-
-                        </p>
-
-                        <p className="text-xs text-slate-500">
-
-                          {office}
-
-                        </p>
-
-                      </div>
-
+                      {/* Right */}
+                      {member.unreadCount > 0 && (
+                        <div className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-red-500 px-2 text-xs font-bold text-white">
+                          {member.unreadCount > 99
+                            ? '99+'
+                            : member.unreadCount}
+                        </div>
+                      )}
                     </button>
-
                   );
                 })}
 

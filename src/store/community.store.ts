@@ -15,6 +15,8 @@ type ChatUser = {
   profileImageUrl?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   offices?: any;
+  directCommunityId?: string | null;
+  unreadCount: number;
 };
 
 type CommunityState = {
@@ -109,6 +111,11 @@ type CommunityState = {
 
   clearUnread: (
     communityId: string,
+  ) => void;
+
+  setUnread: (
+    communityId: string,
+    unreadCount: number,
   ) => void;
   
 };
@@ -485,6 +492,12 @@ export const useCommunityStore =
           targetUserId,
         );
 
+      await communityService.markAsRead(
+        community.id,
+      );
+
+      get().clearUnread(community.id);
+
       set({
         selectedCommunity: community,
       });
@@ -532,6 +545,39 @@ export const useCommunityStore =
                 unreadCount: 0,
               }
             : community,
+        ),
+
+        chatUsers: state.chatUsers.map((user) =>
+          user.directCommunityId === communityId
+            ? {
+                ...user,
+                unreadCount: 0,
+              }
+            : user,
+        ),
+      })),
+
+    setUnread: (
+      communityId,
+      unreadCount,
+    ) =>
+      set((state) => ({
+        communities: state.communities.map((community) =>
+          community.id === communityId
+            ? {
+                ...community,
+                unreadCount,
+              }
+            : community,
+        ),
+
+        chatUsers: state.chatUsers.map((user) =>
+          user.directCommunityId === communityId
+            ? {
+                ...user,
+                unreadCount,
+              }
+            : user,
         ),
       })),
     
