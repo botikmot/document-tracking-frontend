@@ -45,6 +45,18 @@ export type CommunityMember = {
   user: User;
 };
 
+export type MessageReaction = {
+  id: string;
+  emoji: string;
+  userId: string;
+
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+};
+
 export type CommunityMessage = {
   id: string;
   message: string;
@@ -55,6 +67,7 @@ export type CommunityMessage = {
   user: User;
   isDeleted: boolean;
   editedAt: string;
+  reactions: MessageReaction[];
 };
 
 export type User = {

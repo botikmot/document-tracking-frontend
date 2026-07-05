@@ -136,6 +136,15 @@ export function SocketProvider({
       deleteMessage,
     );
 
+    socket.on(
+      'reaction-updated',
+      (message) => {
+        useCommunityStore
+          .getState()
+          .updateMessage(message);
+      },
+    );
+
     return () => {
       socket.off(
         'new-message',
@@ -156,6 +165,8 @@ export function SocketProvider({
       socket.off(
         'message-deleted',
       );
+
+      socket.off('reaction-updated');
 
       socket.disconnect();
     };

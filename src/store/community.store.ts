@@ -135,6 +135,11 @@ type CommunityState = {
       id: string,
   ) => Promise<void>;
 
+  toggleReactionApi: (
+      messageId: string,
+      emoji: string,
+  ) => Promise<void>;
+
 };
 
 export const useCommunityStore =
@@ -642,6 +647,18 @@ export const useCommunityStore =
             await communityService.deleteMessage(
                 id,
             );
+        },
+
+        toggleReactionApi: async (
+            messageId,
+            emoji,
+        ) => {
+
+            await communityService.toggleReaction(
+                messageId,
+                emoji,
+            );
+
         },
     
 }));

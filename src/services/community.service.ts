@@ -176,6 +176,18 @@ class CommunityService {
     );
   }
 
+  toggleReaction(
+    messageId: string,
+    emoji: string,
+  ) {
+    return api.post(
+      `/communities/messages/${messageId}/reactions`,
+      {
+        emoji,
+      },
+    );
+  }
+
 
 }
 
