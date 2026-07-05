@@ -84,7 +84,7 @@ export function CommunitySidebar() {
   
   return (
     <>
-    <Card className="rounded-[32px] border-0 bg-white shadow-xl dark:bg-[#102418]">
+    <Card className="rounded-[32px] border-0 py-0 bg-white shadow-xl dark:bg-[#102418]">
 
       <div className="p-6">
 
@@ -199,7 +199,7 @@ export function CommunitySidebar() {
 
             {/* List */}
 
-            <div className="mt-6 h-[340px] space-y-2 overflow-y-auto pr-2">
+            <div className="mt-6 h-[386px] space-y-2 overflow-y-auto pr-2">
 
               {communities
                 .filter((community) =>
@@ -348,7 +348,7 @@ export function CommunitySidebar() {
 
             </div>
 
-            <div className="mt-6 h-[410px] space-y-3 overflow-y-auto pr-2">
+            <div className="mt-6 h-[460px] space-y-3 overflow-y-auto pr-2">
 
               {sortedUsers
                 .filter((member) =>

@@ -156,6 +156,27 @@ class CommunityService {
     return data;
   }
 
+  updateMessage(
+    messageId: string,
+    message: string,
+  ) {
+    return api.patch(
+      `/communities/messages/${messageId}`,
+      {
+        message,
+      },
+    );
+  }
+
+  deleteMessage(
+    messageId: string,
+  ) {
+    return api.delete(
+      `/communities/messages/${messageId}`,
+    );
+  }
+
+
 }
 
 export default new CommunityService();

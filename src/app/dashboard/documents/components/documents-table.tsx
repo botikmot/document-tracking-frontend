@@ -162,6 +162,7 @@ export function DocumentsTable({
 
   const getDeadlineInfo = (
     deadline: string,
+    status?: string,
   ) => {
     if (!deadline) {
       return null;
@@ -177,6 +178,10 @@ export function DocumentsTable({
       now.getTime();
 
     if (diffMs <= 0) {
+      if (status?.toUpperCase() === 'COMPLETED') {
+        return null;
+      }
+
       return {
         text: 'Overdue',
         className:
@@ -278,7 +283,7 @@ export function DocumentsTable({
 
             const deadlineInfo =
               getDeadlineInfo(
-                doc.deadline,
+                doc.deadline, doc.currentStatus?.name
               );
 
             const canUpdate = [

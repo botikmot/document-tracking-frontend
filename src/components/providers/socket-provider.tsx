@@ -46,6 +46,18 @@ export function SocketProvider({
       (state) => state.clearUnread,
     );
 
+  const updateMessage =
+    useCommunityStore(
+      (state) =>
+        state.updateMessage,
+    );
+
+  const deleteMessage =
+    useCommunityStore(
+      (state) =>
+        state.deleteMessage,
+    );
+
   useEffect(() => {
     if (!userId) {
       return;
@@ -114,6 +126,16 @@ export function SocketProvider({
       },
     );
 
+    socket.on(
+      'message-updated',
+      updateMessage,
+    );
+
+    socket.on(
+      'message-deleted',
+      deleteMessage,
+    );
+
     return () => {
       socket.off(
         'new-message',
@@ -126,6 +148,15 @@ export function SocketProvider({
       socket.off(
         'online-users',
       );
+
+      socket.off(
+        'message-updated',
+      );
+
+      socket.off(
+        'message-deleted',
+      );
+
       socket.disconnect();
     };
   }, [userId]);

@@ -53,6 +53,8 @@ export type CommunityMessage = {
   communityId: string;
   userId: string;
   user: User;
+  isDeleted: boolean;
+  editedAt: string;
 };
 
 export type User = {

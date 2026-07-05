@@ -117,7 +117,24 @@ type CommunityState = {
     communityId: string,
     unreadCount: number,
   ) => void;
+
+  updateMessage: (
+    message: CommunityMessage,
+  ) => void;
+
+  deleteMessage: (
+    message: CommunityMessage,
+  ) => void;
   
+  updateMessageApi: (
+      id: string,
+      message: string,
+  ) => Promise<void>;
+
+  deleteMessageApi: (
+      id: string,
+  ) => Promise<void>;
+
 };
 
 export const useCommunityStore =
@@ -580,6 +597,51 @@ export const useCommunityStore =
             : user,
         ),
       })),
-    
 
-  }));
+      updateMessage: (
+        updatedMessage,
+      ) =>
+
+        set((state) => ({
+          messages:
+            state.messages.map((message) =>
+              message.id ===
+              updatedMessage.id
+                ? updatedMessage
+                : message,
+            ),
+        })),
+
+        deleteMessage: (
+          deletedMessage,
+        ) =>
+          set((state) => ({
+            messages:
+              state.messages.map((message) =>
+                message.id ===
+                deletedMessage.id
+                  ? deletedMessage
+                  : message,
+              ),
+          })),
+
+      updateMessageApi: async (
+            id,
+            message,
+        ) => {
+
+            await communityService.updateMessage(
+                id,
+                message,
+            );
+        },
+
+        deleteMessageApi: async (
+            id,
+        ) => {
+            await communityService.deleteMessage(
+                id,
+            );
+        },
+    
+}));

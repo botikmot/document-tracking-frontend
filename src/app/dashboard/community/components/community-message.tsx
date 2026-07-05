@@ -1,13 +1,21 @@
 'use client';
 
-import { cn } from '@/lib/utils';
-import { timeAgo } from '@/lib/date';
-import type { CommunityMessage } from '@/types/community';
+import { useState } from 'react';
+
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from '@/components/ui/avatar';
+
+import { cn } from '@/lib/utils';
+
+import { timeAgo } from '@/lib/date';
+
+import { MessageActions } from './message-actions';
+import { EditMessageDialog } from './edit-message-dialog';
+import { DeleteMessageDialog } from './delete-message-dialog';
+import type { CommunityMessage } from '@/types/community';
 
 type Props = {
   message: CommunityMessage;
@@ -19,79 +27,202 @@ export function CommunityMessage({
   currentUserId,
 }: Props) {
 
-    const isMine = message.userId === currentUserId;
-    const initials = `${message.user.firstName.charAt(0)}${message.user.lastName.charAt(0)}`;
-    const office = message.user.offices?.[0]?.office?.officeName ?? 'DENR Caraga';
+  const [editOpen, setEditOpen] =
+    useState(false);
 
-    //console.log('chat-message:',message)
+  const [deleteOpen, setDeleteOpen] =
+    useState(false);
+
+  const isMine =
+    message.userId === currentUserId;
+
+  const initials =
+    `${message.user.firstName.charAt(0)}${message.user.lastName.charAt(0)}`;
+
+  const office =
+    message.user.offices?.[0]?.office
+      ?.officeName ??
+    'DENR Caraga';
 
   return (
-    <div
-      className={cn(
-        'flex gap-4',
-        isMine && 'justify-end',
-      )}
-    >
-      {!isMine && (
-        <Avatar className="h-11 w-11">
-          <AvatarImage src={message.user.profileImageUrl ?? ''} />
-
-          <AvatarFallback className="bg-gradient-to-br from-green-600 to-emerald-600 text-white font-bold">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-      )}
+    <>
 
       <div
         className={cn(
-          'max-w-[75%]',
-          isMine && 'order-first',
+          'group flex gap-4',
+          isMine &&
+            'justify-end',
         )}
       >
-        {!isMine && (
-          <>
-            <p className="font-semibold text-[#102418] dark:text-white">
-              {message.user.firstName} {message.user.lastName}
-            </p>
 
-            <p className="mb-2 text-xs text-slate-500">
-              {office}
-            </p>
-          </>
+        {!isMine && (
+          <Avatar className="h-11 w-11">
+
+            <AvatarImage
+              src={
+                message.user.profileImageUrl ??
+                ''
+              }
+            />
+
+            <AvatarFallback className="bg-gradient-to-br from-green-600 to-emerald-600 font-bold text-white">
+
+              {initials}
+
+            </AvatarFallback>
+
+          </Avatar>
         )}
 
         <div
           className={cn(
-            'rounded-3xl px-5 py-4 shadow',
-            isMine
-              ? 'bg-gradient-to-br from-green-600 to-emerald-600 text-white'
-              : 'bg-white dark:bg-[#163122]',
+            'relative max-w-[75%]',
+            isMine &&
+              'order-first',
           )}
         >
-          <p className="leading-7">
-            {message.message}
-          </p>
+
+          {!isMine && (
+            <>
+              <p className="font-semibold text-[#102418] dark:text-white">
+
+                {message.user.firstName}{' '}
+                {message.user.lastName}
+
+              </p>
+
+              <p className="mb-2 text-xs text-slate-500">
+
+                {office}
+
+              </p>
+            </>
+          )}
+
+          {isMine &&
+            !message.isDeleted && (
+
+              <div
+                className="
+                  absolute
+                  -right-2
+                  -top-2
+                  opacity-0
+                  transition-opacity
+                  group-hover:opacity-100
+                "
+              >
+
+                <MessageActions
+                  onEdit={() =>
+                    setEditOpen(
+                      true,
+                    )
+                  }
+                  onDelete={() =>
+                    setDeleteOpen(
+                      true,
+                    )
+                  }
+                />
+
+              </div>
+
+            )}
+
+          <div
+            className={cn(
+              'rounded-3xl px-5 py-4 shadow',
+
+              message.isDeleted
+                ? 'bg-slate-100 italic text-slate-500 dark:bg-[#1B2D22] dark:text-slate-400'
+
+                : isMine
+
+                  ? 'bg-gradient-to-br from-green-600 to-emerald-600 text-white'
+
+                  : 'bg-white dark:bg-[#163122]',
+            )}
+          >
+
+            <p className="leading-7">
+
+              {message.message}
+
+            </p>
+
+          </div>
+
+          <div
+            className={cn(
+              'mt-2 flex items-center gap-2 text-xs text-slate-500',
+
+              isMine &&
+                'justify-end',
+            )}
+          >
+
+            <span>
+
+              {timeAgo(
+                message.createdAt,
+              )}
+
+            </span>
+
+            {message.editedAt &&
+              !message.isDeleted && (
+
+                <span className="italic">
+
+                  edited
+
+                </span>
+
+              )}
+
+          </div>
+
         </div>
 
-        <p
-          className={cn(
-            'mt-2 text-xs text-slate-500',
-            isMine && 'text-right',
-          )}
-        >
-          {timeAgo(message.createdAt)}
-        </p>
+        {isMine && (
+          <Avatar className="h-11 w-11">
+
+            <AvatarImage
+              src={
+                message.user.profileImageUrl ??
+                ''
+              }
+            />
+
+            <AvatarFallback className="bg-gradient-to-br from-green-600 to-emerald-600 font-bold text-white">
+
+              {initials}
+
+            </AvatarFallback>
+
+          </Avatar>
+        )}
+
       </div>
 
-      {isMine && (
-        <Avatar className="h-11 w-11">
-          <AvatarImage src={message.user.profileImageUrl ?? ''} />
+      <EditMessageDialog
+        key={message.id + String(editOpen)}
+        open={editOpen}
+        onOpenChange={
+          setEditOpen
+        }
+        message={message}
+      />
 
-          <AvatarFallback className="bg-gradient-to-br from-green-600 to-emerald-600 text-white font-bold">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-      )}
-    </div>
+      <DeleteMessageDialog
+        open={deleteOpen}
+        onOpenChange={
+          setDeleteOpen
+        }
+        message={message}
+      />
+
+    </>
   );
 }

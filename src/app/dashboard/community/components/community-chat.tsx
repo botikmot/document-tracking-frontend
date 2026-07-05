@@ -173,7 +173,7 @@ useEffect(() => {
   ]);
 
   return (
-    <Card className="flex h-[calc(100vh-240px)] gap-0 flex-col overflow-hidden rounded-[32px] border-0 bg-white shadow-xl dark:bg-[#102418]">
+    <Card className="flex h-[calc(100vh-240px)] gap-0 flex-col py-0 overflow-hidden rounded-[32px] border-0 bg-white shadow-xl dark:bg-[#102418]">
 
       {/* Header */}
 
@@ -205,32 +205,33 @@ useEffect(() => {
                 <Hash className="h-6 w-6 text-green-600"/>
               }
 
-              <h2 className="text-2xl capitalize font-black text-[#102418] dark:text-white">
-                {
-                  isDirect
-                  ?
-                  `${otherMember?.user.firstName}
-                  ${otherMember?.user.lastName}`
-                  :
-                  selectedCommunity?.name
-                }
-              </h2>
+              <div className="py-0">
+
+                <h2 className="text-2xl capitalize font-black text-[#102418] dark:text-white">
+                  {
+                    isDirect
+                    ?
+                    `${otherMember?.user.firstName}
+                    ${otherMember?.user.lastName}`
+                    :
+                    selectedCommunity?.name
+                  }
+                </h2>
+                  <p className="text-sm text-slate-500">
+                    {
+                      isDirect
+                      ?
+                      otherMember?.user?.offices?.[0]?.office?.officeName
+
+                      ??
+                      "DENR Caraga"
+                      :
+                      selectedCommunity?.description
+                    }
+                  </p>
+              </div>
 
             </div>
-
-            <p className="mt-2 text-sm text-slate-500">
-              {
-                isDirect
-                ?
-                otherMember?.user?.offices?.[0]?.office?.officeName
-
-                ??
-                "DENR Caraga"
-                :
-                selectedCommunity?.description
-              }
-            </p>
-
           </div>
 
           <div className="flex gap-3">    
