@@ -30,7 +30,7 @@ import {
   Eye,
   FileText,
   FileSpreadsheet,
-  FileImage,
+  //FileImage,
   FileArchive,
 } from 'lucide-react';
 
@@ -451,10 +451,6 @@ export function CommunityMessage({
 
                 {groupedReactions.map((reaction) => {
 
-                  const reactedByMe =
-                    reaction.users.some(
-                      (u) => u.id === currentUserId,
-                    );
 
                   return (
 

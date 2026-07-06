@@ -31,20 +31,20 @@ export function SocketProvider({
         (s) => s.updateUnread,
     ); */
 
-  const incrementUnread =
+  /* const incrementUnread =
     useCommunityStore(
       (state) => state.incrementUnread,
-    );
+    ); */
 
   const setUnread =
     useCommunityStore(
       (state) => state.setUnread,
     );
 
-  const clearUnread =
+  /* const clearUnread =
     useCommunityStore(
       (state) => state.clearUnread,
-    );
+    ); */
 
   const updateMessage =
     useCommunityStore(
@@ -170,7 +170,7 @@ export function SocketProvider({
 
       socket.disconnect();
     };
-  }, [userId]);
+  }, [addMessage, deleteMessage, setOnlineUsers, setUnread, updateMessage, userId]);
 
    // ---------------------------------------
   // Join Community

@@ -419,7 +419,7 @@ export function DocumentsTable({
                       </div>
                     )}
 
-                    {type === 'pending' && (
+                    {(type === 'pending' || type === 'archived') && (
                       <DropdownMenu>
                         <DropdownMenuTrigger 
                           asChild
