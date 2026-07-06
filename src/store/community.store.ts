@@ -140,6 +140,10 @@ type CommunityState = {
       emoji: string,
   ) => Promise<void>;
 
+  sendMessage: (
+    formData: FormData,
+  ) => Promise<void>;
+
 };
 
 export const useCommunityStore =
@@ -660,5 +664,23 @@ export const useCommunityStore =
             );
 
         },
+
+      sendMessage: async (
+        formData,
+      ) => {
+
+        const community =
+          get().selectedCommunity;
+
+        if (!community) {
+          return;
+        }
+
+        await communityService.sendMessage(
+          community.id,
+          formData,
+        );
+
+      },
     
 }));

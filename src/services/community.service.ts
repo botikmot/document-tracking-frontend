@@ -188,6 +188,25 @@ class CommunityService {
     );
   }
 
+  async sendMessage(
+    communityId: string,
+    formData: FormData,
+  ) {
+    const response =
+      await api.post(
+        `/communities/${communityId}/messages`,
+        formData,
+        {
+          headers: {
+            'Content-Type':
+              'multipart/form-data',
+          },
+        },
+      );
+
+    return response.data;
+  }
+
 
 }
 

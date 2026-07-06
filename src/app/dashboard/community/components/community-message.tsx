@@ -18,12 +18,21 @@ import { DeleteMessageDialog } from './delete-message-dialog';
 import type { CommunityMessage } from '@/types/community';
 import { useCommunityStore } from '@/store/community.store';
 import { CommunityEmojiPicker } from '@/components/ui/emoji-picker';
+import { Button } from '@/components/ui/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  Download,
+  Eye,
+  FileText,
+  FileSpreadsheet,
+  FileImage,
+  FileArchive,
+} from 'lucide-react';
 
 type Props = {
   message: CommunityMessage;
@@ -92,6 +101,26 @@ export function CommunityMessage({
         >,
       ),
     );
+
+ const attachments = message.attachments ?? [];
+
+  const formatFileSize = (
+    bytes: number,
+  ) => {
+    if (bytes < 1024)
+      return `${bytes} B`;
+
+    if (bytes < 1024 * 1024)
+      return `${(
+        bytes / 1024
+      ).toFixed(1)} KB`;
+
+    return `${(
+      bytes /
+      1024 /
+      1024
+    ).toFixed(1)} MB`;
+  };
 
   return (
     <>
@@ -199,6 +228,190 @@ export function CommunityMessage({
               {message.message}
 
             </p>
+
+            {attachments.length > 0 && (
+
+              <div className="mt-4 space-y-3">
+
+                {attachments.map((attachment) => {
+
+                  const isImage =
+                    attachment.mimeType.startsWith('image/');
+
+                  const isPdf =
+                    attachment.mimeType ===
+                    'application/pdf';
+
+                  const isExcel =
+                    attachment.mimeType.includes(
+                      'spreadsheet',
+                    ) ||
+                    attachment.mimeType.includes(
+                      'excel',
+                    );
+
+                  const isWord =
+                    attachment.mimeType.includes(
+                      'word',
+                    );
+
+                  const fileUrl = `${process.env.NEXT_PUBLIC_URL}${attachment.path}`;
+
+                  return (
+
+                    <div
+                      key={attachment.id}
+                    >
+
+                      {/* IMAGE */}
+
+                      {isImage ? (
+
+                        <a
+                          href={fileUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+
+                          <img
+                            src={fileUrl}
+                            alt={attachment.originalName}
+                            className="
+                              max-h-80
+                              rounded-2xl
+                              border
+                              shadow-lg
+                              transition
+                              hover:scale-[1.02]
+                              hover:shadow-xl
+                            "
+                          />
+
+                        </a>
+
+                      ) : (
+
+                        <div
+                          className="
+                            flex
+                            items-center
+                            justify-between
+                            rounded-2xl
+                            border
+                            border-slate-200
+                            bg-white/80
+                            p-4
+                            dark:border-[#2D4A39]
+                            dark:bg-[#163122]
+                          "
+                        >
+
+                          <div className="flex items-center gap-4">
+
+                            <div
+                              className="
+                                rounded-xl
+                                bg-green-100
+                                p-3
+                                dark:bg-[#21432F]
+                              "
+                            >
+
+                              {isPdf ? (
+
+                                <FileText className="h-7 w-7 text-red-500" />
+
+                              ) : isExcel ? (
+
+                                <FileSpreadsheet className="h-7 w-7 text-green-600" />
+
+                              ) : isWord ? (
+
+                                <FileText className="h-7 w-7 text-blue-600" />
+
+                              ) : (
+
+                                <FileArchive className="h-7 w-7 text-slate-500" />
+
+                              )}
+
+                            </div>
+
+                            <div>
+
+                              <p
+                                className="
+                                  max-w-[220px]
+                                  truncate
+                                  font-semibold
+                                "
+                              >
+                                {attachment.originalName}
+                              </p>
+
+                              <p className="text-xs text-slate-500">
+
+                                {formatFileSize(
+                                  attachment.fileSize,
+                                )}
+
+                              </p>
+
+                            </div>
+
+                          </div>
+
+                          <div className="flex gap-2">
+
+                            <Button
+                              asChild
+                              variant="ghost"
+                              size="icon"
+                            >
+
+                              <a
+                                href={fileUrl}
+                                target="_blank"
+                              >
+
+                                <Eye className="h-4 w-4" />
+
+                              </a>
+
+                            </Button>
+
+                            <Button
+                              asChild
+                              variant="ghost"
+                              size="icon"
+                            >
+
+                              <a
+                                href={fileUrl}
+                                download
+                              >
+
+                                <Download className="h-4 w-4" />
+
+                              </a>
+
+                            </Button>
+
+                          </div>
+
+                        </div>
+
+                      )}
+
+                    </div>
+
+                  );
+
+                })}
+
+              </div>
+
+            )}
 
             {!isMine && (
               <div

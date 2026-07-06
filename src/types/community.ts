@@ -57,6 +57,16 @@ export type MessageReaction = {
   };
 };
 
+export type CommunityAttachment = {
+  id: string;
+  fileName: string;
+  originalName: string;
+  mimeType: string;
+  fileSize: number;
+  path: string;
+  createdAt: string;
+};
+
 export type CommunityMessage = {
   id: string;
   message: string;
@@ -68,6 +78,7 @@ export type CommunityMessage = {
   isDeleted: boolean;
   editedAt: string;
   reactions: MessageReaction[];
+  attachments: CommunityAttachment[];
 };
 
 export type User = {
