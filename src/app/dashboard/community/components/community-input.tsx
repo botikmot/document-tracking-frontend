@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { socket } from '@/lib/socket';
 
 import {
   Paperclip,
@@ -13,8 +14,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { useCommunityStore } from '@/store/community.store';
 import EmojiPicker from 'emoji-picker-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAuthStore } from '@/store/auth.store';
 
 export function CommunityInput() {
+
+  const user =
+    useAuthStore(
+      (state) => state.user,
+    );
 
   const textareaRef =
     useRef<HTMLTextAreaElement>(null);
@@ -23,6 +30,10 @@ export function CommunityInput() {
     useCommunityStore(
       (state) => state.selectedCommunity,
     );
+
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const isTypingRef = useRef(false);
 
   const sendMessageStore =
     useCommunityStore(
@@ -34,6 +45,60 @@ export function CommunityInput() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachment, setAttachment] = useState<File | null>(null);
+
+  const handleTyping = () => {
+
+    if (!selectedCommunity || !user) {
+      return;
+    }
+
+    // Send typing-start only once
+    if (!isTypingRef.current) {
+
+      isTypingRef.current = true;
+
+      socket.emit(
+        'typing-start',
+        {
+          communityId:
+            selectedCommunity.id,
+          userId:
+            user.userId,
+          firstName:
+            user.firstName,
+          lastName:
+            user.lastName,
+        },
+      );
+
+    }
+
+    // Reset timer
+    if (typingTimeoutRef.current) {
+      clearTimeout(
+        typingTimeoutRef.current,
+      );
+    }
+
+    typingTimeoutRef.current =
+      setTimeout(() => {
+
+        socket.emit(
+          'typing-stop',
+          {
+            communityId:
+              selectedCommunity.id,
+            userId:
+              user.userId,
+          },
+        );
+
+        isTypingRef.current = false;
+
+      }, 1000);
+
+  };
+
 
   async function sendMessage() {
     if (
@@ -60,6 +125,26 @@ export function CommunityInput() {
           attachment,
         );
       }
+
+      if (
+            isTypingRef.current &&
+            selectedCommunity
+          ) {
+
+            socket.emit(
+              'typing-stop',
+              {
+                communityId:
+                  selectedCommunity.id,
+                userId:
+                  user?.userId,
+              },
+            );
+
+            isTypingRef.current = false;
+
+          }
+
 
       await sendMessageStore(
         formData,
@@ -107,6 +192,34 @@ export function CommunityInput() {
       }
     }
   };
+
+  useEffect(() => {
+
+    return () => {
+
+      if (
+        isTypingRef.current &&
+        selectedCommunity
+      ) {
+
+        socket.emit(
+          'typing-stop',
+          {
+            communityId:
+              selectedCommunity.id,
+            userId:
+              user?.userId,
+          },
+        );
+
+      }
+
+    };
+
+  }, [
+    selectedCommunity,
+    user,
+  ]);
 
   return (
     <div className="border-t border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-[#102418]">
@@ -226,9 +339,12 @@ export function CommunityInput() {
           placeholder="Type your message..."
           value={message}
           rows={1}
-          onChange={(e) =>
-            setMessage(e.target.value)
-          }
+          onChange={(e) => {
+            setMessage(
+              e.target.value,
+            );
+            handleTyping();
+          }}
           onKeyDown={(e) => {
             if (
               e.key === 'Enter' &&

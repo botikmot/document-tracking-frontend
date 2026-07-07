@@ -25,6 +25,7 @@ import { CommunityMenu } from './community-menu';
 import { ManageMembersDialog } from './manage-members-dialog';
 import { EditChannelDialog } from './edit-channel-dialog';
 import { DeleteChannelDialog } from './delete-channel-dialog';
+import { TypingIndicator } from './TypingIndicator';
 
 export function CommunityChat() {
   const bottomRef =
@@ -341,6 +342,7 @@ useEffect(() => {
 
       </ScrollArea>
 
+      <TypingIndicator />
       <CommunityInput />
 
       <ManageMembersDialog

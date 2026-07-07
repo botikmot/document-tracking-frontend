@@ -19,6 +19,13 @@ type ChatUser = {
   unreadCount: number;
 };
 
+export type TypingUser = {
+  communityId: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+};
+
 type CommunityState = {
   communities: Community[];
 
@@ -33,6 +40,18 @@ type CommunityState = {
   chatUsers: ChatUser[];
 
   loading: boolean;
+
+  typingUsers: TypingUser[];
+
+  addTypingUser: (
+    user: TypingUser,
+  ) => void;
+
+  removeTypingUser: (
+    userId: string,
+  ) => void;
+
+  clearTypingUsers: () => void;
 
   fetchCommunities: () => Promise<void>;
 
@@ -157,6 +176,7 @@ export const useCommunityStore =
     shouldScrollToBottom: true,
     onlineUsers: [],
     loading: false,
+    typingUsers: [],
 
     // ======================================
     // COMMUNITIES
@@ -682,5 +702,42 @@ export const useCommunityStore =
         );
 
       },
+
+    addTypingUser: (user) =>
+      set((state) => {
+
+        const exists =
+          state.typingUsers.some(
+            (u) => u.userId === user.userId,
+          );
+
+        if (exists) {
+          return state;
+        }
+
+        return {
+          typingUsers: [
+            ...state.typingUsers,
+            user,
+          ],
+        };
+
+      }),
+
+    removeTypingUser: (
+      userId,
+    ) =>
+      set((state) => ({
+        typingUsers:
+          state.typingUsers.filter(
+            (user) =>
+              user.userId !== userId,
+          ),
+      })),
+
+    clearTypingUsers: () =>
+      set({
+        typingUsers: [],
+      }),
     
 }));

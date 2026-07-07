@@ -72,6 +72,21 @@ export function SocketProvider({
         state.deleteMessage,
     );
 
+  const addTypingUser =
+    useCommunityStore(
+      (state) => state.addTypingUser,
+    );
+
+  const removeTypingUser =
+    useCommunityStore(
+      (state) => state.removeTypingUser,
+    );
+
+  const clearTypingUsers =
+    useCommunityStore(
+      (state) => state.clearTypingUsers,
+    );
+
   useEffect(() => {
     if (!userId) {
       return;
@@ -160,6 +175,42 @@ export function SocketProvider({
       },
     );
 
+    socket.on(
+      'user-typing',
+      (user) => {
+
+        // Don't show yourself typing
+        if (user.userId === userId) {
+          return;
+        }
+
+        const current =
+          useCommunityStore.getState()
+            .selectedCommunity;
+
+        // Ignore if not viewing this community
+        if (
+          current?.id !== user.communityId
+        ) {
+          return;
+        }
+
+        addTypingUser(user);
+
+      },
+    );
+
+    socket.on(
+      'user-stop-typing',
+      ({ userId: typingUserId }) => {
+
+        removeTypingUser(
+          typingUserId,
+        );
+
+      },
+    );
+
     return () => {
       socket.off(
         'new-message',
@@ -183,6 +234,14 @@ export function SocketProvider({
 
       socket.off('reaction-updated');
 
+      socket.off(
+        'user-typing',
+      );
+
+      socket.off(
+        'user-stop-typing',
+      );
+
       socket.disconnect();
     };
   }, [addMessage, deleteMessage, setOnlineUsers, setUnread, updateMessage, userId]);
@@ -193,6 +252,8 @@ export function SocketProvider({
 
   useEffect(() => {
     console.log('Selected Community:', selectedCommunity);
+
+    clearTypingUsers();
 
     if (!selectedCommunity) return;
     console.log('Connected:', socket.connected);
@@ -209,7 +270,7 @@ export function SocketProvider({
         selectedCommunity.id,
       );
     };
-  }, [selectedCommunity]);
+  }, [selectedCommunity, clearTypingUsers]);
 
   return null;
 }
