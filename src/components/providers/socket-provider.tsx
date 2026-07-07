@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { socket } from '@/lib/socket';
 import { useCommunityStore } from '@/store/community.store';
 import communityService from '@/services/community.service';
+import { useSettingsStore } from '@/store/settings.store';
 
 export function SocketProvider({
   userId,
@@ -11,6 +12,32 @@ export function SocketProvider({
   userId: string;
 }) {
 
+  const notificationAudio = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    notificationAudio.current = new Audio('/sounds/message_notification.wav');
+
+    notificationAudio.current.volume = 0.5;
+  }, []);
+
+
+  const playNotificationIfNeeded = () => {
+    const enabled =
+      useSettingsStore.getState().settings.notificationSounds;
+
+    if (!enabled) return;
+
+    if (!notificationAudio.current) return;
+
+    notificationAudio.current.pause();
+    notificationAudio.current.currentTime = 0;
+
+    notificationAudio.current
+      .play()
+      .catch(console.error);
+  };
+
+ 
   const selectedCommunity =
     useCommunityStore(
       (state) => state.selectedCommunity,
@@ -26,26 +53,13 @@ export function SocketProvider({
       (state) => state.setOnlineUsers,
     );
 
-  /* const updateUnread =
-    useCommunityStore(
-        (s) => s.updateUnread,
-    ); */
-
-  /* const incrementUnread =
-    useCommunityStore(
-      (state) => state.incrementUnread,
-    ); */
-
+  
   const setUnread =
     useCommunityStore(
       (state) => state.setUnread,
     );
 
-  /* const clearUnread =
-    useCommunityStore(
-      (state) => state.clearUnread,
-    ); */
-
+  
   const updateMessage =
     useCommunityStore(
       (state) =>
@@ -82,9 +96,9 @@ export function SocketProvider({
           useCommunityStore.getState()
             .selectedCommunity;
 
-        if (
-          current?.id === message.communityId
-        ) {
+        const isViewingConversation = current?.id === message.communityId;
+
+        if (isViewingConversation) {
           await communityService.markAsRead(
             message.communityId,
           );
@@ -94,7 +108,7 @@ export function SocketProvider({
             .clearUnread(
               message.communityId,
             );
-        }
+        }  
       },
     );
 
@@ -123,6 +137,7 @@ export function SocketProvider({
           communityId,
           unreadCount,
         );
+        playNotificationIfNeeded();
       },
     );
 
