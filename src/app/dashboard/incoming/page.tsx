@@ -179,11 +179,19 @@ export default function IncomingPage() {
 
         setDocuments(
           (prev) => {
+
+            const newDocument = {
+              ...data,
+
+              documentId:
+                data.document.id,
+            };
+
             const exists =
               prev.some(
                 (doc) =>
                   doc.id ===
-                  data.id,
+                  newDocument.id,
               );
 
             if (exists) {
@@ -191,7 +199,7 @@ export default function IncomingPage() {
             }
 
             return [
-              data,
+              newDocument,
               ...prev,
             ];
           },

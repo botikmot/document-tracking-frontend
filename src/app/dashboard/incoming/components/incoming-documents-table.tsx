@@ -237,6 +237,7 @@ export function IncomingDocumentsTable({
                         documentId={
                           doc.id
                         }
+                        title={route.title}
                         onSuccess={
                           onRefresh
                         }
