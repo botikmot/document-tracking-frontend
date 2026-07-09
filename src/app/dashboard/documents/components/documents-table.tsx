@@ -544,6 +544,7 @@ export function DocumentsTable({
                           >
                             <RouteDocumentDialog
                               documentId={doc.id}
+                              title={doc.title}
                               onSuccess={
                                 onRefresh
                               }

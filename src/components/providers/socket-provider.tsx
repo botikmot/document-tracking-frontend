@@ -92,7 +92,7 @@ export function SocketProvider({
       return;
     }
     socket.connect();
-    //socket.emit('join', userId);
+    socket.emit('join', userId);
     socket.emit('register', userId);
     console.log('SOCKET CONNECTED');
 

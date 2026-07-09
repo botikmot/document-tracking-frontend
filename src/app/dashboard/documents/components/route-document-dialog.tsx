@@ -41,12 +41,13 @@ import {
 
 interface Props {
   documentId: string;
-
+  title: string;
   onSuccess?: () => void;
 }
 
 export function RouteDocumentDialog({
   documentId,
+  title,
   onSuccess,
 }: Props) {
   const [
@@ -157,9 +158,10 @@ export function RouteDocumentDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-5 py-4">
+        <div className="space-y-5 pb-4">
           {/* OFFICE */}
           <div>
+            <h2 className="font-semibold pb-4">Title: {title}</h2>
             <Label className="font-semibold text-slate-700 dark:text-[#D7E8DD]">
               Route To Office
             </Label>

@@ -89,7 +89,16 @@ export default function DocumentDialog({
   const [trackingNumber, setTrackingNumber] = useState('');
   const [documentTypes, setDocumentTypes] = useState<{id: string; name: string;}[]>([]);
   const [currentOffice, setCurrentOffice] = useState<{id: string; officeName: string;} | null>(null);
-  //const [formData, setFormData] = useState(initialValues);
+  const [offices, setOffices] = useState<{
+        id:string;
+        officeName:string;
+      }[]
+    >([]);
+  
+  const [routing, setRouting] = useState({
+    toOfficeId:'',
+    remarks:'',
+  });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapDocumentToForm = (doc: any) => ({
@@ -142,6 +151,12 @@ export default function DocumentDialog({
 
         // Auto-select Memorandum for create mode
         if (mode === 'create') {
+
+          const officesRes = await api.get('/offices/accessible');
+          setOffices(
+            officesRes.data
+          );
+
           const memorandum = types.find(
             (type: { id: string; name: string }) =>
               type.name.toLowerCase() === 'memorandum'
@@ -217,6 +232,20 @@ export default function DocumentDialog({
             res = await api.patch(`/documents/${document.id}`, payload);
         } else {
             res = await api.post('/documents', payload);
+
+            if(mode === 'create' && routing.toOfficeId){
+              await api.post(
+                `/documents/${res.data.id}/route`,
+                {
+                  toOfficeId:
+                    routing.toOfficeId,
+
+                  remarks:
+                    routing.remarks,
+                }
+              );
+            }
+
         }
 
         console.log('created: ', res)
@@ -747,7 +776,7 @@ const handleFileUpload = async (
           </section>
 
           {/* ===================================== */}
-          {/* CLASSIFICATION */}
+          {/* CLASSIFICATION & Routing */}
           {/* ===================================== */}
           <section className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-sm transition-colors dark:border-[#214234] dark:bg-[#102418]">
             <div className="mb-6 flex items-center gap-3">
@@ -946,6 +975,70 @@ const handleFileUpload = async (
                 </div>
               </div>
             </div>
+
+            {mode === 'create' && (
+              <>
+              <div className="grid gap-6 lg:grid-cols-2 py-6">
+                <div className="">
+                    <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+                      Route To Office
+                    </Label>
+
+                    <Select
+                      value={routing.toOfficeId}
+                      onValueChange={(value)=> 
+                      setRouting(prev=>({
+                          ...prev,
+                          toOfficeId:value
+                        }))
+                      }
+                    >
+
+                    <SelectTrigger className="h-12 w-full rounded-2xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
+                      <SelectValue placeholder="Select destination office"/>
+                    </SelectTrigger>
+
+                      <SelectContent>
+
+                      {
+                        offices.map((office)=>(
+                          <SelectItem
+                            key={office.id}
+                            value={office.id}
+                            >
+                            {office.officeName}
+                          </SelectItem>
+                        ))
+                      }
+
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-slate-500 mt-2">
+                      Optional. If no office is selected, the document will be saved as Draft.
+                    </p>
+                </div>
+
+                <div>
+                    <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+                      Routing Remarks
+                    </Label>
+
+                    <Textarea
+                      value={routing.remarks}
+                      onChange={(e)=>
+                      setRouting(prev=>({
+                        ...prev,
+                        remarks:e.target.value
+                        }))
+                      }
+                    />
+
+                </div>
+
+                </div>
+              </>
+              )}
+
           </section>
 
           {/* ===================================== */}
