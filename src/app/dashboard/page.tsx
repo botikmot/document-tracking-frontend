@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+//import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -54,7 +54,9 @@ export default function DashboardPage() {
     },
   });
 
-  const user = useAuthStore((state) => state.user,);
+  const user = useAuthStore((state) => state.user);
+
+  console.log('auth:', user)
 
   const fetchDashboardStats =
     async () => {

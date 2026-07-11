@@ -16,6 +16,7 @@ type AuthState = {
   ) => void;
   logout: () => void;
   hydrate: () => void;
+  verifyAuth: () => Promise<void>;
 };
 
 export const useAuthStore =
@@ -97,4 +98,107 @@ export const useAuthStore =
             hydrated: true,
         });
     },
+
+    verifyAuth: async () => {
+
+      const token =
+        localStorage.getItem(
+          'accessToken',
+        );
+
+
+      if (!token) {
+        set({
+          user: null,
+          accessToken: null,
+        });
+
+        return;
+      }
+
+
+      try {
+
+        const response =
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/auth/me`,
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            },
+          );
+
+
+        if (!response.ok) {
+          throw new Error(
+            'Unauthorized',
+          );
+        }
+
+
+        const data =
+          await response.json();
+
+        const user: AuthUser = {
+          userId: data.userId,
+          username: data.username,
+          firstName: data.firstName,
+          lastName: data.lastName,
+
+          profileImageUrl:
+            data.profileImageUrl,
+
+          roles:
+            data.roles,
+
+
+          officeIds:
+            data.officeUsers?.map(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (item: any) =>
+                item.officeId,
+            ) ?? [],
+
+
+          offices:
+            data.officeUsers?.map(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (item: any) => ({
+                officeId:
+                  item.officeId,
+
+                officeName:
+                  item.office?.officeName,
+              }),
+            ) ?? [],
+        };
+
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        set({
+          user,
+          accessToken: token,
+        });
+
+
+      } catch(error) {
+
+        localStorage.removeItem(
+          'accessToken',
+        );
+
+        localStorage.removeItem(
+          'user',
+        );
+
+
+        set({
+          user: null,
+          accessToken: null,
+        });
+      }
+    },
+
   }));

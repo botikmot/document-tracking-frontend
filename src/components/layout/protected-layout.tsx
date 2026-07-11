@@ -4,6 +4,7 @@ import { SocketProvider } from '../providers/socket-provider';
 import { NotificationListener } from '../providers/notification-listener';
 import {
   useEffect,
+  useState,
 } from 'react';
 
 import {
@@ -23,6 +24,9 @@ export function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
+
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  
   const router = useRouter();
 
   const user =
@@ -35,6 +39,11 @@ export function ProtectedLayout({
       (state) => state.hydrated,
     );
 
+  const verifyAuth =
+    useAuthStore(
+      (state) => state.verifyAuth,
+    );
+
   /*
    |--------------------------------------------------------------------------
    | Wait for hydration first
@@ -42,15 +51,33 @@ export function ProtectedLayout({
    */
 
   useEffect(() => {
-    if (!hydrated) {
-      return;
-    }
 
-    if (!user) {
+      async function checkAuth() {
+        if (!hydrated) {
+          return;
+        }
+        await verifyAuth();
+        setCheckingAuth(false);
+      }
+
+      checkAuth();
+
+    }, [
+      hydrated,
+      verifyAuth,
+  ]);
+
+  useEffect(() => {
+
+    if (
+      !checkingAuth &&
+      !user
+    ) {
       router.replace('/login');
     }
+
   }, [
-    hydrated,
+    checkingAuth,
     user,
     router,
   ]);
@@ -61,7 +88,7 @@ export function ProtectedLayout({
    |--------------------------------------------------------------------------
    */
 
-  if (!hydrated) {
+  if (!hydrated || checkingAuth) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#F5F7F2] transition-colors dark:bg-[#07130C]">
         <div className="rounded-3xl border border-slate-200 bg-white px-8 py-6 shadow-xl transition-colors dark:border-[#1F4D36] dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">
