@@ -606,7 +606,7 @@ export default function SettingsPage() {
                 </p>
 
                 <p className="mt-2 text-sm text-emerald-600 dark:text-green-200">
-                  Automated backup systems are currently operational.
+                  Database backups are available and can be performed manually by authorized administrators.
                 </p>
               </div>
             </CardContent>
