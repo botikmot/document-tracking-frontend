@@ -495,13 +495,13 @@ export default function DashboardPage() {
                       .processingEfficiency,
                 },
 
-                {
+                /* {
                   label:
                     'Approval Completion',
                   value:
                     stats.performance
                       .approvalCompletion,
-                },
+                }, */
 
                 {
                   label:
