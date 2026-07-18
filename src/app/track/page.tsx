@@ -19,6 +19,7 @@ import { TrackingRouteHistory } from '@/components/tracking/tracking-route-histo
 import Link from 'next/link';
 import SearchParamsContent from './search-params-content';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/auth.store';
 
 export default function PublicTrackingPage() {
   const [loading, setLoading] = useState(false);
@@ -28,6 +29,9 @@ export default function PublicTrackingPage() {
 
   const [trackingNumber, setTrackingNumber] = useState('');
   const router = useRouter();
+
+  //const user = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
   /*
   |--------------------------------------------------------------------------
   | TRACK
@@ -42,7 +46,9 @@ export default function PublicTrackingPage() {
       setLoading(true);
       setError('');
 
-      const response = await api.get(`/track/${value}`);
+      //const response = await api.get(`/track/${value}`);
+      const endpoint = accessToken ? `/documents/track/${value}` : `/track/${value}`;
+      const response = await api.get(endpoint);
 
       setDocument(response.data);
     } catch {
