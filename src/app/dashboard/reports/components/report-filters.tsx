@@ -28,6 +28,8 @@ import type {
   ReportFilters as ReportFiltersType,
 } from '@/types/report';
 
+import { useDocumentTypes } from '../hooks/useDocumentTypes';
+
 type Props = {
   filters: ReportFiltersType;
 
@@ -71,8 +73,12 @@ export function ReportFilters({
         new Date().getMonth() + 1,
       quarter: 1,
       year: currentYear,
+      documentTypeId: undefined,
+      status: undefined,
     });
   };
+
+  const documentTypes = useDocumentTypes();
 
   return (
     <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">
@@ -365,6 +371,109 @@ export function ReportFilters({
                 : 'Generate Report'}
             </Button>
           </div>
+        </div>
+
+        <div className="mt-6 grid gap-4 lg:grid-cols-12">
+          
+          <div className="lg:col-span-2">
+            <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+              Document Type
+            </label>
+
+            <Select
+              value={filters.documentTypeId ?? 'ALL'}
+              onValueChange={(value) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  documentTypeId:
+                    value === 'ALL'
+                      ? undefined
+                      : value,
+                }))
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+
+              <SelectContent>
+
+                <SelectItem value="ALL">
+                  All Document Types
+                </SelectItem>
+
+                {documentTypes.map((type) => (
+                  <SelectItem
+                    key={type.id}
+                    value={type.id}
+                  >
+                    {type.name}
+                  </SelectItem>
+                ))}
+
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="lg:col-span-2">
+            <label className="mb-2 block text-sm text-slate-700 dark:text-[#D7E8DD] font-semibold">
+              Status
+            </label>
+
+            <Select
+              value={filters.status ?? 'ALL'}
+              onValueChange={(value) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  status:
+                    value === 'ALL'
+                      ? undefined
+                      : value,
+                }))
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+
+              <SelectContent>
+
+                <SelectItem value="ALL">
+                  All Status
+                </SelectItem>
+
+                <SelectItem value="DRAFT">
+                  Draft
+                </SelectItem>
+
+                <SelectItem value="PENDING">
+                  Pending
+                </SelectItem>
+
+                <SelectItem value="FOR_REVIEW">
+                  For Review
+                </SelectItem>
+
+                <SelectItem value="FOR_APPROVAL">
+                  For Approval
+                </SelectItem>
+
+                <SelectItem value="ON_PROCESS">
+                  On Process
+                </SelectItem>
+
+                <SelectItem value="COMPLETED">
+                  Completed
+                </SelectItem>
+
+                {/* <SelectItem value="REJECTED">
+                  Rejected
+                </SelectItem> */}
+
+              </SelectContent>
+            </Select>
+          </div>
+
         </div>
 
         {/* Footer Info */}

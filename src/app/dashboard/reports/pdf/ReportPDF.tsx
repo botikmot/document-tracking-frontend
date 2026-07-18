@@ -11,7 +11,7 @@ import { styles } from './pdf-styles';
 // Change this to your logo location.
 // If using Vite/Next public folder:
 // public/images/denr-logo.png
-const LOGO = '/images/logo_denr.png';
+const LOGO = '/images/denr_logov2.png';
 
 type DocumentItem = {
   id: string;
@@ -137,6 +137,134 @@ export function ReportPDF({
 
     return '-';
   }
+
+  const FIRST_PAGE_ROWS = 7;
+  const OTHER_PAGE_ROWS = 18;
+
+  function paginateDocuments(documents: DocumentItem[]) {
+    const firstPage = documents.slice(0, FIRST_PAGE_ROWS);
+
+    const remaining = documents.slice(FIRST_PAGE_ROWS);
+
+    const otherPages: DocumentItem[][] = [];
+
+    for (let i = 0; i < remaining.length; i += OTHER_PAGE_ROWS) {
+      otherPages.push(
+        remaining.slice(i, i + OTHER_PAGE_ROWS),
+      );
+    }
+
+    return {
+      firstPage,
+      otherPages,
+    };
+  }
+
+  function TableHeader() {
+    return (
+      <View style={styles.tableHeader}>
+        <Text style={[styles.headerCell, styles.no]}>#</Text>
+
+        <Text style={[styles.headerCell, styles.tracking]}>
+          Tracking No.
+        </Text>
+
+        <Text style={[styles.headerCell, styles.title]}>
+          Title
+        </Text>
+
+        <Text style={[styles.headerCell, styles.type]}>
+          Type
+        </Text>
+
+        <Text style={[styles.headerCell, styles.office]}>
+          Current Office
+        </Text>
+
+        <Text style={[styles.headerCell, styles.classification]}>
+          Classification
+        </Text>
+
+        <Text style={[styles.headerCell, styles.deadline]}>
+          Deadline
+        </Text>
+
+        <Text style={[styles.headerCell, styles.status]}>
+          Status
+        </Text>
+      </View>
+    );
+  }
+
+  function TableRow({
+    doc,
+    index,
+  }: {
+    doc: DocumentItem;
+    index: number;
+  }) {
+    return (
+      <View
+        style={[
+          styles.row,
+          index % 2 === 0
+            ? styles.alternateRow
+            : {},
+        ]}
+      >
+        <Text style={[styles.cell, styles.no]}>
+          {index + 1}
+        </Text>
+
+        <Text style={[styles.cell, styles.tracking]}>
+          {doc.trackingNumber}
+        </Text>
+
+        <Text style={[styles.cell, styles.title]}>
+          {doc.title}
+        </Text>
+
+        <Text style={[styles.cell, styles.type]}>
+          {doc.documentType}
+        </Text>
+
+        <Text style={[styles.cell, styles.office]}>
+          {doc.office}
+        </Text>
+
+        <Text
+          style={[
+            styles.cell,
+            styles.classification,
+          ]}
+        >
+          {doc.classification}
+        </Text>
+
+        <Text
+          style={[
+            styles.cell,
+            styles.deadline,
+            getDeadlineStyle(doc.deadline),
+          ]}
+        >
+          {formatDate(doc.deadline)}
+        </Text>
+
+        <Text
+          style={[
+            styles.cell,
+            styles.status,
+            getStatusStyle(doc.status),
+          ]}
+        >
+          {doc.status.replaceAll('_', ' ')}
+        </Text>
+      </View>
+    );
+  }
+
+  const { firstPage, otherPages } = paginateDocuments(documents);
 
   return (
     <Document>
@@ -340,6 +468,7 @@ export function ReportPDF({
             style={
               styles.tableHeader
             }
+            fixed
           >
             <Text
               style={[
@@ -416,111 +545,14 @@ export function ReportPDF({
 
           {/* ROWS */}
 
-          {documents.map(
-            (
-              doc,
-              index,
-            ) => (
-              <View
-                key={doc.id}
-                style={[
-                  styles.row,
-                  index % 2 === 0
-                    ? styles.alternateRow
-                    : {},
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.cell,
-                    styles.no,
-                  ]}
-                >
-                  {index + 1}
-                </Text>
+          {firstPage.map((doc, index) => (
+            <TableRow
+              key={doc.id}
+              doc={doc}
+              index={index}
+            />
+          ))}
 
-                <Text
-                  style={[
-                    styles.cell,
-                    styles.tracking,
-                  ]}
-                >
-                  {
-                    doc.trackingNumber
-                  }
-                </Text>
-
-                <Text
-                  style={[
-                    styles.cell,
-                    styles.title,
-                  ]}
-                >
-                  {doc.title}
-                </Text>
-
-                <Text
-                  style={[
-                    styles.cell,
-                    styles.type,
-                  ]}
-                >
-                  {
-                    doc.documentType
-                  }
-                </Text>
-
-                <Text
-                  style={[
-                    styles.cell,
-                    styles.office,
-                  ]}
-                >
-                  {doc.office}
-                </Text>
-
-                <Text
-                  style={[
-                    styles.cell,
-                    styles.classification,
-                  ]}
-                >
-                  {
-                    doc.classification
-                  }
-                </Text>
-
-                <Text
-                  style={[
-                    styles.cell,
-                    styles.deadline,
-                    getDeadlineStyle(
-                      doc.deadline,
-                    ),
-                  ]}
-                >
-                  {formatDate(
-                    doc.deadline,
-                  )}
-                </Text>
-
-                <Text
-                  style={[
-                    styles.cell,
-                    styles.status,
-                    getStatusStyle(
-                      doc.status,
-                    ),
-                  ]}
-                >
-                  {doc.status.replaceAll(
-                    '_',
-                    ' ',
-                  )}
-                </Text>
-              </View>
-            ),
-          )}
         </View>
 
         {/* FOOTER */}
@@ -555,6 +587,72 @@ export function ReportPDF({
           }
         />
       </Page>
+
+
+      {otherPages.map((page, pageIndex) => (
+            <Page
+              key={pageIndex}
+              size="A4"
+              orientation="landscape"
+              style={styles.page}
+            >
+
+              {/* Compact Header */}
+
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  color: '#006838',
+                  marginBottom: 12,
+                }}
+              >
+                Document Tracking Report
+              </Text>
+
+              <View style={styles.table}>
+                <TableHeader />
+
+                {page.map((doc, rowIndex) => (
+                  <TableRow
+                    key={doc.id}
+                    doc={doc}
+                    index={
+                      FIRST_PAGE_ROWS +
+                      pageIndex * OTHER_PAGE_ROWS +
+                      rowIndex
+                    }
+                  />
+                ))}
+              </View>
+
+              <Text
+                fixed
+                style={{
+                  position: 'absolute',
+                  left: 30,
+                  bottom: 18,
+                  fontSize: 8,
+                }}
+              >
+                Generated by eDATS
+              </Text>
+
+              <Text
+                fixed
+                style={{
+                  position: 'absolute',
+                  right: 30,
+                  bottom: 18,
+                  fontSize: 8,
+                }}
+                render={({ pageNumber, totalPages }) =>
+                  `Page ${pageNumber} of ${totalPages}`
+                }
+              />
+            </Page>
+          ))}
+
     </Document>
   );
 }

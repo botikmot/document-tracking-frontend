@@ -230,7 +230,7 @@ export default function RoutingSlipPDF({
               }
             >
               <Image
-                src="/images/logo_denr.png"
+                src="/images/denr_logov2.png"
                 style={
                   styles.logo
                 }

@@ -240,33 +240,10 @@ summaryGrid: {
   justifyContent: 'space-between',
 },
 
-/* summaryCard: {
-  width: '48%',
-  borderWidth: 1,
-  borderColor: '#D6D6D6',
-  backgroundColor: '#F5F8F5',
-  borderRadius: 4,
-  padding: 8,
-  marginBottom: 8,
-  alignItems: 'center',
-}, */
-
 summaryDanger: {
   backgroundColor: '#FEE2E2',
   borderColor: '#DC2626',
 },
-
-/* summaryTitle: {
-  fontSize: 8,
-  color: '#555',
-}, */
-
-/* summaryValue: {
-  marginTop: 4,
-  fontSize: 14,
-  fontWeight: 'bold',
-  color: '#006838',
-}, */
 
 summaryTitle: {
   fontSize: 11,
