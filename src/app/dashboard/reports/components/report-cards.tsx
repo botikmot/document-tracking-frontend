@@ -42,6 +42,7 @@ type ReportSummary = {
   pendingDocuments: DocumentSummary;
   overdueDocuments: DocumentSummary;
   completionRate: number;
+  processingEfficiency: number;
   averageProcessingHours: number;
 };
 
@@ -66,6 +67,7 @@ export function ReportCards({
     pendingDocuments: emptyDocumentSummary,
     overdueDocuments: emptyDocumentSummary,
     completionRate: 0,
+    processingEfficiency: 0,
     averageProcessingHours: 0,
   };
 
@@ -291,7 +293,7 @@ export function ReportCards({
             Completion efficiency currently stands at
             <span className="font-bold text-white">
               {' '}
-              {data.completionRate}%
+              {data.processingEfficiency}%
             </span>
             .
           </p>
@@ -301,7 +303,7 @@ export function ReportCards({
               <span>Efficiency</span>
 
               <span className="font-bold">
-                {data.completionRate}%
+                {data.processingEfficiency}%
               </span>
             </div>
 
@@ -310,7 +312,7 @@ export function ReportCards({
                 className="h-full rounded-full bg-gradient-to-r from-green-400 to-emerald-500"
                 style={{
                   width: `${Math.min(
-                    data.completionRate,
+                    data.processingEfficiency,
                     100,
                   )}%`,
                 }}

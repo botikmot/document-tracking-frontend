@@ -481,7 +481,7 @@ export default function DashboardPage() {
               </CardTitle>
 
               <p className="text-green-100/70">
-                Monthly operational metrics overview
+                Overall operational metrics overview
               </p>
             </CardHeader>
 
