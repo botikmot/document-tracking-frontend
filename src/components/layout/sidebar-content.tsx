@@ -136,6 +136,8 @@ export function SidebarContent() {
   const totalChatUnread =
     totalCommunityUnread + totalDirectUnread;
 
+  console.log('unread:', unreadCounts)
+
    return (
     <>
       {/* ====================================== */}

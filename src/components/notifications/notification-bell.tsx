@@ -17,7 +17,7 @@ import {
 
 import { toast } from 'sonner';
 import { api } from '@/lib/axios';
-import { socket } from '@/lib/socket';
+//import { socket } from '@/lib/socket';
 import { Button } from '@/components/ui/button';
 
 import {
@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/popover';
 import { useNotificationStore } from '@/store/notification.store';
 
-type NotificationType =
+/* type NotificationType =
   | 'DEADLINE'
   | 'ROUTED'
   | 'APPROVED';
@@ -40,14 +40,14 @@ type Notification = {
   isRead: boolean;
   documentId: string;
   createdAt: string;
-};
+}; */
 
 export function NotificationBell() {
   const {
     notifications,
     unreadCounts,
-    setNotifications,
-    addNotification,
+    //setNotifications,
+    //addNotification,
     markAsRead: removeNotification,
     markAllAsRead: markAllNotificationsAsRead,
   } = useNotificationStore();
@@ -70,7 +70,7 @@ export function NotificationBell() {
    |-------------------------------------------------------------
    */
 
-  const fetchNotifications =
+  /* const fetchNotifications =
     async () => {
       try {
         const response =
@@ -86,7 +86,7 @@ export function NotificationBell() {
       } catch (error) {
         console.error(error);
       }
-    };
+    }; */
 
   /*
    |-------------------------------------------------------------
@@ -94,14 +94,14 @@ export function NotificationBell() {
    |-------------------------------------------------------------
    */
 
-  useEffect(() => {
+  /* useEffect(() => {
       const load =
         async () => {
           await fetchNotifications();
         };
   
       void load();
-    }, []);
+    }, []); */
 
 
     /*

@@ -5,25 +5,9 @@ import { CommunityHeader } from './components/community-header';
 //import { CommunityStats } from './components/community-stats';
 import { CommunitySidebar } from './components/community-sidebar';
 import { CommunityChat } from './components/community-chat';
-import { useCommunityStore } from '@/store/community.store';
-import { useEffect } from 'react';
 
 export default function CommunityPage() {
 
-    const fetchCommunities =
-        useCommunityStore(
-            (state) => state.fetchCommunities,
-        );
-
-    const fetchChatUsers =
-        useCommunityStore(
-            (state) => state.fetchChatUsers,
-        );
-
-  useEffect(() => {
-    fetchCommunities();
-    fetchChatUsers();
-  }, [fetchCommunities, fetchChatUsers]);
 
   return (
     <main className="relative flex-1 overflow-hidden bg-[#F5F7F2] transition-colors dark:bg-[#07150D]">
