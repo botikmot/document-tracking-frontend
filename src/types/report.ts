@@ -42,6 +42,7 @@ export type ReportSummary = {
   overdueDocuments: DocumentSummary;
   completionRate: number;
   averageProcessingHours: number;
+  processingEfficiency: number;
 };
 
 export interface Report {

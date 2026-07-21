@@ -44,6 +44,7 @@ export function useReports() {
       overdueDocuments: emptyDocumentSummary,
       completionRate: 0,
       averageProcessingHours: 0,
+      processingEfficiency: 0,
     },
     statusBreakdown: [],
     documentTypeBreakdown: [],

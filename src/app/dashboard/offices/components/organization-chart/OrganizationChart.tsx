@@ -14,7 +14,7 @@ import 'reactflow/dist/style.css';
 
 import {
   buildOrganizationLayout,
-} from './layout';
+} from './graph-layout';
 
 import {
   OrganizationNode,

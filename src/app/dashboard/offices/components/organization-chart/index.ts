@@ -1,5 +1,5 @@
 export * from './types';
-export * from './layout';
+export * from './graph-layout';
 export * from './builder';
 
 export {
