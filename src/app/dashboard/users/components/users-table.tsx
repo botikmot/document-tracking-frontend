@@ -9,6 +9,7 @@ import {
 
 import {
   Avatar,
+  AvatarImage,
   AvatarFallback,
 } from '@/components/ui/avatar';
 
@@ -99,6 +100,12 @@ export function UsersTable({
                 {/* LEFT */}
                 <div className="flex items-center gap-5">
                   <Avatar className="h-14 w-14">
+
+                    <AvatarImage
+                        src={
+                          user?.profileImageUrl
+                        }
+                      />
                     <AvatarFallback className="bg-blue-100 text-lg font-bold text-blue-700">
                       {
                         `${user.firstName[0]}${user.lastName[0]}`
