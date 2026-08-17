@@ -5,7 +5,6 @@ import { useState } from 'react';
 import {
   CalendarClock,
   FilePenLine,
-  FileText,
   Loader2,
   LockKeyhole,
   Save,
@@ -36,7 +35,6 @@ import {
 } from '@/components/ui/select';
 
 import { Separator } from '@/components/ui/separator';
-import { Textarea } from '@/components/ui/textarea';
 
 /*
 |--------------------------------------------------------------------------
@@ -228,17 +226,6 @@ function toDateTimeLocal(
   return `${year}-${month}-${day}T${hour}:${minute}`;
 }
 
-function emptyToNull(
-  value: string,
-) {
-  const trimmed =
-    value.trim();
-
-  return trimmed.length > 0
-    ? trimmed
-    : null;
-}
-
 /*
 |--------------------------------------------------------------------------
 | Component
@@ -268,37 +255,11 @@ export function EditDocumentDialog({
   |
   */
 
-  const [title, setTitle] =
-    useState(
-      () =>
-        document.title ?? '',
-    );
 
-  const [
-    description,
-    setDescription,
-  ] = useState(
-    () =>
-      document.description ??
-      '',
-  );
 
-  const [
-    addressee,
-    setAddressee,
-  ] = useState(
-    () =>
-      document.addressee ?? '',
-  );
+  
 
-  const [
-    referenceNumber,
-    setReferenceNumber,
-  ] = useState(
-    () =>
-      document.referenceNumber ??
-      '',
-  );
+  
 
   const [
     documentTypeId,
@@ -409,14 +370,6 @@ export function EditDocumentDialog({
       if (!editable) {
         setError(
           'Only authorized users from the Office of the Regional Director can edit this document while it is under ORD custody.',
-        );
-
-        return;
-      }
-
-      if (!title.trim()) {
-        setError(
-          'Document title is required.',
         );
 
         return;

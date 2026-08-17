@@ -25,7 +25,6 @@ import {
 import {
   ScrollArea,
 } from '@/components/ui/scroll-area';
-import { useState } from 'react';
 
 type Props = {
   open: boolean;

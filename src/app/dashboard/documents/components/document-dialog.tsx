@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   FileText,
   FolderOpen,
-  Loader2,
   Paperclip,
   Plus,
   Shield,
