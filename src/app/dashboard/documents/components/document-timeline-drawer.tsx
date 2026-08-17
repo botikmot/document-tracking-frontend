@@ -54,18 +54,27 @@ export function DocumentTimelineDrawer({
   const now = Date.now();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const enrichedRoutes = document.routes?.map((route: any, index: number) => {
-    const nextRoute = document.routes?.[index + 1];
+  const enrichedRoutes = document.routes?.map((route: any) => {
+    const receivedAt = route.receivedAt
+      ? new Date(route.receivedAt).getTime()
+      : null;
 
-    const start = new Date(route.sentAt).getTime();
-    const end = nextRoute
-      ? new Date(nextRoute.sentAt).getTime()
-      : now;
+    const completedAt = route.completedAt
+      ? new Date(route.completedAt).getTime()
+      : null;
 
-    const durationMs = end - start;
+    const durationMs =
+      receivedAt !== null
+        ? Math.max(
+            (completedAt ?? now) - receivedAt,
+            0,
+          )
+        : null;
 
     const isStuck =
-      document.currentStatus.name !== 'COMPLETED' && durationMs > STUCK_THRESHOLD_MS;
+      durationMs !== null &&
+      route.status !== 'COMPLETED' &&
+      durationMs > STUCK_THRESHOLD_MS;
 
     return {
       ...route,

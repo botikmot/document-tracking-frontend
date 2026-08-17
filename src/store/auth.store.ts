@@ -171,6 +171,7 @@ export const useAuthStore =
 
                 officeName:
                   item.office?.officeName,
+                officeCode: item.office?.officeCode,
               }),
             ) ?? [],
         };

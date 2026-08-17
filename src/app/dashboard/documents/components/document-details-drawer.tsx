@@ -6,7 +6,8 @@ import {
   FileText,
   Shield,
   AlertCircle,
-  Paperclip
+  Paperclip,
+  Pencil
 } from 'lucide-react';
 
 import {
@@ -26,6 +27,7 @@ import {
 } from '@/components/ui/separator';
 import { downloadRoutingSlip } from '@/lib/download-routing-slip';
 import QRCode from 'qrcode';
+import { useAuthStore } from '@/store/auth.store';
 
 interface Props {
   open: boolean;
@@ -35,16 +37,32 @@ interface Props {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   document: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onEdit?: (document: any) => void;
 }
 
 export function DocumentDetailsDrawer({
   open,
   onOpenChange,
   document,
+  onEdit,
 }: Props) {
+
+  const user = useAuthStore((state) => state.user)
+
   if (!document) {
     return null;
   }
+ 
+  const isOrdUser = user?.offices?.some(
+    (item) =>
+      item.office?.officeCode === 'ORD' ||
+      item.officeCode === 'ORD',
+  );
+
+  const documentIsInOrd = document?.currentOffice?.officeCode === 'ORD';
+
+  const canEdit = Boolean(isOrdUser && documentIsInOrd);
 
   const handleDownloadRoutingSlip =
   async () => {
@@ -151,17 +169,33 @@ export function DocumentDetailsDrawer({
                         ?.name
                     }
                   </Badge>
+                  
+                  <div className="ml-auto flex items-center gap-2">
+                    {canEdit && (
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          onEdit?.(document)
+                        }
+                        className="cursor-pointer rounded-xl"
+                      >
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit Document
+                      </Button>
+                    )}
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="ml-auto rounded-xl cursor-pointer dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
-                    onClick={() =>
-                      handleDownloadRoutingSlip()
-                    }
-                  >
-                    Download Routing Slip
-                  </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="cursor-pointer rounded-xl dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
+                      onClick={() =>
+                        handleDownloadRoutingSlip()
+                      }
+                    >
+                      Download Routing Slip
+                    </Button>
+                  </div>
+
                 </div>
               </div>
             </div>
@@ -271,7 +305,7 @@ export function DocumentDetailsDrawer({
             </div>
           </div>
 
-          {/* ATTACHMENTS (NEW ✨) */}
+          {/* ATTACHMENTS (NEW) */}
           {document.attachments?.length > 0 && (
             <div>
               <h3 className="mb-3 flex items-center gap-2 text-lg font-bold text-[#102418] dark:text-[#F3F8F3]">

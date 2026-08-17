@@ -56,7 +56,6 @@ export default function DashboardPage() {
 
   const user = useAuthStore((state) => state.user);
 
-  console.log('auth:', user)
 
   const fetchDashboardStats =
     async () => {

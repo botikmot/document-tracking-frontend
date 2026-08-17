@@ -35,6 +35,8 @@ import { DocumentDetailsDrawer } from './document-details-drawer';
 import { toast } from 'sonner';
 import { useNotificationStore } from '@/store/notification.store';
 import DocumentDialog from './document-dialog';
+import { EditDocumentDialog } from './edit-document-dialog';
+import { useAuthStore } from '@/store/auth.store';
 
 export function DocumentsTable({
   documents,
@@ -59,10 +61,19 @@ export function DocumentsTable({
   search?: string;
   setSearch?: (value: string,) => void;
 }) {
-  const [
+
+  const user = useAuthStore((state) => state.user)
+
+  const [openEdit, setOpenEdit] = useState(false);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [documentToEdit, setDocumentToEdit] = useState<any>(null);
+
+   const [
     selectedDocument,
     setSelectedDocument,
-  ] = useState(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ] = useState<any | null>(null);
 
   const [
     openTimeline,
@@ -73,6 +84,22 @@ export function DocumentsTable({
     openDetails,
     setOpenDetails,
   ] = useState(false);
+
+
+  const isOrdUser = user?.offices?.some(
+      (item) =>
+        item.office?.officeCode === 'ORD' ||
+        item.officeCode === 'ORD',
+    );
+
+  const documentIsInOrd = selectedDocument?.currentOffice?.officeCode === 'ORD';
+
+  const canEditDocument =
+      Boolean(
+        isOrdUser &&
+        documentIsInOrd,
+      );
+  
 
   const WORKFLOW_STATUSES = [
     'FOR_REVIEW',
@@ -228,6 +255,37 @@ export function DocumentsTable({
         'bg-emerald-100 text-emerald-700 border-emerald-200',
     };
   };
+
+  const handleUpdateDocument =
+    async (
+      documentId: string,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: any,
+    ) => {
+      console.log("updated data:", data)
+
+      try {
+        const res = await api.patch(`/documents/${documentId}`, data);
+
+        console.log(
+          'DOCUMENT UPDATED:',
+          res.data,
+        );
+
+        // Replace this with imong existing
+        // document-list refresh function.
+         onRefresh();
+      } catch (error) {
+        console.error(
+          'UPDATE DOCUMENT ERROR:',
+          error,
+        );
+
+        throw error;
+      }
+    };
+
+
 
   return (
     <>
@@ -617,7 +675,38 @@ export function DocumentsTable({
         document={
           selectedDocument
         }
+        onEdit={(document) => {
+          setDocumentToEdit(document);
+          setOpenDetails(false);
+          setOpenEdit(true);
+        }}
       />
+
+        {documentToEdit && (
+          <EditDocumentDialog
+            key={documentToEdit.id}
+            open={openEdit}
+            onOpenChange={(open) => {
+              setOpenEdit(open);
+
+              if (!open) {
+                setDocumentToEdit(
+                  null,
+                );
+              }
+            }}
+            document={
+              documentToEdit
+            }
+            canEdit={
+              canEditDocument
+            }
+            onSave={
+              handleUpdateDocument
+            }
+          />
+        )}
+
     </>
   );
 }

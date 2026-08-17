@@ -19,6 +19,8 @@ import {
 import { Input } from '@/components/ui/input';
 
 import { Badge } from '@/components/ui/badge';
+import { formatDuration } from '@/lib/format-duration';
+import { getRoutingDisplay } from '@/lib/get-routing-display';
 
 import {
   Button,
@@ -29,11 +31,30 @@ type ReportDocument = {
   trackingNumber: string;
   title: string;
   documentType: string;
+  classification: string;
+
   status: string;
+  officeStatus: string;
+
   office: string;
+  routedToOffice: string;
+
   priority?: string;
+
   createdAt: string;
   deadline?: string;
+
+  // NEW
+  allottedTimeMs: number | null;
+  timeInOfficeMs: number;
+
+  isOverdue: boolean;
+
+  deadlineStatus:
+    | 'NO_DEADLINE'
+    | 'AWAITING_RECEIPT'
+    | 'ON_TIME'
+    | 'OVERDUE';
 };
 
 type Props = {
@@ -162,7 +183,7 @@ export function ReportsTable({
     <Card className="rounded-[32px] border-0 shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-2xl font-black text-[#102418] dark:text-[#F3F8F3]">
-          Report Documents
+          Summary Documents
         </CardTitle>
 
         <div className="flex gap-3">
@@ -216,15 +237,31 @@ export function ReportsTable({
                 </th>
 
                 <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
-                  Office
+                  Clasification
                 </th>
 
                 <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
-                  Status
+                 Routing / Custody
+                </th>
+
+                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
+                  Office Status
                 </th>
 
                 <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
                   Priority
+                </th>
+
+                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
+                  Allotted Time
+                </th>
+
+                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
+                  Time in Office
+                </th>
+
+                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
+                  Deadline Status
                 </th>
 
                 <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
@@ -261,24 +298,64 @@ export function ReportsTable({
                   </td>
 
                   <td className="px-5 py-4">
-                    {doc.office}
+                    {doc.classification}
+                  </td>
+
+                  <td className="px-5 py-4">
+                    {getRoutingDisplay({
+                      officeStatus: doc.officeStatus,
+                      routedToOffice: doc.routedToOffice,
+                    })}
                   </td>
 
                   <td className="px-5 py-4">
                     <Badge
-                      className={statusBadge(
-                        doc.status,
-                      )}
+                      className={statusBadge(doc.officeStatus)}
                     >
-                      {
-                        doc.status
-                      }
+                      {officeStatusLabel(doc.officeStatus)}
                     </Badge>
                   </td>
 
                   <td className="px-5 py-4">
                     {doc.priority ??
                       '-'}
+                  </td>
+
+                  <td className="px-5 py-4">
+                    {formatDuration(
+                      doc.allottedTimeMs,
+                    )}
+                  </td>
+
+                  <td className="px-5 py-4">
+                    {doc.officeStatus === 'PENDING'
+                      ? 'Not Received'
+                      : formatDuration(
+                          doc.timeInOfficeMs,
+                          { showSeconds: true },
+                        )}
+                  </td>
+
+                  <td className="px-5 py-4">
+                    <Badge
+                      className={
+                        doc.deadlineStatus === 'OVERDUE'
+                          ? 'bg-red-100 text-red-700'
+                          : doc.deadlineStatus === 'ON_TIME'
+                            ? 'bg-green-100 text-green-700'
+                            : doc.deadlineStatus === 'AWAITING_RECEIPT'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-slate-100 text-slate-700'
+                      }
+                    >
+                      {doc.deadlineStatus === 'NO_DEADLINE'
+                        ? 'No Deadline'
+                        : doc.deadlineStatus === 'AWAITING_RECEIPT'
+                          ? 'Awaiting Receipt'
+                          : doc.deadlineStatus === 'OVERDUE'
+                            ? 'Overdue'
+                            : 'On Time'}
+                    </Badge>
                   </td>
 
                   <td className="px-5 py-4">
@@ -310,7 +387,7 @@ export function ReportsTable({
                 <tr>
 
                   <td
-                    colSpan={8}
+                    colSpan={11}
                     className="py-16 text-center text-slate-500"
                   >
                     No documents found.
@@ -375,4 +452,23 @@ export function ReportsTable({
       </CardContent>
     </Card>
   );
+}
+
+function officeStatusLabel(status?: string | null) {
+  switch (status) {
+    case 'PENDING':
+      return 'Awaiting Receipt';
+
+    case 'RECEIVED':
+      return 'Received';
+
+    case 'COMPLETED':
+      return 'Completed';
+
+    case 'RETURNED':
+      return 'Returned';
+
+    default:
+      return '-';
+  }
 }
