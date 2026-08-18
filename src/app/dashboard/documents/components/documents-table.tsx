@@ -668,6 +668,7 @@ export function DocumentsTable({
 
       {/* DETAILS */}
       <DocumentDetailsDrawer
+        key={selectedDocument?.id ?? 'document-details'}
         open={openDetails}
         onOpenChange={
           setOpenDetails
