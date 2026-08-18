@@ -197,6 +197,35 @@ export default function DashboardPage() {
     return 'Good Evening';
   };
 
+  const formatActivityDate = (
+    value?: string | null,
+  ) => {
+    if (!value) {
+      return '—';
+    }
+
+    const date = new Date(value);
+
+    if (
+      Number.isNaN(
+        date.getTime(),
+      )
+    ) {
+      return '—';
+    }
+
+    return date.toLocaleString(
+      'en-PH',
+      {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      },
+    );
+  };
+
 
   return (
     <main className="relative flex-1 overflow-hidden bg-[#F5F7F2] transition-colors dark:bg-[#07150D]">
@@ -430,44 +459,165 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
 
-            <CardContent className="space-y-5">
-            {stats.recentActivities.map(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (doc: any, i: number) => {
-                return (
-                  <div
-                    key={i}
-                    className="group flex flex-col gap-5 rounded-3xl border border-slate-100 bg-slate-50/70 transition-colors dark:border-[#214234] dark:bg-[#173227] p-5 transition-all duration-300 hover:border-green-200 hover:bg-white dark:hover:bg-slate-800 md:flex-row md:items-center md:justify-between"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-lg">
-                        <FileText className="h-8 w-8" />
-                      </div>
+            <CardContent className="space-y-4">
+              {stats.recentActivities.map(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (doc: any) => {
+                  return (
+                    <div
+                      key={doc.id}
+                      className="
+                        group
+                        rounded-3xl
+                        border
+                        border-slate-100
+                        bg-slate-50/70
+                        p-5
+                        transition-all
+                        duration-300
+                        hover:border-green-200
+                        hover:bg-white
+                        hover:shadow-md
+                        dark:border-[#214234]
+                        dark:bg-[#173227]
+                        dark:hover:border-green-700
+                        dark:hover:bg-slate-800
+                      "
+                    >
+                      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                        {/* LEFT */}
 
-                      <div>
-                        <h3 className="text-lg font-bold text-[#102418] dark:text-[#F3F8F3]">
-                          {doc.title}
-                        </h3>
+                        <div className="flex min-w-0 flex-1 items-start gap-4">
+                          {/* ICON */}
 
-                        <p className="mt-1 text-sm text-slate-500 dark:text-[#A9C5B6]">
-                          Tracking No:{' '}
-                          {doc.trackingNumber}
-                        </p>
+                          <div
+                            className="
+                              flex
+                              h-16
+                              w-16
+                              shrink-0
+                              items-center
+                              justify-center
+                              rounded-3xl
+                              bg-gradient-to-br
+                              from-green-600
+                              to-emerald-600
+                              text-white
+                              shadow-lg
+                            "
+                          >
+                            <FileText className="h-8 w-8" />
+                          </div>
+
+                          {/* CONTENT */}
+
+                          <div className="min-w-0 flex-1">
+                            {/* TITLE */}
+
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="text-lg font-bold text-[#102418] dark:text-[#F3F8F3]">
+                                {doc.title}
+                              </h3>
+
+                              {doc.documentType && (
+                                <Badge
+                                  variant="outline"
+                                  className="
+                                    rounded-full
+                                    border-slate-200
+                                    bg-white
+                                    text-xs
+                                    font-medium
+                                    text-slate-600
+                                    dark:border-[#315543]
+                                    dark:bg-[#102418]
+                                    dark:text-[#A9C5B6]
+                                  "
+                                >
+                                  {doc.documentType}
+                                </Badge>
+                              )}
+                            </div>
+
+                            {/* TRACKING */}
+
+                            <p className="mt-1 text-sm text-slate-500 dark:text-[#A9C5B6]">
+                              Tracking No:{' '}
+                              <span className="font-semibold text-slate-700 dark:text-[#D7E8DD]">
+                                {doc.trackingNumber}
+                              </span>
+                            </p>
+
+                            {/* ROUTING */}
+
+                            <div
+                              className="
+                                mt-4
+                                flex
+                                flex-wrap
+                                items-center
+                                gap-2
+                                text-sm
+                                font-medium
+                                text-slate-700
+                                dark:text-[#D7E8DD]
+                              "
+                            >
+                              <span>
+                                {doc.fromOffice
+                                  ?.officeName ??
+                                  'Unknown Office'}
+                              </span>
+
+                              <span className="text-green-600">
+                                →
+                              </span>
+
+                              <span>
+                                {doc.toOffice
+                                  ?.officeName ??
+                                  'Unknown Office'}
+                              </span>
+                            </div>                            
+                          </div>
+                        </div>
+
+                        {/* RIGHT */}
+
+                        <div className="flex shrink-0 flex-wrap items-center gap-2">
+                          {/* DIRECTION */}
+
+                          <Badge
+                            variant="outline"
+                            className={
+                              doc.direction ===
+                              'INCOMING'
+                                ? 'rounded-full border-blue-200 bg-blue-50 px-4 py-2 text-blue-700 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300'
+                                : 'rounded-full border-violet-200 bg-violet-50 px-4 py-2 text-violet-700 dark:border-violet-900 dark:bg-violet-950/30 dark:text-violet-300'
+                            }
+                          >
+                            {doc.direction}
+                          </Badge>
+
+                          {/* ROUTE STATUS */}
+
+                          <Badge
+                            className={`rounded-full px-5 py-2 ${getStatusColor(
+                              doc.status,
+                            )}`}
+                          >
+                            {doc.status?.replaceAll(
+                              '_',
+                              ' ',
+                            )}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
-
-                    <Badge
-                      className={`rounded-full px-5 py-2 ${getStatusColor(
-                        doc.status,
-                      )}`}
-                    >
-                      {doc.status}
-                    </Badge>
-                  </div>
-                );
-              },
-            )}
-          </CardContent>
+                  );
+                },
+              )}
+            </CardContent>
           </Card>
 
           {/* ====================================== */}

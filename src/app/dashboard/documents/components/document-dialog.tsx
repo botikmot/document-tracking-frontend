@@ -503,113 +503,176 @@ export default function DocumentDialog({
       }
     };
 
-  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-const handleFileUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>
+const handleFileUpload =
+  async (
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    const files = e.target.files;
+    const files =
+      e.target.files;
 
-    if (!files) return;
+    if (!files) {
+      return;
+    }
 
     try {
       setUploading(true);
 
-      const uploadedFiles: Attachment[] = [];
+      const uploadedFiles:
+        Attachment[] = [];
 
-      for (const file of Array.from(files)) {
+      for (
+        const file of Array.from(
+          files,
+        )
+      ) {
         /*
-        |----------------------------------------
-        | FILE SIZE LIMIT
-        |----------------------------------------
+        |--------------------------------------------------------------------------
+        | FILE SIZE
+        |--------------------------------------------------------------------------
         */
 
-        if (file.size > MAX_FILE_SIZE) {
-          alert(
-            `${file.name} exceeds 10MB limit`
+        if (
+          file.size >
+          MAX_FILE_SIZE
+        ) {
+          toast.error(
+            `${file.name} exceeds the 10MB limit.`,
           );
 
           continue;
         }
 
         /*
-        |----------------------------------------
-        | UPLOAD TO CLOUDINARY
-        |----------------------------------------
+        |--------------------------------------------------------------------------
+        | FORM DATA
+        |--------------------------------------------------------------------------
         */
 
-        const data = new FormData();
+        const data =
+          new FormData();
 
-        data.append('file', file);
-
-        const response = await fetch(
-          '/api/upload',
-          {
-            method: 'POST',
-            body: data,
-          }
+        data.append(
+          'file',
+          file,
         );
 
-        const result =
-          await response.json();
+        /*
+        |--------------------------------------------------------------------------
+        | UPLOAD TO NESTJS BACKEND
+        |--------------------------------------------------------------------------
+        */
 
-        if (!response.ok) {
-          throw new Error(
-            result.error ||
-              'Upload failed'
+        const response =
+          await api.post(
+            '/documents/upload',
+            data,
+            {
+              headers: {
+                'Content-Type':
+                  'multipart/form-data',
+              },
+            },
           );
-        }
 
         uploadedFiles.push({
-          fileName: file.name,
-          filePath: result.url,
-          mimeType: file.type,
-          fileSize: file.size,
-          publicId: result.public_id,
+          fileName:
+            response.data
+              .fileName,
+
+          filePath:
+            response.data
+              .filePath,
+
+          mimeType:
+            response.data
+              .mimeType,
+
+          fileSize:
+            response.data
+              .fileSize,
+
+          publicId:
+            response.data
+              .publicId,
         });
       }
 
-      setAttachments((prev) => [
-        ...prev,
-        ...uploadedFiles,
-      ]);
-    } catch (error) {
-      console.error(error);
+      setAttachments(
+        (prev) => [
+          ...prev,
+          ...uploadedFiles,
+        ],
+      );
 
-      alert('Upload failed');
+      if (
+        uploadedFiles.length >
+        0
+      ) {
+        toast.success(
+          `${uploadedFiles.length} file${
+            uploadedFiles.length >
+            1
+              ? 's'
+              : ''
+          } uploaded successfully.`,
+        );
+      }
+
+      /*
+       * Allows selecting the same
+       * file again if needed.
+       */
+      e.target.value = '';
+    } catch (error) {
+      console.error(
+        'Document upload failed:',
+        error,
+      );
+
+      toast.error(
+        'Failed to upload attachment.',
+      );
     } finally {
       setUploading(false);
     }
   };
 
-  const removeAttachment = async (
-    publicId: string
-  ) => {
-    try {
-      await fetch(
-        '/api/upload/delete',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type':
-              'application/json',
-          },
-          body: JSON.stringify({
+  const removeAttachment =
+    async (
+      publicId: string,
+    ) => {
+      try {
+        await api.delete(
+          `/documents/upload/${encodeURIComponent(
             publicId,
-          }),
-        }
-      );
+          )}`,
+        );
 
-      setAttachments((prev) =>
-        prev.filter(
-          (item) =>
-            item.publicId !== publicId
-        )
-      );
-    } catch (error) {
-      console.error(error);
-    }
-  };
+        setAttachments(
+          (prev) =>
+            prev.filter(
+              (item) =>
+                item.publicId !==
+                publicId,
+            ),
+        );
+
+        toast.success(
+          'Attachment removed.',
+        );
+      } catch (error) {
+        console.error(
+          'Failed to remove attachment:',
+          error,
+        );
+
+        toast.error(
+          'Failed to remove attachment.',
+        );
+      }
+    };
 
   const selectedDocumentType =
     documentTypes.find(

@@ -60,6 +60,9 @@ export function DocumentDetailsDrawer({
       item.officeCode === 'ORD',
   );
 
+
+  const API_URL = process.env.NEXT_PUBLIC_URL?.replace(/\/$/, '') ?? '';
+
   const officeCode = user?.offices[0].officeCode;
 
   const documentIsInOrd = document?.currentOffice?.officeCode === 'ORD';
@@ -108,6 +111,19 @@ export function DocumentDetailsDrawer({
       officeCode,
       documentType: document.documentType?.name ?? ''
     });
+  };
+
+  const getAttachmentUrl = (
+    filePath: string,
+  ) => {
+    if (
+      filePath.startsWith('http://') ||
+      filePath.startsWith('https://')
+    ) {
+      return filePath;
+    }
+
+    return `${API_URL}${filePath}`;
   };
 
 
@@ -358,7 +374,15 @@ export function DocumentDetailsDrawer({
                       size="sm"
                       variant="outline"
                       className="mt-3 cursor-pointer dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
-                      onClick={() => window.open(file.filePath)}
+                      onClick={() =>
+                        window.open(
+                          getAttachmentUrl(
+                            file.filePath,
+                          ),
+                          '_blank',
+                          'noopener,noreferrer',
+                        )
+                      }
                     >
                       Preview
                     </Button>

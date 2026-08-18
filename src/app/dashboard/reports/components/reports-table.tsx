@@ -199,7 +199,7 @@ export function ReportsTable({
                 </th>
 
                 <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
-                  Title
+                  Subject
                 </th>
 
                 <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
