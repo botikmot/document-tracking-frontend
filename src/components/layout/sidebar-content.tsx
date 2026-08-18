@@ -17,6 +17,7 @@ import {
   FileText,
   ChartColumn,
   MessageSquare,
+  Eye,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -61,6 +62,13 @@ export function SidebarContent() {
     useAuthStore(
       (state) => state.logout,
     );
+
+  const isOrdUser =
+    user?.offices?.some(
+      (item) =>
+        item.office?.officeCode === 'ORD' ||
+        item.officeCode === 'ORD',
+    ) ?? false;
 
   const menus = [
     {
@@ -109,6 +117,15 @@ export function SidebarContent() {
         '/dashboard/reports',
       icon: ChartColumn,
     },
+    ...(isOrdUser
+    ? [
+        {
+          label: 'Records Monitoring',
+          href: '/dashboard/records-monitoring',
+          icon: Eye,
+        },
+      ]
+    : []),
     {
       label: 'Settings',
       href:

@@ -60,6 +60,8 @@ export function DocumentDetailsDrawer({
       item.officeCode === 'ORD',
   );
 
+  const officeCode = user?.offices[0].officeCode;
+
   const documentIsInOrd = document?.currentOffice?.officeCode === 'ORD';
 
   const canEdit = Boolean(isOrdUser && documentIsInOrd);
@@ -103,6 +105,8 @@ export function DocumentDetailsDrawer({
         ).toLocaleString(),
 
       qrCode,
+      officeCode,
+      documentType: document.documentType?.name ?? ''
     });
   };
 
@@ -217,6 +221,27 @@ export function DocumentDetailsDrawer({
 
           {/* DETAILS GRID */}
           <div className="grid gap-5 md:grid-cols-2">
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 transition-colors dark:border-[#214234] dark:bg-[#102418]">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-slate-500 dark:text-[#A9C5B6]" />
+
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
+                    Document Classification
+                  </p>
+
+                  <h4 className="font-bold text-slate-900 dark:text-[#F3F8F3]">
+                    {document.classification ===
+                    'TECHNICAL'
+                      ? 'HIGHLY TECHNICAL'
+                      : document.classification ||
+                        'N/A'}
+                  </h4>
+                </div>
+              </div>
+            </div>
+
             <div className="rounded-2xl border border-slate-200 bg-white p-5 transition-colors dark:border-[#214234] dark:bg-[#102418]">
               <div className="flex items-center gap-3">
                 <Building2 className="h-5 w-5 text-slate-500 dark:text-[#A9C5B6]" />

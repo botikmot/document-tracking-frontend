@@ -18,36 +18,10 @@ import {
 
 import { Badge } from '@/components/ui/badge';
 
-type DocumentSummary = {
-  count: number;
-  documents: {
-    id: string;
-    trackingNumber: string;
-    title: string;
-    documentType: string;
-    status: string;
-    office: string;
-    classification: string | null;
-    priority: string | null;
-    createdAt: string;
-    deadline: string | null;
-  }[];
-};
-
-type ReportSummary = {
-  totalDocuments: DocumentSummary;
-  incomingDocuments: DocumentSummary;
-  outgoingDocuments: DocumentSummary;
-  completedDocuments: DocumentSummary;
-  pendingDocuments: DocumentSummary;
-  overdueDocuments: DocumentSummary;
-  completionRate: number;
-  processingEfficiency: number;
-  averageProcessingHours: number;
-};
+import type { Report } from '@/types/report';
 
 type Props = {
-  summary?: ReportSummary;
+  summary?: Report['summary'];
 };
 
 export function ReportCards({

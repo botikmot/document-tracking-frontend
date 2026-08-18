@@ -17,15 +17,63 @@ export interface ReportFilters {
 
 export type ReportDocument = {
   id: string;
+
   trackingNumber: string;
   title: string;
+
   documentType: string;
+
+  // Global document status
   status: string;
+
+  // Selected office handling status
+  officeStatus:
+    | 'PENDING'
+    | 'RECEIVED'
+    | 'COMPLETED'
+    | 'RETURNED'
+    | null;
+
+  routeStatus:
+    | 'PENDING'
+    | 'RECEIVED'
+    | 'COMPLETED'
+    | 'RETURNED'
+    | null;
+
+  routedToOffice:
+    | string
+    | null;
+
   office: string;
-  classification: string | null;
-  priority: string | null;
+
+  classification: string;
+
+  priority?: string | null;
+
   createdAt: string;
-  deadline: string | null;
+
+  deadline?: string | null;
+
+  allottedTimeMs:
+    | number
+    | null;
+
+  timeInOfficeMs:
+    | number
+    | null;
+
+  deadlineStatus:
+    | 'NO_DEADLINE'
+    | 'AWAITING_RECEIPT'
+    | 'ON_TIME'
+    | 'OVERDUE';
+
+  isOverdue: boolean;
+
+  officeCompletedAt?:
+    | string
+    | null;
 };
 
 export type DocumentSummary = {
@@ -45,14 +93,40 @@ export type ReportSummary = {
   processingEfficiency: number;
 };
 
-export interface Report {
+export type Report = {
   reportPeriod: {
     type: string;
     startDate: string;
     endDate: string;
   };
 
-  summary: ReportSummary;
+  summary: {
+    totalDocuments:
+      DocumentSummary;
+
+    incomingDocuments:
+      DocumentSummary;
+
+    outgoingDocuments:
+      DocumentSummary;
+
+    pendingDocuments:
+      DocumentSummary;
+
+    completedDocuments:
+      DocumentSummary;
+
+    overdueDocuments:
+      DocumentSummary;
+
+    completionRate: number;
+
+    averageProcessingHours:
+      number;
+
+    processingEfficiency:
+      number;
+  };
 
   statusBreakdown: {
     statusId: string;
@@ -66,34 +140,27 @@ export interface Report {
     count: number;
   }[];
 
-  byPriority: Array<{
+  byPriority: {
     priority: string | null;
+
     _count: {
       priority: number;
     };
-  }>;
-
-  monthlyTrend: Array<{
-    month: string;
-    created: number;
-    completed: number;
-  }>;
-
-  analytics: {
-    averageProcessingHours: number;
-  };
-
-  documents: {
-    id: string;
-    trackingNumber: string;
-    title: string;
-    documentType: string;
-    status: string;
-    office: string;
-    priority?: string;
-    createdAt: string;
-    deadline?: string;
   }[];
 
+  monthlyTrend: {
+    month: string;
+    handled: number;
+    completed: number;
+  }[];
+
+  analytics: {
+    averageProcessingHours:
+      number;
+  };
+
+  documents:
+    ReportDocument[];
+
   generatedAt: string;
-}
+};

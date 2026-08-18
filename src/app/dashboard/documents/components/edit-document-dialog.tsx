@@ -154,7 +154,7 @@ const CLASSIFICATIONS = [
   },
   {
     value: 'TECHNICAL',
-    label: 'Technical',
+    label: 'Highly Technical',
   },
 ];
 

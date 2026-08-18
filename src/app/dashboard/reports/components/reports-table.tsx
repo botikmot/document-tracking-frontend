@@ -21,41 +21,14 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { formatDuration } from '@/lib/format-duration';
 import { getRoutingDisplay } from '@/lib/get-routing-display';
+import type {
+  ReportDocument,
+} from '@/types/report';
 
 import {
   Button,
 } from '@/components/ui/button';
 
-type ReportDocument = {
-  id: string;
-  trackingNumber: string;
-  title: string;
-  documentType: string;
-  classification: string;
-
-  status: string;
-  officeStatus: string;
-
-  office: string;
-  routedToOffice: string;
-
-  priority?: string;
-
-  createdAt: string;
-  deadline?: string;
-
-  // NEW
-  allottedTimeMs: number | null;
-  timeInOfficeMs: number;
-
-  isOverdue: boolean;
-
-  deadlineStatus:
-    | 'NO_DEADLINE'
-    | 'AWAITING_RECEIPT'
-    | 'ON_TIME'
-    | 'OVERDUE';
-};
 
 type Props = {
   loading: boolean;
@@ -155,29 +128,26 @@ export function ReportsTable({
    |-------------------------------------------------------------
    */
 
-  function statusBadge(
-    status: string,
-  ) {
+  const statusBadge = (
+    status: string | null,
+  ) => {
     switch (status) {
       case 'COMPLETED':
-        return 'bg-green-100 text-green-700';
+        return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+
+      case 'RECEIVED':
+        return 'bg-blue-100 text-blue-700 border-blue-200';
 
       case 'PENDING':
-        return 'bg-yellow-100 text-yellow-700';
-
-      case 'FOR_REVIEW':
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-amber-100 text-amber-700 border-amber-200';
 
       case 'RETURNED':
-        return 'bg-red-100 text-red-700';
-
-      case 'IN_TRANSIT':
-        return 'bg-indigo-100 text-indigo-700';
+        return 'bg-red-100 text-red-700 border-red-200';
 
       default:
-        return 'bg-slate-100 text-slate-700';
+        return 'bg-slate-100 text-slate-600 border-slate-200';
     }
-  }
+  };
 
   return (
     <Card className="rounded-[32px] border-0 shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">

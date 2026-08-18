@@ -68,7 +68,74 @@ export function IncomingDocumentsTable({
 
   const { markAsRead, notifications } = useNotificationStore();
 
+  const getDeadlineInfo = (
+    deadline: string,
+    status?: string,
+  ) => {
+    if (!deadline) {
+      return null;
+    }
 
+    const now = new Date();
+
+    const deadlineDate =
+      new Date(deadline);
+
+    const diffMs =
+      deadlineDate.getTime() -
+      now.getTime();
+
+    if (diffMs <= 0) {
+      if (status?.toUpperCase() === 'COMPLETED') {
+        return null;
+      }
+
+      return {
+        text: 'Overdue',
+        className:
+          'bg-red-100 text-red-700 border-red-200',
+      };
+    }
+
+    const diffHours = Math.floor(
+      diffMs /
+        (1000 * 60 * 60),
+    );
+
+    const diffDays = Math.floor(
+      diffHours / 24,
+    );
+
+    if (diffHours < 24) {
+      return {
+        text: `${diffHours} hour${
+          diffHours > 1
+            ? 's'
+            : ''
+        } remaining`,
+        className:
+          'bg-orange-100 text-orange-700 border-orange-200 animate-pulse',
+      };
+    }
+
+    if (diffDays <= 3) {
+      return {
+        text: `${diffDays} day${
+          diffDays > 1
+            ? 's'
+            : ''
+        } remaining`,
+        className:
+          'bg-amber-100 text-amber-700 border-amber-200',
+      };
+    }
+
+    return {
+      text: `${diffDays} days remaining`,
+      className:
+        'bg-emerald-100 text-emerald-700 border-emerald-200',
+    };
+  };
 
 
   if (loading) {
@@ -141,6 +208,11 @@ export function IncomingDocumentsTable({
               ?.name ===
             'IN_TRANSIT';
 
+          const deadlineInfo =
+              getDeadlineInfo(
+                doc.deadline, doc.currentStatus?.name
+              );
+
           return (
             <div
               key={route.id}
@@ -167,6 +239,17 @@ export function IncomingDocumentsTable({
                             ?.name
                         }
                       </Badge>
+
+                      {deadlineInfo && (
+                        <div
+                          className={`rounded-full border px-4 py-1 text-sm font-bold ${deadlineInfo.className}`}
+                        >
+                          {
+                            deadlineInfo.text
+                          }
+                        </div>
+                      )}
+
                     </div>
 
                     {/* META */}

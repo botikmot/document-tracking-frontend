@@ -136,23 +136,23 @@ export const styles = StyleSheet.create({
   },
 
   no: {
-    width: '5%',
+    width: '3%',
   },
 
   tracking: {
-    width: '16%',
+    width: '10%',
   },
 
   title: {
-    width: '28%',
+    width: '19%',
   },
 
   type: {
-    width: '13%',
+    width: '8%',
   },
 
   office: {
-    width: '18%',
+    width: '14%',
   },
 
   classification: {
@@ -160,11 +160,19 @@ export const styles = StyleSheet.create({
   },
 
   deadline: {
+    width: '9%',
+  },
+
+  allottedTime: {
+    width: '8%',
+  },
+
+  timeInOffice: {
     width: '10%',
   },
 
   status: {
-    width: '10%',
+    width: '9%',
   },
 
   footer: {

@@ -31,7 +31,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { api } from '@/lib/axios';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
-import { downloadRoutingSlip } from '@/lib/download-routing-slip';
+//import { downloadRoutingSlip } from '@/lib/download-routing-slip';
 
 type Attachment = {
   fileName: string;
@@ -138,7 +138,7 @@ export default function CreateDocumentDialog(
             trackingUrl,
           );
         
-        await downloadRoutingSlip({
+        /* await downloadRoutingSlip({
           trackingNumber:
             res.data.trackingNumber,
 
@@ -169,7 +169,9 @@ export default function CreateDocumentDialog(
             ).toLocaleString(),
 
           qrCode,
-        });
+          officeCode,
+          documentType,
+        }); */
 
         onCreated();
 

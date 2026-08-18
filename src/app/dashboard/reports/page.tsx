@@ -5,15 +5,23 @@ import { useReports } from './hooks/useReports';
 import { ReportHeader } from './components/report-header';
 import { ReportFilters } from './components/report-filters';
 import { ReportCards } from './components/report-cards';
-import { TrendChart } from './components/trend-chart';
+//import { TrendChart } from './components/trend-chart';
 import { StatusChart } from './components/status-chart';
-import { PriorityChart } from './components/priority-chart';
+//import { PriorityChart } from './components/priority-chart';
 import { TypeChart } from './components/type-chart';
 //import { OfficeRankingChart } from './components/office-ranking-chart';
 import { ReportsTable } from './components/reports-table';
 import { ExportButtons } from './components/export-buttons';
+import { useAuthStore } from '@/store/auth.store';
 
 export default function ReportsPage() {
+
+  const user =
+      useAuthStore(
+        (state) =>
+          state.user,
+      );
+
   const {
     loading,
     filters,
@@ -52,9 +60,9 @@ export default function ReportsPage() {
 
           <div className="grid gap-6 xl:grid-cols-2">
 
-            <TrendChart
+            {/* <TrendChart
               data={report.monthlyTrend}
-            />
+            /> */}
 
             <StatusChart
               data={report.statusBreakdown.map(
@@ -65,9 +73,18 @@ export default function ReportsPage() {
               )}
             />
 
+            <TypeChart
+              data={report.documentTypeBreakdown.map(
+                (item) => ({
+                  name: item.documentTypeName,
+                  total: item.count,
+                }),
+              )}
+            />
+
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-2">
+          {/* <div className="grid gap-6 xl:grid-cols-2">
 
             <PriorityChart
               data={report.byPriority.map((item) => ({
@@ -85,7 +102,7 @@ export default function ReportsPage() {
               )}
             />
 
-          </div>
+          </div> */}
 
           <ReportsTable
             loading={loading}
@@ -94,6 +111,11 @@ export default function ReportsPage() {
 
           <ExportButtons
             documents={report.documents}
+            officeName={
+              user?.offices?.[0]
+                ?.officeName ??
+              'N/A'
+            }
             reportName="eDats_Report"
             reportType={filters.type}
             year={filters.year}
@@ -104,6 +126,8 @@ export default function ReportsPage() {
             pending={report.summary.pendingDocuments.count}
             completed={report.summary.completedDocuments.count}
             overdue={report.summary.overdueDocuments.count}
+            averageProcessingHours={report.summary.averageProcessingHours}
+            processingEfficiency={report.summary.processingEfficiency}
           />
 
         </div>

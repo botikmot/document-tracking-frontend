@@ -171,6 +171,32 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 8,
   },
+
+  classificationOptions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 12,
+    flex: 1,
+  },
+
+  checkboxOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+
+  checkbox: {
+    width: 10,
+    height: 10,
+    borderWidth: 1,
+    borderColor: '#000000',
+  },
+
+  checkboxLabel: {
+    fontSize: 8,
+  },
+
 });
 
 type Props = {
@@ -183,6 +209,8 @@ type Props = {
   addressee: string;
   createdAt: string;
   qrCode: string;
+  officeCode: string;
+  documentType: string;
 };
 
 export default function RoutingSlipPDF({
@@ -194,7 +222,15 @@ export default function RoutingSlipPDF({
   addressee,
   createdAt,
   qrCode,
+  officeCode,
+  documentType,
 }: Props) {
+
+  const isPermitDocument =
+      documentType
+        ?.trim()
+        .toLowerCase() ===
+      'permits';
 
   return (
     <Document>
@@ -401,26 +437,42 @@ export default function RoutingSlipPDF({
             </Text>
           </View>
 
-          <View
-            style={
-              styles.infoRow
-            }
-          >
-            <Text
-              style={
-                styles.infoLabel
-              }
-            >
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>
               Classification:
             </Text>
 
-            <Text
-              style={
-                styles.infoValue
-              }
-            >
-              {classification === 'TECHNICAL' ? 'HIGHLY TECHNICAL' : classification }
-            </Text>
+            {officeCode === 'RO-RECORDS' &&
+                !isPermitDocument ? (
+              <View style={styles.classificationOptions}>
+                <View style={styles.checkboxOption}>
+                  <View style={styles.checkbox} />
+                  <Text style={styles.checkboxLabel}>
+                    Simple
+                  </Text>
+                </View>
+
+                <View style={styles.checkboxOption}>
+                  <View style={styles.checkbox} />
+                  <Text style={styles.checkboxLabel}>
+                    Complex
+                  </Text>
+                </View>
+
+                <View style={styles.checkboxOption}>
+                  <View style={styles.checkbox} />
+                  <Text style={styles.checkboxLabel}>
+                    Highly Technical
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <Text style={styles.infoValue}>
+                {classification === 'TECHNICAL'
+                  ? 'HIGHLY TECHNICAL'
+                  : classification}
+              </Text>
+            )}
           </View>
 
           <View

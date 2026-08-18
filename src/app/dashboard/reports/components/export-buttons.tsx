@@ -20,6 +20,7 @@ import { ReportPDF } from '../pdf/ReportPDF';
 type Props = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   documents: any[];
+  officeName: string;
   reportName: string;
   reportType?: string;
   year?: number;
@@ -30,10 +31,13 @@ type Props = {
   pending?: number;
   completed?: number;
   overdue?: number;
+  averageProcessingHours?: number;
+  processingEfficiency?: number;
 };
 
 export function ExportButtons({
   documents,
+  officeName,
   reportName,
   reportType,
   year,
@@ -44,6 +48,8 @@ export function ExportButtons({
   pending = 0,
   completed = 0,
   overdue = 0,
+  averageProcessingHours = 0,
+  processingEfficiency = 0,
 }: Props) {
   return (
     <div className="flex flex-wrap gap-3 justify-end">
@@ -56,6 +62,7 @@ export function ExportButtons({
             documents={
               documents
             }
+            officeName={officeName}
             reportType={reportType}
             year={year}
             month={month}
@@ -65,9 +72,11 @@ export function ExportButtons({
             pending={pending}
             completed={completed}
             overdue={overdue}
+            averageProcessingHours={averageProcessingHours}
+            processingEfficiency={processingEfficiency}
           />
         }
-        fileName={`${reportName}.pdf`}
+        fileName={`${officeName}-${reportType}.pdf`}
       >
         {({
           loading,

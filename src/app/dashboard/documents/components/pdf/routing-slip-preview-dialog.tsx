@@ -55,7 +55,7 @@ export default function RoutingSlipPreviewDialog({
         </DialogHeader>
 
         <div className="flex justify-end">
-          <PDFDownloadLink
+          {/* <PDFDownloadLink
             document={
               <RoutingSlipPDF
                 {...documentData}
@@ -72,7 +72,7 @@ export default function RoutingSlipPreviewDialog({
                   : 'Download PDF'}
               </Button>
             )}
-          </PDFDownloadLink>
+          </PDFDownloadLink> */}
         </div>
 
         <div className="flex-1 overflow-hidden rounded-xl border">
@@ -80,9 +80,9 @@ export default function RoutingSlipPreviewDialog({
             width="100%"
             height="100%"
           >
-            <RoutingSlipPDF
+            {/* <RoutingSlipPDF
               {...documentData}
-            />
+            /> */}
           </PDFViewer>
         </div>
       </DialogContent>

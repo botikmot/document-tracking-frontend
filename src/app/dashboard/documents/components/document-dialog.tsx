@@ -27,11 +27,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+//import { Badge } from '@/components/ui/badge';
 import { api } from '@/lib/axios';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { downloadRoutingSlip } from '@/lib/download-routing-slip';
 import { toast } from 'sonner';
+import { useAuthStore } from '@/store/auth.store';
 
 type Attachment = {
   fileName: string;
@@ -40,6 +41,150 @@ type Attachment = {
   fileSize: number;
   publicId: string;
 };
+
+type PermitOption = {
+  id: string;
+  name: string;
+  classification:
+    | 'SIMPLE'
+    | 'COMPLEX'
+    | 'TECHNICAL';
+
+  turnaround: {
+    days: number;
+    hours?: number;
+    minutes?: number;
+  };
+
+  note?: string;
+};
+
+const PERMIT_OPTIONS: PermitOption[] = [
+  {
+    id: 'supply-contracts-plantation',
+    name: 'Supply Contracts (Log, Lumber & Veneer-Plantation)',
+    classification: 'COMPLEX',
+    turnaround: {
+      days: 7,
+    },
+  },
+  {
+    id: 'export-authority',
+    name: 'Export Authority',
+    classification: 'COMPLEX',
+    turnaround: {
+      days: 7,
+    },
+  },
+  {
+    id: 'supply-contracts-naturally-grown',
+    name: 'Supply Contracts (Naturally Grown Species)',
+    classification: 'TECHNICAL',
+    turnaround: {
+      days: 7,
+    },
+  },
+  {
+    id: 'dealership-permits',
+    name: 'Dealership Permits',
+    classification: 'COMPLEX',
+    turnaround: {
+      days: 7,
+    },
+  },
+  {
+    id: 'annual-rattan-cutting-replanting',
+    name: 'Annual Rattan Cutting and Replanting Permit',
+    classification: 'COMPLEX',
+    turnaround: {
+      days: 7,
+    },
+  },
+  {
+    id: 'rattan-cutting-contract',
+    name: 'Rattan Cutting Contract (RCC)',
+    classification: 'TECHNICAL',
+    turnaround: {
+      days: 7,
+    },
+  },
+  {
+    id: 'rattan-processing-plant-permit',
+    name: 'Rattan Processing Plant Permit (RPPP)',
+    classification: 'TECHNICAL',
+    turnaround: {
+      days: 7,
+    },
+  },
+  {
+    id: 'feasibility-permit',
+    name: 'Feasibility Permit',
+    classification: 'TECHNICAL',
+    turnaround: {
+      days: 20,
+    },
+  },
+  {
+    id: 'wood-processing-plant-permit',
+    name: 'Wood Processing Plant (WPP) Permit',
+    classification: 'TECHNICAL',
+    turnaround: {
+      days: 20,
+    },
+  },
+  {
+    id: 'private-land-timber-permit',
+    name: 'Private Land Timber Permit (PLTP)',
+    classification: 'TECHNICAL',
+    turnaround: {
+      days: 11,
+      hours: 1,
+      minutes: 45,
+    },
+    note: 'Per CC 1st Edition 2026',
+  },
+  {
+    id: 'community-based-forest-management',
+    name: 'Community Based-Forest Management (CBFM)',
+    classification: 'TECHNICAL',
+    turnaround: {
+      days: 20,
+    },
+  },
+  {
+    id: 'gratuitous-special-use-permit',
+    name: 'Gratuitous Special Use Permit (GSUP)',
+    classification: 'TECHNICAL',
+    turnaround: {
+      days: 20,
+    },
+  },
+  {
+    id: 'special-tree-cutting-earth-balling',
+    name: 'Special Tree Cutting and Earth-balling Permit',
+    classification: 'TECHNICAL',
+    turnaround: {
+      days: 20,
+    },
+  },
+  {
+    id: 'sustainable-forest-land-management',
+    name: 'Sustainable Forest Land Management Agreement',
+    classification: 'TECHNICAL',
+    turnaround: {
+      days: 20,
+    },
+    note: 'Endorsement to CO',
+  },
+  {
+    id: 'water-permit',
+    name: 'Water Permit',
+    classification: 'TECHNICAL',
+    turnaround: {
+      days: 15,
+    },
+  },
+];
 
 interface Props {
   mode?: 'create' | 'edit';
@@ -58,6 +203,16 @@ export default function DocumentDialog({
   onSuccess,
 }: Props) {
 
+  const user =
+      useAuthStore(
+        (state) =>
+          state.user,
+      );
+
+  console.log('user::-->>',user)
+  const officeCode = user?.offices[0].officeCode;
+  const isRecords = officeCode === 'RO-RECORDS'
+
   const initialFormData = {
     title: '',
     description: '',
@@ -66,8 +221,9 @@ export default function DocumentDialog({
         | Date
         | undefined,
     documentTypeId: '',
+    permitId: '',
     addressee: '',
-    classification: 'SIMPLE',
+    classification: isRecords ? 'UNCLASSIFIED' : 'SIMPLE',
     priority: 'MEDIUM',
     confidentialityLevel: 'PUBLIC',
     senderType: 'OFFICE',
@@ -105,6 +261,7 @@ export default function DocumentDialog({
     description: doc.description || '',
     deadline: doc.deadline ? new Date(doc.deadline) : undefined,
     documentTypeId: doc.documentTypeId || '',
+    permitId: doc.permitId || '',
     addressee: doc.addressee || '',
     classification: doc.classification || 'SIMPLE',
     priority: doc.priority || 'MEDIUM',
@@ -198,12 +355,50 @@ export default function DocumentDialog({
         toast.error('Please provide a document title.')
         return
       }
+      
 
       try {
         setLoading(true);
+
+        const selectedPermit =
+          PERMIT_OPTIONS.find(
+            (permit) =>
+              permit.id ===
+              formData.permitId,
+          );
+
+        const finalTitle =
+          isPermitDocument &&
+          selectedPermit
+            ? `${formData.title.trim()} Permits | ${selectedPermit.name}`
+            : formData.title.trim();
        
         const payload = {
-          ...formData,
+          title: finalTitle,
+          description:
+            formData.description,
+          deadline:
+            formData.deadline,
+          documentTypeId:
+            formData.documentTypeId,
+          addressee:
+            formData.addressee,
+          classification:
+            formData.classification,
+          priority:
+            formData.priority,
+          confidentialityLevel:
+            formData.confidentialityLevel,
+          senderType:
+            formData.senderType,
+          senderOfficeId:
+            formData.senderOfficeId,
+          senderName:
+            formData.senderName,
+          senderOrganization:
+            formData.senderOrganization,
+          senderContact:
+            formData.senderContact,
           attachments,
         };
 
@@ -250,6 +445,12 @@ export default function DocumentDialog({
         console.log('created: ', res)
         const trackingUrl = `${window.location.origin}/track?tracking=${res.data.trackingNumber}`;
 
+        const selectedDocumentType =
+              documentTypes.find(
+                (type) =>
+                  type.id === formData.documentTypeId,
+              );
+
         const qrCode =
           await QRCode.toDataURL(
             trackingUrl,
@@ -286,6 +487,8 @@ export default function DocumentDialog({
             ).toLocaleString(),
 
           qrCode,
+          officeCode,
+          documentType: selectedDocumentType?.name ?? ''
         });
 
         onSuccess();
@@ -408,9 +611,54 @@ const handleFileUpload = async (
     }
   };
 
+  const selectedDocumentType =
+    documentTypes.find(
+      (type) =>
+        type.id ===
+        formData.documentTypeId,
+    );
+
+  const isPermitDocument =
+    selectedDocumentType?.name
+      ?.trim()
+      .toLowerCase() ===
+    'permits';
+
 
   console.log('document::', document)
 
+  function calculatePermitDeadline(
+    turnaround: {
+      days: number;
+      hours?: number;
+      minutes?: number;
+    },
+  ) {
+    const deadline = new Date();
+
+    deadline.setDate(
+      deadline.getDate() +
+        turnaround.days,
+    );
+
+    if (turnaround.hours) {
+      deadline.setHours(
+        deadline.getHours() +
+          turnaround.hours,
+      );
+    }
+
+    if (turnaround.minutes) {
+      deadline.setMinutes(
+        deadline.getMinutes() +
+          turnaround.minutes,
+      );
+    }
+
+    return deadline;
+  }
+
+  
   return (
     <Dialog
       open={open}
@@ -492,11 +740,11 @@ const handleFileUpload = async (
               {/* TITLE */}
               <div className="lg:col-span-2">
                 <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
-                  Document Title
+                  Subject
                 </Label>
 
                 <Input
-                  placeholder="Enter document title..."
+                  placeholder="Enter document subject..."
                   className="h-12 rounded-2xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:placeholder:text-[#7FA18E]"
                   value={formData.title}
                   onChange={(e) =>
@@ -797,40 +1045,46 @@ const handleFileUpload = async (
             <div className="grid gap-6 lg:grid-cols-2">
               {/* DOCUMENT CLASSIFICATION */}
 
-            <div>
-              <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
-                Classification
-              </Label>
+              {(!isRecords || isPermitDocument) && (
+                <div>
+                  <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+                    Classification
+                  </Label>
 
-              <Select
-                value={
-                  formData.classification
-                }
-                onValueChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    classification:
-                      value,
-                  })
-                }
-              >
-                <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
-                  <SelectValue placeholder="Select classification" />
-                </SelectTrigger>
+                  <Select
+                    disabled={
+                      isPermitDocument ||
+                      isRecords
+                    }
+                    value={
+                      formData.classification
+                    }
+                    onValueChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        classification:
+                          value,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
+                      <SelectValue placeholder="Select classification" />
+                    </SelectTrigger>
 
-                <SelectContent className="dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]">
-                  <SelectItem value="SIMPLE">
-                    Simple
-                  </SelectItem>
-                  <SelectItem value="COMPLEX">
-                    Complex
-                  </SelectItem>
-                  <SelectItem value="TECHNICAL">
-                    Highly Technical
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                    <SelectContent className="dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]">
+                      <SelectItem value="SIMPLE">
+                        Simple
+                      </SelectItem>
+                      <SelectItem value="COMPLEX">
+                        Complex
+                      </SelectItem>
+                      <SelectItem value="TECHNICAL">
+                        Highly Technical
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               {/* DOCUMENT TYPE */}
               <div>
                 <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
@@ -841,12 +1095,52 @@ const handleFileUpload = async (
                   value={
                     formData.documentTypeId
                   }
-                  onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
+                  onValueChange={(value) => {
+                    const selectedType =
+                      documentTypes.find(
+                        (type) =>
+                          type.id === value,
+                      );
+
+                    const isPermits =
+                      selectedType?.name
+                        ?.trim()
+                        .toLowerCase() ===
+                      'permits';
+
+                    setFormData((prev) => ({
+                      ...prev,
+
                       documentTypeId: value,
-                    })
-                  }
+
+                      /*
+                      * Clear old permit when
+                      * changing document type.
+                      */
+                      permitId: '',
+
+                      /*
+                      * For Records:
+                      * normal documents remain
+                      * unclassified.
+                      */
+                      classification:
+                        isPermits
+                          ? prev.classification
+                          : isRecords
+                            ? 'UNCLASSIFIED'
+                            : 'SIMPLE',
+
+                      /*
+                      * Prevent stale permit
+                      * deadline.
+                      */
+                      deadline:
+                        isPermits
+                          ? prev.deadline
+                          : undefined,
+                    }));
+                  }}
                 >
                   <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
                     <SelectValue placeholder="Select type" />
@@ -864,6 +1158,80 @@ const handleFileUpload = async (
                   </SelectContent>
                 </Select>
               </div>
+
+              {isPermitDocument && (
+                <div>
+                  <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+                    Name of Permit
+                  </Label>
+
+                  <Select
+                    value={
+                      formData.permitId
+                    }
+                    onValueChange={(
+                      value,
+                    ) => {
+                      const permit =
+                        PERMIT_OPTIONS.find(
+                          (item) =>
+                            item.id ===
+                            value,
+                        );
+
+                      if (!permit) {
+                        return;
+                      }
+
+                      const deadline =
+                        calculatePermitDeadline(
+                          permit.turnaround,
+                        );
+
+                      setFormData(
+                        (prev) => ({
+                          ...prev,
+
+                          permitId:
+                            permit.id,
+
+                          classification:
+                            permit.classification,
+
+                          deadline,
+                        }),
+                      );
+                    }}
+                  >
+                    <SelectTrigger className="h-12 w-full rounded-2xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
+                      <SelectValue placeholder="Select permit" />
+                    </SelectTrigger>
+
+                    <SelectContent className="dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]">
+                      {PERMIT_OPTIONS.map(
+                        (permit) => (
+                          <SelectItem
+                            key={permit.id}
+                            value={
+                              permit.id
+                            }
+                          >
+                            {permit.name}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
+
+                  <p className="mt-2 text-xs text-slate-500 dark:text-[#A9C5B6]">
+                    Classification and
+                    deadline will be set
+                    automatically based on
+                    the selected permit.
+                  </p>
+                </div>
+              )}
+
 
               {/* PRIORITY */}
               <div>
@@ -962,7 +1330,7 @@ const handleFileUpload = async (
               </div>
 
               {/* STATUS */}
-              <div>
+              {/* <div>
                 <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
                   Initial Status
                 </Label>
@@ -972,7 +1340,7 @@ const handleFileUpload = async (
                     Pending Review
                   </Badge>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {mode === 'create' && (

@@ -20,7 +20,7 @@ import {
 
 type TrendData = {
   month: string;
-  created: number;
+  handled: number;
   completed: number;
 };
 
@@ -60,7 +60,7 @@ export function TrendChart({
 
               <Line
                 type="monotone"
-                dataKey="created"
+                dataKey="handled"
                 stroke="#2563eb"
                 strokeWidth={4}
                 dot={{
@@ -69,7 +69,7 @@ export function TrendChart({
                 activeDot={{
                   r: 7,
                 }}
-                name="Created"
+                name="Handled"
               />
 
               <Line

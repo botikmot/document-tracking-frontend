@@ -18,6 +18,8 @@ type Props = {
   addressee: string;
   createdAt: string;
   qrCode: string;
+  officeCode: string;
+  documentType: string;
 };
 
 export async function downloadRoutingSlip(
