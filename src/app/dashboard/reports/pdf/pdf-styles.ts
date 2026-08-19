@@ -99,7 +99,7 @@ export const styles = StyleSheet.create({
     borderColor: '#CFCFCF',
   },
 
-  tableHeader: {
+  /* tableHeader: {
     flexDirection: 'row',
     backgroundColor: '#006838',
     color: '#FFF',
@@ -108,7 +108,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#CFCFCF',
-  },
+  }, */
 
   row: {
     flexDirection: 'row',
@@ -118,62 +118,63 @@ export const styles = StyleSheet.create({
     borderBottomColor: '#ECECEC',
   },
 
-  alternateRow: {
+  /* alternateRow: {
     backgroundColor: '#F8F8F8',
-  },
+  }, */
 
-  cell: {
+ /*  cell: {
     paddingHorizontal: 6,
     paddingVertical: 5,
     fontSize: 8,
-  },
+  }, */
 
-  headerCell: {
+  /* headerCell: {
     paddingHorizontal: 6,
     paddingVertical: 7,
     fontSize: 8,
     fontWeight: 'bold',
-  },
+  }, */
 
   no: {
     width: '3%',
   },
 
-  tracking: {
+ /*  tracking: {
     width: '10%',
-  },
+  }, */
 
   title: {
     width: '19%',
   },
 
-  type: {
+ /*  type: {
     width: '8%',
   },
-
+ */
   office: {
     width: '14%',
   },
 
-  classification: {
+  /* classification: {
     width: '10%',
-  },
+  }, */
 
-  deadline: {
+  /* deadline: {
     width: '9%',
-  },
+  }, */
 
-  allottedTime: {
+ /*  allottedTime: {
     width: '8%',
-  },
+  }, */
 
-  timeInOffice: {
+  /* timeInOffice: {
     width: '10%',
-  },
+  }, */
 
   status: {
     width: '9%',
   },
+  
 
   footer: {
     position: 'absolute',
@@ -189,25 +190,25 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 
-  statusCompleted: {
+ /*  statusCompleted: {
     color: '#15803d',
     fontWeight: 'bold',
-  },
+  }, */
 
   statusProcess: {
     color: '#2563eb',
     fontWeight: 'bold',
   },
 
-  statusPending: {
+  /* statusPending: {
     color: '#ca8a04',
     fontWeight: 'bold',
-  },
+  }, */
 
-  statusReturned: {
+  /* statusReturned: {
     color: '#dc2626',
     fontWeight: 'bold',
-  },
+  }, */
 
   overdue: {
     color: '#dc2626',
@@ -326,5 +327,143 @@ summaryCardValue: {
 summaryCardValueDanger: {
   color: '#DC2626',
 },
+
+  /*
+  |--------------------------------------------------------------------------
+  | Report Document Table
+  |--------------------------------------------------------------------------
+  */
+
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#006838',
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+  },
+
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#D1D5DB',
+    minHeight: 29,
+  },
+
+  alternateRow: {
+    backgroundColor: '#F8FAF8',
+  },
+
+  headerCell: {
+    color: '#FFFFFF',
+    fontSize: 5.7,
+    fontWeight: 'bold',
+    paddingHorizontal: 3,
+    paddingVertical: 6,
+    justifyContent: 'center',
+  },
+
+  cell: {
+    color: '#374151',
+    fontSize: 5.8,
+    paddingHorizontal: 3,
+    paddingVertical: 6,
+  },
+
+  /*
+   * Width total = 100%
+   */
+
+  tracking: {
+    width: '9%',
+  },
+
+  subject: {
+    width: '14%',
+  },
+
+  type: {
+    width: '8%',
+  },
+
+  classification: {
+    width: '8%',
+  },
+
+  currentLocation: {
+    width: '10%',
+  },
+
+  officeStatus: {
+    width: '9%',
+  },
+
+  responsible: {
+    width: '13%',
+  },
+
+  allottedTime: {
+    width: '7%',
+  },
+
+  timeInOffice: {
+    width: '7%',
+  },
+
+  deadlineStatus: {
+    width: '8%',
+  },
+
+  deadline: {
+    width: '7%',
+  },
+
+  /*
+  |--------------------------------------------------------------------------
+  | Status Text
+  |--------------------------------------------------------------------------
+  */
+
+  statusPending: {
+    color: '#B45309',
+    fontWeight: 'bold',
+  },
+
+  statusCustody: {
+    color: '#1D4ED8',
+    fontWeight: 'bold',
+  },
+
+  statusForwarded: {
+    color: '#7C3AED',
+    fontWeight: 'bold',
+  },
+
+  statusCompleted: {
+    color: '#047857',
+    fontWeight: 'bold',
+  },
+
+  statusReturned: {
+    color: '#B91C1C',
+    fontWeight: 'bold',
+  },
+
+  deadlineOnTime: {
+    color: '#047857',
+    fontWeight: 'bold',
+  },
+
+  deadlineOverdue: {
+    color: '#DC2626',
+    fontWeight: 'bold',
+  },
+
+  deadlineWaiting: {
+    color: '#B45309',
+    fontWeight: 'bold',
+  },
+
+  deadlineNone: {
+    color: '#6B7280',
+  },
 
 });

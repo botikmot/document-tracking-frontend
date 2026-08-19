@@ -19,61 +19,86 @@ export type ReportDocument = {
   id: string;
 
   trackingNumber: string;
+
   title: string;
 
   documentType: string;
 
-  // Global document status
-  status: string;
-
-  // Selected office handling status
-  officeStatus:
-    | 'PENDING'
-    | 'RECEIVED'
-    | 'COMPLETED'
-    | 'RETURNED'
-    | null;
-
-  routeStatus:
-    | 'PENDING'
-    | 'RECEIVED'
-    | 'COMPLETED'
-    | 'RETURNED'
-    | null;
-
-  routedToOffice:
-    | string
-    | null;
-
-  office: string;
-
-  classification: string;
+  classification?: string | null;
 
   priority?: string | null;
+
+  status: string;
+
+  officeStatus?: string | null;
+
+  routeStatus?: string | null;
+
+  routedToOffice?: string | null;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Current Location
+  |--------------------------------------------------------------------------
+  */
+
+  currentLocation?: {
+    officeId: string;
+
+    officeCode: string;
+
+    officeName: string;
+
+    isInTransit: boolean;
+  } | null;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Backward Compatibility
+  |--------------------------------------------------------------------------
+  */
+
+  office?: string;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Responsibility
+  |--------------------------------------------------------------------------
+  */
+
+  responsibleOffice?: {
+    id: string;
+
+    officeCode: string;
+
+    officeName: string;
+  } | null;
+
+  responsiblePerson?: string | null;
+
+  responsibleParty?: string | null;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Dates / Timing
+  |--------------------------------------------------------------------------
+  */
 
   createdAt: string;
 
   deadline?: string | null;
 
-  allottedTimeMs:
-    | number
-    | null;
+  allottedTimeMs?: number | null;
 
-  timeInOfficeMs:
-    | number
-    | null;
+  timeInOfficeMs: number;
+
+  isOverdue: boolean;
 
   deadlineStatus:
     | 'NO_DEADLINE'
     | 'AWAITING_RECEIPT'
     | 'ON_TIME'
     | 'OVERDUE';
-
-  isOverdue: boolean;
-
-  officeCompletedAt?:
-    | string
-    | null;
 };
 
 export type DocumentSummary = {

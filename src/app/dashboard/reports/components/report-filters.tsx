@@ -1,20 +1,28 @@
 'use client';
 
 import {
+  useMemo,
+} from 'react';
+
+import {
   CalendarDays,
   FileBarChart2,
   RotateCcw,
   Search,
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import {
+  Button,
+} from '@/components/ui/button';
 
 import {
   Card,
   CardContent,
 } from '@/components/ui/card';
 
-import { Input } from '@/components/ui/input';
+import {
+  Input,
+} from '@/components/ui/input';
 
 import {
   Select,
@@ -28,7 +36,23 @@ import type {
   ReportFilters as ReportFiltersType,
 } from '@/types/report';
 
-import { useDocumentTypes } from '../hooks/useDocumentTypes';
+import {
+  useAuthStore,
+} from '@/store/auth.store';
+
+import {
+  useAccessibleOffices,
+} from '@/hooks/useAccessibleOffices';
+
+import {
+  useDocumentTypes,
+} from '../hooks/useDocumentTypes';
+
+/*
+|--------------------------------------------------------------------------
+| Props
+|--------------------------------------------------------------------------
+*/
 
 type Props = {
   filters: ReportFiltersType;
@@ -41,6 +65,12 @@ type Props = {
 
   onGenerate: () => Promise<void>;
 };
+
+/*
+|--------------------------------------------------------------------------
+| Constants
+|--------------------------------------------------------------------------
+*/
 
 const MONTHS = [
   'January',
@@ -57,99 +87,524 @@ const MONTHS = [
   'December',
 ];
 
+const STATUS_OPTIONS = [
+  {
+    value: 'DRAFT',
+    label: 'Draft',
+  },
+  {
+    value: 'PENDING',
+    label: 'Pending',
+  },
+  {
+    value: 'IN_TRANSIT',
+    label: 'In Transit',
+  },
+  {
+    value: 'FOR_REVIEW',
+    label: 'For Review',
+  },
+  {
+    value: 'FOR_APPROVAL',
+    label: 'For Approval',
+  },
+  {
+    value: 'ON_PROCESS',
+    label: 'On Process',
+  },
+  {
+    value: 'FOR_RELEASE',
+    label: 'For Release',
+  },
+  {
+    value: 'APPROVED',
+    label: 'Approved',
+  },
+  {
+    value: 'REJECTED',
+    label: 'Rejected',
+  },
+  {
+    value: 'COMPLETED',
+    label: 'Completed',
+  },
+];
+
+/*
+|--------------------------------------------------------------------------
+| Component
+|--------------------------------------------------------------------------
+*/
+
 export function ReportFilters({
   filters,
   setFilters,
   loading,
   onGenerate,
 }: Props) {
+  /*
+  |--------------------------------------------------------------------------
+  | Current User
+  |--------------------------------------------------------------------------
+  */
+
+  const user =
+    useAuthStore(
+      (state) => state.user,
+    );
+
+  const currentUserOffice =
+    user?.offices?.[0];
+
+  /*
+   * Support both possible auth shapes:
+   *
+   * {
+   *   officeId,
+   *   officeCode,
+   *   officeName
+   * }
+   *
+   * or:
+   *
+   * {
+   *   officeId,
+   *   office: {...}
+   * }
+   */
+
+  const defaultOfficeId =
+    currentUserOffice?.officeId ??
+    currentUserOffice?.office?.id;
+
+  const defaultOfficeCode =
+    currentUserOffice?.officeCode ??
+    currentUserOffice?.office
+      ?.officeCode;
+
+  const defaultOfficeName =
+    currentUserOffice?.officeName ??
+    currentUserOffice?.office
+      ?.officeName;
+
+  /*
+   |--------------------------------------------------------------------------
+   | ORD Permission
+   |--------------------------------------------------------------------------
+   */
+
+  const isORD =
+    defaultOfficeCode ===
+    'ORD';
+
+  /*
+  |--------------------------------------------------------------------------
+  | Lookup Data
+  |--------------------------------------------------------------------------
+  */
+
+  const documentTypes =
+    useDocumentTypes();
+
+  const {
+    offices,
+    loading: loadingOffices,
+  } = useAccessibleOffices();
+
+  /*
+  |--------------------------------------------------------------------------
+  | Office Options
+  |--------------------------------------------------------------------------
+  |
+  | Important:
+  |
+  | The current/default office is inserted immediately if the accessible
+  | offices API has not finished loading yet.
+  |
+  | This means SelectValue always has a matching SelectItem and therefore
+  | will not render blank.
+  |
+  */
+
+  const officeOptions =
+    useMemo(() => {
+      const officeMap =
+        new Map(
+          offices.map(
+            (office) => [
+              office.id,
+              office,
+            ],
+          ),
+        );
+
+      if (
+        defaultOfficeId &&
+        !officeMap.has(
+          defaultOfficeId,
+        )
+      ) {
+        officeMap.set(
+          defaultOfficeId,
+          {
+            id:
+              defaultOfficeId,
+
+            officeCode:
+              defaultOfficeCode ??
+              '',
+
+            officeName:
+              defaultOfficeName ??
+              'Office of the Regional Director',
+          },
+        );
+      }
+
+      return Array.from(
+        officeMap.values(),
+      );
+    }, [
+      offices,
+      defaultOfficeId,
+      defaultOfficeCode,
+      defaultOfficeName,
+    ]);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Selected Reporting Office
+  |--------------------------------------------------------------------------
+  |
+  | undefined
+  |   = use logged-in user's default office
+  |
+  | []
+  |   = All Accessible Offices
+  |
+  | [officeId]
+  |   = explicitly selected office
+  |
+  */
+
+  const selectedOfficeValue =
+    filters.officeIds ===
+    undefined
+      ? defaultOfficeId ??
+        'ALL'
+      : filters.officeIds
+            .length === 0
+        ? 'ALL'
+        : filters.officeIds[0];
+
+  /*
+  |--------------------------------------------------------------------------
+  | Selected Office Label
+  |--------------------------------------------------------------------------
+  */
+
+  const selectedOffice =
+    selectedOfficeValue ===
+    'ALL'
+      ? undefined
+      : officeOptions.find(
+          (office) =>
+            office.id ===
+            selectedOfficeValue,
+        );
+
+  const selectedOfficeLabel =
+    selectedOfficeValue ===
+    'ALL'
+      ? 'All Accessible Offices'
+      : selectedOffice
+        ? `${
+            selectedOffice.officeName
+          }${
+            selectedOffice.officeCode
+              ? ` (${selectedOffice.officeCode})`
+              : ''
+          }`
+        : defaultOfficeName
+          ? `${defaultOfficeName}${
+              defaultOfficeCode
+                ? ` (${defaultOfficeCode})`
+                : ''
+            }`
+          : 'Select office';
+
+  /*
+  |--------------------------------------------------------------------------
+  | Current Date
+  |--------------------------------------------------------------------------
+  */
+
   const currentYear =
     new Date().getFullYear();
+
+  /*
+  |--------------------------------------------------------------------------
+  | Reset
+  |--------------------------------------------------------------------------
+  */
 
   const resetFilters = () => {
     setFilters({
       type: 'monthly',
+
       month:
-        new Date().getMonth() + 1,
+        new Date().getMonth() +
+        1,
+
       quarter: 1,
-      year: currentYear,
-      documentTypeId: undefined,
-      status: undefined,
+
+      year:
+        currentYear,
+
+      documentTypeId:
+        undefined,
+
+      status:
+        undefined,
+
+      /*
+       * Return to logged-in
+       * user's default office.
+       */
+      officeIds:
+        defaultOfficeId
+          ? [defaultOfficeId]
+          : undefined,
     });
   };
 
-  const documentTypes = useDocumentTypes();
+  /*
+  |--------------------------------------------------------------------------
+  | Render
+  |--------------------------------------------------------------------------
+  */
 
   return (
-    <Card className="overflow-hidden rounded-[32px] border-0 bg-white shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]">
-      <CardContent className="p-8">
+    <Card
+      className="
+        overflow-hidden
+        rounded-[32px]
+        border-0
+        bg-white
+        shadow-xl
+        transition-colors
+        dark:bg-[#102418]
+        dark:shadow-[0_0_35px_rgba(34,197,94,0.12)]
+      "
+    >
+      <CardContent
+        className="
+          p-6
+          md:p-8
+        "
+      >
 
-        {/* Header */}
+        {/* ================================================================
+            HEADER
+        ================================================================= */}
 
-        <div className="mb-8 flex items-start justify-between">
-          <div className="flex items-center gap-4">
-
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 transition-colors dark:from-blue-900/30 dark:to-indigo-900/30">
-              <FileBarChart2 className="h-7 w-7 text-indigo-600 dark:text-indigo-300" />
+        <div
+          className="
+            mb-8
+            flex
+            items-start
+            justify-between
+            gap-4
+          "
+        >
+          <div
+            className="
+              flex
+              items-center
+              gap-4
+            "
+          >
+            <div
+              className="
+                flex
+                h-14
+                w-14
+                shrink-0
+                items-center
+                justify-center
+                rounded-2xl
+                bg-gradient-to-br
+                from-blue-100
+                to-indigo-100
+                transition-colors
+                dark:from-blue-900/30
+                dark:to-indigo-900/30
+              "
+            >
+              <FileBarChart2
+                className="
+                  h-7
+                  w-7
+                  text-indigo-600
+                  dark:text-indigo-300
+                "
+              />
             </div>
 
             <div>
-              <h2 className="text-2xl font-black text-[#102418] dark:text-[#F3F8F3]">
+              <h2
+                className="
+                  text-2xl
+                  font-black
+                  text-[#102418]
+                  dark:text-[#F3F8F3]
+                "
+              >
                 Reports Generator
               </h2>
 
-              <p className="text-slate-500 dark:text-[#A9C5B6]">
-                Generate document tracking analytics and export reports.
+              <p
+                className="
+                  mt-0.5
+                  text-sm
+                  text-slate-500
+                  dark:text-[#A9C5B6]
+                "
+              >
+                Generate document tracking
+                analytics and export reports.
               </p>
             </div>
           </div>
 
-          <div className="hidden rounded-full bg-green-50 px-4 py-2 text-sm font-medium text-green-700 transition-colors dark:bg-green-900/30 dark:text-green-300 md:block">
+          <div
+            className="
+              hidden
+              rounded-full
+              bg-green-50
+              px-4
+              py-2
+              text-sm
+              font-medium
+              text-green-700
+              transition-colors
+              dark:bg-green-900/30
+              dark:text-green-300
+              md:block
+            "
+          >
             Analytics Report
           </div>
         </div>
 
-        {/* Filters */}
+        {/* ================================================================
+            PRIMARY FILTERS
+        ================================================================= */}
 
-        <div className="grid gap-4 lg:grid-cols-12">
+        <div
+          className="
+            grid
+            gap-x-4
+            gap-y-5
+            md:grid-cols-2
+            lg:grid-cols-12
+          "
+        >
 
           {/* Report Type */}
 
-          <div className="lg:col-span-2">
-            <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+          <div className="lg:col-span-3">
+            <label
+              className="
+                mb-2
+                block
+                text-sm
+                font-semibold
+                text-slate-700
+                dark:text-[#D7E8DD]
+              "
+            >
               Report Type
             </label>
 
             <Select
-              value={filters.type}
-              onValueChange={(value) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  type:
-                    value as ReportFiltersType['type'],
-                }))
+              value={
+                filters.type
+              }
+              onValueChange={(
+                value,
+              ) =>
+                setFilters(
+                  (prev) => ({
+                    ...prev,
+
+                    type:
+                      value as ReportFiltersType['type'],
+                  }),
+                )
               }
             >
-              <SelectTrigger className="w-full border-slate-200 bg-white transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
+              <SelectTrigger
+                className="
+                  w-full
+                  border-slate-200
+                  bg-white
+                  dark:border-[#214234]
+                  dark:bg-[#173227]
+                  dark:text-[#F3F8F3]
+                "
+              >
                 <SelectValue />
               </SelectTrigger>
 
-              <SelectContent className="border-slate-200 bg-white dark:border-[#214234] dark:bg-[#102418]">
-                <SelectItem className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white" value="monthly">
+              <SelectContent
+                position="popper"
+                side="bottom"
+                align="start"
+                sideOffset={6}
+                className="
+                  z-[100]
+                  border-slate-200
+                  bg-white
+                  dark:border-[#214234]
+                  dark:bg-[#102418]
+                "
+              >
+                <SelectItem
+                  value="monthly"
+                  className="
+                    cursor-pointer
+                    dark:text-[#F3F8F3]
+                    dark:focus:bg-[#173227]
+                    dark:focus:text-white
+                  "
+                >
                   Monthly
                 </SelectItem>
 
-                <SelectItem className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white" value="quarterly">
+                <SelectItem
+                  value="quarterly"
+                  className="
+                    cursor-pointer
+                    dark:text-[#F3F8F3]
+                    dark:focus:bg-[#173227]
+                    dark:focus:text-white
+                  "
+                >
                   Quarterly
                 </SelectItem>
 
-                <SelectItem className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white" value="annual">
+                <SelectItem
+                  value="annual"
+                  className="
+                    cursor-pointer
+                    dark:text-[#F3F8F3]
+                    dark:focus:bg-[#173227]
+                    dark:focus:text-white
+                  "
+                >
                   Annual
                 </SelectItem>
-
-                {/* <SelectItem value="custom">
-                  Custom
-                </SelectItem> */}
               </SelectContent>
             </Select>
           </div>
@@ -157,36 +612,71 @@ export function ReportFilters({
           {/* Year */}
 
           <div className="lg:col-span-2">
-            <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+            <label
+              className="
+                mb-2
+                block
+                text-sm
+                font-semibold
+                text-slate-700
+                dark:text-[#D7E8DD]
+              "
+            >
               Year
             </label>
 
             <Input
               type="number"
-              value={filters.year}
-              onChange={(e) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  year: Number(
-                    e.target.value,
-                  ),
-                }))
+              value={
+                filters.year
               }
+              onChange={(e) =>
+                setFilters(
+                  (prev) => ({
+                    ...prev,
+
+                    year:
+                      Number(
+                        e.target
+                          .value,
+                      ),
+                  }),
+                )
+              }
+              className="
+                border-slate-200
+                bg-white
+                dark:border-[#214234]
+                dark:bg-[#173227]
+                dark:text-[#F3F8F3]
+              "
             />
           </div>
 
-          {/* Monthly */}
+          {/* Month */}
 
           {filters.type ===
             'monthly' && (
-            <div className="lg:col-span-2">
-              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+            <div className="lg:col-span-3">
+              <label
+                className="
+                  mb-2
+                  block
+                  text-sm
+                  font-semibold
+                  text-slate-700
+                  dark:text-[#D7E8DD]
+                "
+              >
                 Month
               </label>
 
               <Select
                 value={String(
-                  filters.month,
+                  filters.month ??
+                    new Date()
+                      .getMonth() +
+                      1,
                 )}
                 onValueChange={(
                   value,
@@ -194,6 +684,7 @@ export function ReportFilters({
                   setFilters(
                     (prev) => ({
                       ...prev,
+
                       month:
                         Number(
                           value,
@@ -202,11 +693,33 @@ export function ReportFilters({
                   )
                 }
               >
-                <SelectTrigger className="w-full border-slate-200 bg-white transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
+                <SelectTrigger
+                  className="
+                    w-full
+                    border-slate-200
+                    bg-white
+                    dark:border-[#214234]
+                    dark:bg-[#173227]
+                    dark:text-[#F3F8F3]
+                  "
+                >
                   <SelectValue />
                 </SelectTrigger>
 
-                <SelectContent className="border-slate-200 bg-white dark:border-[#214234] dark:bg-[#102418]">
+                <SelectContent
+                  position="popper"
+                  side="bottom"
+                  align="start"
+                  sideOffset={6}
+                  className="
+                    z-[100]
+                    max-h-[320px]
+                    border-slate-200
+                    bg-white
+                    dark:border-[#214234]
+                    dark:bg-[#102418]
+                  "
+                >
                   {MONTHS.map(
                     (
                       month,
@@ -220,7 +733,12 @@ export function ReportFilters({
                           index +
                             1,
                         )}
-                         className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white"
+                        className="
+                          cursor-pointer
+                          dark:text-[#F3F8F3]
+                          dark:focus:bg-[#173227]
+                          dark:focus:text-white
+                        "
                       >
                         {month}
                       </SelectItem>
@@ -231,18 +749,28 @@ export function ReportFilters({
             </div>
           )}
 
-          {/* Quarterly */}
+          {/* Quarter */}
 
           {filters.type ===
             'quarterly' && (
-            <div className="lg:col-span-2">
-              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+            <div className="lg:col-span-3">
+              <label
+                className="
+                  mb-2
+                  block
+                  text-sm
+                  font-semibold
+                  text-slate-700
+                  dark:text-[#D7E8DD]
+                "
+              >
                 Quarter
               </label>
 
               <Select
                 value={String(
-                  filters.quarter,
+                  filters.quarter ??
+                    1,
                 )}
                 onValueChange={(
                   value,
@@ -250,6 +778,7 @@ export function ReportFilters({
                   setFilters(
                     (prev) => ({
                       ...prev,
+
                       quarter:
                         Number(
                           value,
@@ -258,24 +787,45 @@ export function ReportFilters({
                   )
                 }
               >
-                <SelectTrigger className="w-full border-slate-200 bg-white transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
+                <SelectTrigger
+                  className="
+                    w-full
+                    border-slate-200
+                    bg-white
+                    dark:border-[#214234]
+                    dark:bg-[#173227]
+                    dark:text-[#F3F8F3]
+                  "
+                >
                   <SelectValue />
                 </SelectTrigger>
 
-                <SelectContent className="border-slate-200 bg-white dark:border-[#214234] dark:bg-[#102418]">
-                  <SelectItem className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white" value="1">
+                <SelectContent
+                  position="popper"
+                  side="bottom"
+                  align="start"
+                  sideOffset={6}
+                  className="
+                    z-[100]
+                    border-slate-200
+                    bg-white
+                    dark:border-[#214234]
+                    dark:bg-[#102418]
+                  "
+                >
+                  <SelectItem value="1">
                     Q1
                   </SelectItem>
 
-                  <SelectItem className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white" value="2">
+                  <SelectItem value="2">
                     Q2
                   </SelectItem>
 
-                  <SelectItem className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white" value="3">
+                  <SelectItem value="3">
                     Q3
                   </SelectItem>
 
-                  <SelectItem className="cursor-pointer dark:text-[#F3F8F3] dark:focus:bg-[#173227] dark:focus:text-white" value="4">
+                  <SelectItem value="4">
                     Q4
                   </SelectItem>
                 </SelectContent>
@@ -283,76 +833,56 @@ export function ReportFilters({
             </div>
           )}
 
-          {/* Custom Dates */}
+          {/* Annual Spacer */}
 
           {filters.type ===
-            'custom' && (
-            <>
-              <div className="lg:col-span-3">
-                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
-                  Start Date
-                </label>
-
-                <Input
-                  type="date"
-                  value={
-                    filters.startDate ??
-                    ''
-                  }
-                  onChange={(e) =>
-                    setFilters(
-                      (
-                        prev,
-                      ) => ({
-                        ...prev,
-                        startDate:
-                          e.target
-                            .value,
-                      }),
-                    )
-                  }
-                />
-              </div>
-
-              <div className="lg:col-span-3">
-                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
-                  End Date
-                </label>
-
-                <Input
-                  type="date"
-                  value={
-                    filters.endDate ??
-                    ''
-                  }
-                  onChange={(e) =>
-                    setFilters(
-                      (
-                        prev,
-                      ) => ({
-                        ...prev,
-                        endDate:
-                          e.target
-                            .value,
-                      }),
-                    )
-                  }
-                />
-              </div>
-            </>
+            'annual' && (
+            <div
+              className="
+                hidden
+                lg:col-span-3
+                lg:block
+              "
+            />
           )}
 
-          {/* Buttons */}
+          {/* Actions */}
 
-          <div className="flex items-end justify-end gap-3 lg:col-span-4">
-
+          <div
+            className="
+              flex
+              items-end
+              justify-start
+              gap-3
+              md:col-span-2
+              lg:col-span-4
+              lg:justify-end
+            "
+          >
             <Button
               type="button"
               variant="outline"
-              className="rounded-xl cursor-pointer dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
-              onClick={resetFilters}
+              onClick={
+                resetFilters
+              }
+              className="
+                cursor-pointer
+                rounded-xl
+                border-slate-200
+                dark:border-[#214234]
+                dark:bg-[#173227]
+                dark:text-[#F3F8F3]
+                dark:hover:bg-[#214234]
+              "
             >
-              <RotateCcw className="mr-2 h-4 w-4" />
+              <RotateCcw
+                className="
+                  mr-2
+                  h-4
+                  w-4
+                "
+              />
+
               Reset
             </Button>
 
@@ -362,9 +892,24 @@ export function ReportFilters({
               onClick={() => {
                 void onGenerate();
               }}
-              className="rounded-xl cursor-pointer bg-gradient-to-r from-green-600 to-emerald-600 transition-all hover:from-green-700 hover:to-emerald-700 dark:shadow-[0_0_20px_rgba(34,197,94,0.25)]"
+              className="
+                cursor-pointer
+                rounded-xl
+                bg-gradient-to-r
+                from-green-600
+                to-emerald-600
+                hover:from-green-700
+                hover:to-emerald-700
+                dark:shadow-[0_0_20px_rgba(34,197,94,0.25)]
+              "
             >
-              <Search className="mr-2 h-4 w-4" />
+              <Search
+                className="
+                  mr-2
+                  h-4
+                  w-4
+                "
+              />
 
               {loading
                 ? 'Generating...'
@@ -373,123 +918,469 @@ export function ReportFilters({
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-12">
-          
-          <div className="lg:col-span-2">
-            <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+        {/* ================================================================
+            SECONDARY FILTERS
+        ================================================================= */}
+
+        <div
+          className="
+            mt-6
+            grid
+            gap-x-4
+            gap-y-5
+            md:grid-cols-2
+            lg:grid-cols-12
+          "
+        >
+
+          {/* Document Type */}
+
+          <div
+            className={
+              isORD
+                ? 'lg:col-span-4'
+                : 'lg:col-span-6'
+            }
+          >
+            <label
+              className="
+                mb-2
+                block
+                text-sm
+                font-semibold
+                text-slate-700
+                dark:text-[#D7E8DD]
+              "
+            >
               Document Type
             </label>
 
             <Select
-              value={filters.documentTypeId ?? 'ALL'}
-              onValueChange={(value) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  documentTypeId:
-                    value === 'ALL'
-                      ? undefined
-                      : value,
-                }))
+              value={
+                filters.documentTypeId ??
+                'ALL'
+              }
+              onValueChange={(
+                value,
+              ) =>
+                setFilters(
+                  (prev) => ({
+                    ...prev,
+
+                    documentTypeId:
+                      value ===
+                      'ALL'
+                        ? undefined
+                        : value,
+                  }),
+                )
               }
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger
+                className="
+                  w-full
+                  border-slate-200
+                  bg-white
+                  dark:border-[#214234]
+                  dark:bg-[#173227]
+                  dark:text-[#F3F8F3]
+                "
+              >
                 <SelectValue />
               </SelectTrigger>
 
-              <SelectContent>
-
-                <SelectItem value="ALL">
+              <SelectContent
+                position="popper"
+                side="bottom"
+                align="start"
+                sideOffset={6}
+                className="
+                  z-[100]
+                  max-h-[320px]
+                  border-slate-200
+                  bg-white
+                  dark:border-[#214234]
+                  dark:bg-[#102418]
+                "
+              >
+                <SelectItem
+                  value="ALL"
+                  className="
+                    cursor-pointer
+                    dark:text-[#F3F8F3]
+                    dark:focus:bg-[#173227]
+                    dark:focus:text-white
+                  "
+                >
                   All Document Types
                 </SelectItem>
 
-                {documentTypes.map((type) => (
-                  <SelectItem
-                    key={type.id}
-                    value={type.id}
-                  >
-                    {type.name}
-                  </SelectItem>
-                ))}
-
+                {documentTypes.map(
+                  (type) => (
+                    <SelectItem
+                      key={
+                        type.id
+                      }
+                      value={
+                        type.id
+                      }
+                      className="
+                        cursor-pointer
+                        dark:text-[#F3F8F3]
+                        dark:focus:bg-[#173227]
+                        dark:focus:text-white
+                      "
+                    >
+                      {
+                        type.name
+                      }
+                    </SelectItem>
+                  ),
+                )}
               </SelectContent>
             </Select>
           </div>
 
-          <div className="lg:col-span-2">
-            <label className="mb-2 block text-sm text-slate-700 dark:text-[#D7E8DD] font-semibold">
+          {/* Status */}
+
+          <div
+            className={
+              isORD
+                ? 'lg:col-span-4'
+                : 'lg:col-span-6'
+            }
+          >
+            <label
+              className="
+                mb-2
+                block
+                text-sm
+                font-semibold
+                text-slate-700
+                dark:text-[#D7E8DD]
+              "
+            >
               Status
             </label>
 
             <Select
-              value={filters.status ?? 'ALL'}
-              onValueChange={(value) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  status:
-                    value === 'ALL'
-                      ? undefined
-                      : value,
-                }))
+              value={
+                filters.status ??
+                'ALL'
+              }
+              onValueChange={(
+                value,
+              ) =>
+                setFilters(
+                  (prev) => ({
+                    ...prev,
+
+                    status:
+                      value ===
+                      'ALL'
+                        ? undefined
+                        : value,
+                  }),
+                )
               }
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger
+                className="
+                  w-full
+                  border-slate-200
+                  bg-white
+                  dark:border-[#214234]
+                  dark:bg-[#173227]
+                  dark:text-[#F3F8F3]
+                "
+              >
                 <SelectValue />
               </SelectTrigger>
 
-              <SelectContent>
-
-                <SelectItem value="ALL">
+              <SelectContent
+                position="popper"
+                side="bottom"
+                align="start"
+                sideOffset={6}
+                className="
+                  z-[100]
+                  max-h-[320px]
+                  border-slate-200
+                  bg-white
+                  dark:border-[#214234]
+                  dark:bg-[#102418]
+                "
+              >
+                <SelectItem
+                  value="ALL"
+                  className="
+                    cursor-pointer
+                    dark:text-[#F3F8F3]
+                    dark:focus:bg-[#173227]
+                    dark:focus:text-white
+                  "
+                >
                   All Status
                 </SelectItem>
 
-                <SelectItem value="DRAFT">
-                  Draft
-                </SelectItem>
-
-                <SelectItem value="PENDING">
-                  Pending
-                </SelectItem>
-
-                <SelectItem value="FOR_REVIEW">
-                  For Review
-                </SelectItem>
-
-                <SelectItem value="FOR_APPROVAL">
-                  For Approval
-                </SelectItem>
-
-                <SelectItem value="ON_PROCESS">
-                  On Process
-                </SelectItem>
-
-                <SelectItem value="COMPLETED">
-                  Completed
-                </SelectItem>
-
-                {/* <SelectItem value="REJECTED">
-                  Rejected
-                </SelectItem> */}
-
+                {STATUS_OPTIONS.map(
+                  (status) => (
+                    <SelectItem
+                      key={
+                        status.value
+                      }
+                      value={
+                        status.value
+                      }
+                      className="
+                        cursor-pointer
+                        dark:text-[#F3F8F3]
+                        dark:focus:bg-[#173227]
+                        dark:focus:text-white
+                      "
+                    >
+                      {
+                        status.label
+                      }
+                    </SelectItem>
+                  ),
+                )}
               </SelectContent>
             </Select>
           </div>
 
+          {/* ================================================================
+              REPORTING OFFICE
+              ORD ONLY
+          ================================================================= */}
+
+          {isORD && (
+            <div className="lg:col-span-4">
+              <div
+                className="
+                  mb-2
+                  flex
+                  items-center
+                  justify-between
+                "
+              >
+                <label
+                  className="
+                    text-sm
+                    font-semibold
+                    text-slate-700
+                    dark:text-[#D7E8DD]
+                  "
+                >
+                  Reporting Office
+                </label>
+
+                <span
+                  className="
+                    rounded-full
+                    bg-emerald-50
+                    px-2
+                    py-0.5
+                    text-[10px]
+                    font-bold
+                    uppercase
+                    tracking-wide
+                    text-emerald-700
+                    dark:bg-emerald-900/30
+                    dark:text-emerald-300
+                  "
+                >
+                  ORD
+                </span>
+              </div>
+
+              <Select
+                value={
+                  selectedOfficeValue
+                }
+                onValueChange={(
+                  value,
+                ) => {
+                  setFilters(
+                    (prev) => ({
+                      ...prev,
+
+                      officeIds:
+                        value ===
+                        'ALL'
+                          ? []
+                          : [
+                              value,
+                            ],
+                    }),
+                  );
+                }}
+              >
+                <SelectTrigger
+                  className="
+                    w-full
+                    border-slate-200
+                    bg-white
+                    dark:border-[#214234]
+                    dark:bg-[#173227]
+                    dark:text-[#F3F8F3]
+                  "
+                >
+                  {/*
+                    IMPORTANT:
+
+                    Keep SelectValue here.
+
+                    Radix uses the selected SelectItem to position
+                    the SelectContent correctly.
+                  */}
+
+                  <SelectValue
+                    placeholder={
+                      loadingOffices
+                        ? 'Loading offices...'
+                        : 'Select reporting office'
+                    }
+                  />
+                </SelectTrigger>
+
+                <SelectContent
+                  position="popper"
+                  side="bottom"
+                  align="start"
+                  sideOffset={6}
+                  avoidCollisions
+                  className="
+                    z-[100]
+                    max-h-[320px]
+                    w-[var(--radix-select-trigger-width)]
+                    overflow-y-auto
+                    border-slate-200
+                    bg-white
+                    shadow-xl
+                    dark:border-[#214234]
+                    dark:bg-[#102418]
+                  "
+                >
+                  <SelectItem
+                    value="ALL"
+                    className="
+                      cursor-pointer
+                      dark:text-[#F3F8F3]
+                      dark:focus:bg-[#173227]
+                      dark:focus:text-white
+                    "
+                  >
+                    All Accessible Offices
+                  </SelectItem>
+
+                  {officeOptions.map(
+                    (office) => (
+                      <SelectItem
+                        key={
+                          office.id
+                        }
+                        value={
+                          office.id
+                        }
+                        className="
+                          cursor-pointer
+                          dark:text-[#F3F8F3]
+                          dark:focus:bg-[#173227]
+                          dark:focus:text-white
+                        "
+                      >
+                        {
+                          office.officeName
+                        }
+
+                        {office.officeCode
+                          ? ` (${office.officeCode})`
+                          : ''}
+                      </SelectItem>
+                    ),
+                  )}
+                </SelectContent>
+              </Select>
+
+              <p
+                className="
+                  mt-1.5
+                  text-xs
+                  text-slate-500
+                  dark:text-[#7FA18E]
+                "
+              >
+                Scope report statistics
+                and document handling by
+                office.
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Footer Info */}
+        {/* ================================================================
+            REPORTING PERIOD
+        ================================================================= */}
 
-        <div className="mt-6 flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600 transition-colors dark:bg-[#173227] dark:text-[#A9C5B6]">
-          <CalendarDays className="h-4 w-4 text-slate-500 dark:text-[#A9C5B6]" />
+        <div
+          className="
+            mt-6
+            flex
+            flex-wrap
+            items-center
+            gap-x-3
+            gap-y-1
+            rounded-2xl
+            bg-slate-50
+            px-4
+            py-3
+            text-sm
+            text-slate-600
+            transition-colors
+            dark:bg-[#173227]
+            dark:text-[#A9C5B6]
+          "
+        >
+          <CalendarDays
+            className="
+              h-4
+              w-4
+              shrink-0
+              text-slate-500
+              dark:text-[#A9C5B6]
+            "
+          />
 
-          Reporting Period:
-          <span className="font-semibold text-slate-900 dark:text-[#F3F8F3]">
+          <span>
+            Reporting Period:
+          </span>
+
+          <span
+            className="
+              font-semibold
+              text-slate-900
+              dark:text-[#F3F8F3]
+            "
+          >
             {filters.type ===
               'monthly' &&
-              `${MONTHS[(filters.month ?? 1) - 1]} ${filters.year}`}
+              `${
+                MONTHS[
+                  (filters.month ??
+                    1) - 1
+                ]
+              } ${
+                filters.year
+              }`}
 
             {filters.type ===
               'quarterly' &&
-              `Q${filters.quarter} ${filters.year}`}
+              `Q${
+                filters.quarter
+              } ${
+                filters.year
+              }`}
 
             {filters.type ===
               'annual' &&
@@ -497,10 +1388,51 @@ export function ReportFilters({
 
             {filters.type ===
               'custom' &&
-              `${filters.startDate ?? '-'} → ${filters.endDate ?? '-'}`}
+              `${
+                filters.startDate ??
+                '-'
+              } → ${
+                filters.endDate ??
+                '-'
+              }`}
           </span>
-        </div>
 
+          {isORD && (
+            <>
+              <span
+                className="
+                  hidden
+                  h-4
+                  w-px
+                  bg-slate-300
+                  sm:block
+                  dark:bg-[#315343]
+                "
+              />
+
+              <span
+                className="
+                  text-slate-500
+                  dark:text-[#7FA18E]
+                "
+              >
+                Office:
+              </span>
+
+              <span
+                className="
+                  font-semibold
+                  text-slate-900
+                  dark:text-[#F3F8F3]
+                "
+              >
+                {
+                  selectedOfficeLabel
+                }
+              </span>
+            </>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

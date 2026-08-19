@@ -9,7 +9,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/axios';
@@ -37,6 +37,12 @@ import { useNotificationStore } from '@/store/notification.store';
 import DocumentDialog from './document-dialog';
 import { EditDocumentDialog } from './edit-document-dialog';
 import { useAuthStore } from '@/store/auth.store';
+
+type OfficeOption = {
+  id: string;
+  officeCode: string;
+  officeName: string;
+};
 
 export function DocumentsTable({
   documents,
@@ -69,6 +75,10 @@ export function DocumentsTable({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [documentToEdit, setDocumentToEdit] = useState<any>(null);
 
+  const [offices, setOffices] = useState<OfficeOption[]>([]);
+
+  const [loadingOffices, setLoadingOffices] = useState(false);
+
    const [
     selectedDocument,
     setSelectedDocument,
@@ -84,6 +94,60 @@ export function DocumentsTable({
     openDetails,
     setOpenDetails,
   ] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadOffices = async () => {
+      try {
+        setLoadingOffices(true);
+
+        const response =
+          await api.get(
+            '/offices/accessible',
+          );
+
+        if (!cancelled) {
+          const officeList: OfficeOption[] =
+            response.data ?? [];
+
+          const uniqueOffices = Array.from(
+            new Map(
+              officeList.map((office) => [
+                office.id,
+                office,
+              ]),
+            ).values(),
+          );
+
+          setOffices(uniqueOffices);
+        }
+      } catch (error) {
+        console.error(
+          'Failed to load accessible offices:',
+          error,
+        );
+
+        if (!cancelled) {
+          setOffices([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingOffices(false);
+        }
+      }
+    };
+
+    void loadOffices();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
 
   const isOrdUser = user?.offices?.some(
@@ -285,7 +349,14 @@ export function DocumentsTable({
       }
     };
 
-
+  const uniqueDocuments = Array.from(
+    new Map(
+      documents.map((document) => [
+        document.id,
+        document,
+      ]),
+    ).values(),
+  );
 
   return (
     <>
@@ -325,7 +396,7 @@ export function DocumentsTable({
 
         {/* CONTENT */}
         <CardContent className="space-y-3 p-4">
-          {documents.map((doc, i) => {
+          {uniqueDocuments.map((doc, i) => {
             const canRoute = type !== 'outgoing' && [
               'DRAFT',
               'PENDING',
@@ -685,7 +756,7 @@ export function DocumentsTable({
 
         {documentToEdit && (
           <EditDocumentDialog
-            key={documentToEdit.id}
+            key={`edit-document-${documentToEdit.id}`}
             open={openEdit}
             onOpenChange={(open) => {
               setOpenEdit(open);
@@ -702,6 +773,7 @@ export function DocumentsTable({
             canEdit={
               canEditDocument
             }
+            offices={offices}
             onSave={
               handleUpdateDocument
             }

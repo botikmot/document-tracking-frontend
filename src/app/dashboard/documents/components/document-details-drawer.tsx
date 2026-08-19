@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Upload,
   Send,
+  UserRound,
 } from 'lucide-react';
 
 import {
@@ -348,6 +349,50 @@ export function DocumentDetailsDrawer({
                         .currentOffice
                         ?.officeName
                     }
+                  </h4>
+                </div>
+              </div>
+            </div>
+
+            {/* RESPONSIBLE OFFICE */}
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 transition-colors dark:border-[#214234] dark:bg-[#102418]">
+              <div className="flex items-center gap-3">
+                <Building2 className="h-5 w-5 text-slate-500 dark:text-[#A9C5B6]" />
+
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
+                    Responsible Office
+                  </p>
+
+                  <h4 className="font-bold text-slate-900 dark:text-[#F3F8F3]">
+                    {document.responsibleOffice?.officeName ||
+                      'Not assigned'}
+                  </h4>
+
+                  {document.responsibleOffice?.officeCode && (
+                    <p className="mt-0.5 text-xs text-slate-400 dark:text-[#7FA18E]">
+                      {document.responsibleOffice.officeCode}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* RESPONSIBLE PERSON */}
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 transition-colors dark:border-[#214234] dark:bg-[#102418]">
+              <div className="flex items-center gap-3">
+                <UserRound className="h-5 w-5 text-slate-500 dark:text-[#A9C5B6]" />
+
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
+                    Responsible Person
+                  </p>
+
+                  <h4 className="font-bold text-slate-900 dark:text-[#F3F8F3]">
+                    {document.responsiblePerson ||
+                      'Not assigned'}
                   </h4>
                 </div>
               </div>

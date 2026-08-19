@@ -141,7 +141,7 @@ export function ReportCards({
           <div className="relative flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                Completed
+                Completed / Acted
               </p>
 
               <h2 className="mt-3 text-5xl font-black text-[#102418] dark:text-white">

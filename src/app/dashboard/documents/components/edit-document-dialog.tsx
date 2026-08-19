@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import {
+  Building2,
   CalendarClock,
   FilePenLine,
   Loader2,
@@ -10,6 +11,7 @@ import {
   Save,
   ShieldCheck,
   TriangleAlert,
+  UserRound,
 } from 'lucide-react';
 
 import {
@@ -35,6 +37,12 @@ import {
 } from '@/components/ui/select';
 
 import { Separator } from '@/components/ui/separator';
+
+type OfficeOption = {
+  id: string;
+  officeCode: string;
+  officeName: string;
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -85,6 +93,16 @@ type EditableDocument = {
     id: string;
     name: string;
   } | null;
+
+  responsibleOfficeId?: string | null;
+
+  responsiblePerson?: string | null;
+
+  responsibleOffice?: {
+    id: string;
+    officeCode: string;
+    officeName: string;
+  } | null;
 };
 
 export type UpdateDocumentPayload = {
@@ -97,6 +115,9 @@ export type UpdateDocumentPayload = {
   confidentialityLevel: string;
 
   deadline: string | null;
+  responsibleOfficeId: string | null;
+
+  responsiblePerson: string | null;
 };
 
 type Props = {
@@ -111,6 +132,8 @@ type Props = {
   canEdit: boolean;
 
   documentTypes?: DocumentTypeOption[];
+
+  offices?: OfficeOption[];
 
   onSave: (
     documentId: string,
@@ -238,6 +261,7 @@ export function EditDocumentDialog({
   document,
   canEdit,
   documentTypes = [],
+  offices = [],
   onSave,
 }: Props) {
   /*
@@ -255,11 +279,24 @@ export function EditDocumentDialog({
   |
   */
 
+  const [
+    responsibleOfficeId,
+    setResponsibleOfficeId,
+  ] = useState(
+    () =>
+      document.responsibleOfficeId ??
+      document.responsibleOffice?.id ??
+      '',
+  );
 
-
-  
-
-  
+  const [
+    responsiblePerson,
+    setResponsiblePerson,
+  ] = useState(
+    () =>
+      document.responsiblePerson ??
+      '',
+  );
 
   const [
     documentTypeId,
@@ -342,22 +379,27 @@ export function EditDocumentDialog({
   |
   */
 
-  const availableDocumentTypes =
+  const rawDocumentTypes =
     documentTypes.length > 0
       ? documentTypes
       : document.documentType
         ? [
             {
-              id: document
-                .documentType
-                .id,
-
-              name: document
-                .documentType
-                .name,
+              id: document.documentType.id,
+              name: document.documentType.name,
             },
           ]
         : [];
+
+  const availableDocumentTypes =
+    Array.from(
+      new Map(
+        rawDocumentTypes.map((type) => [
+          type.id,
+          type,
+        ]),
+      ).values(),
+    );
 
   /*
   |--------------------------------------------------------------------------
@@ -403,6 +445,11 @@ export function EditDocumentDialog({
                   deadline,
                 ).toISOString()
               : null,
+            responsibleOfficeId:
+              responsibleOfficeId || null,
+
+            responsiblePerson:
+              responsiblePerson.trim() || null,
           };
 
         await onSave(
@@ -907,6 +954,196 @@ export function EditDocumentDialog({
                   </Select>
                 </div>
 
+              </div>
+            </section>
+
+            <Separator className="dark:bg-[#214234]" />
+
+            {/* =====================================================
+                RESPONSIBILITY
+            ===================================================== */}
+
+            <section>
+              <div className="mb-5 flex items-center gap-3">
+                <div
+                  className="
+                    flex
+                    h-9
+                    w-9
+                    items-center
+                    justify-center
+                    rounded-xl
+                    bg-blue-100
+                    text-blue-700
+                    dark:bg-blue-950
+                    dark:text-blue-400
+                  "
+                >
+                  <Building2 className="h-4 w-4" />
+                </div>
+
+                <div>
+                  <h3
+                    className="
+                      font-black
+                      text-slate-900
+                      dark:text-[#F3F8F3]
+                    "
+                  >
+                    Responsibility
+                  </h3>
+
+                  <p
+                    className="
+                      text-xs
+                      text-slate-500
+                      dark:text-[#7FA18E]
+                    "
+                  >
+                    Assign an optional responsible
+                    office or person.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-5 md:grid-cols-2">
+                {/* RESPONSIBLE OFFICE */}
+
+                <div className="space-y-2">
+                  <Label>
+                    Responsible Office
+                    <span className="ml-1 text-xs font-normal text-slate-400">
+                      Optional
+                    </span>
+                  </Label>
+
+                  <Select
+                    value={
+                      responsibleOfficeId ||
+                      'NONE'
+                    }
+                    disabled={
+                      submitting ||
+                      !editable
+                    }
+                    onValueChange={(value) =>
+                      setResponsibleOfficeId(
+                        value === 'NONE'
+                          ? ''
+                          : value,
+                      )
+                    }
+                  >
+                    <SelectTrigger
+                      className="
+                        h-11
+                        w-full
+                        rounded-xl
+                        border-slate-200
+                        bg-white
+                        dark:border-[#214234]
+                        dark:bg-[#102418]
+                        dark:text-[#F3F8F3]
+                      "
+                    >
+                      <SelectValue placeholder="Select responsible office" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      <SelectItem value="NONE">
+                        No responsible office
+                      </SelectItem>
+
+                      {offices.map((office) => (
+                        <SelectItem
+                          key={office.id}
+                          value={office.id}
+                        >
+                          {office.officeName}
+                          {office.officeCode
+                            ? ` (${office.officeCode})`
+                            : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <p
+                    className="
+                      text-xs
+                      leading-5
+                      text-slate-500
+                      dark:text-[#7FA18E]
+                    "
+                  >
+                    Select the office accountable
+                    for the document or requested
+                    action.
+                  </p>
+                </div>
+
+                {/* RESPONSIBLE PERSON */}
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-responsible-person">
+                    Responsible Person
+                    <span className="ml-1 text-xs font-normal text-slate-400">
+                      Optional
+                    </span>
+                  </Label>
+
+                  <div className="relative">
+                    <UserRound
+                      className="
+                        absolute
+                        left-3
+                        top-1/2
+                        h-4
+                        w-4
+                        -translate-y-1/2
+                        text-slate-400
+                      "
+                    />
+
+                    <Input
+                      id="edit-responsible-person"
+                      value={responsiblePerson}
+                      disabled={
+                        submitting ||
+                        !editable
+                      }
+                      onChange={(event) =>
+                        setResponsiblePerson(
+                          event.target.value,
+                        )
+                      }
+                      placeholder="Enter responsible person's name"
+                      className="
+                        h-11
+                        rounded-xl
+                        border-slate-200
+                        bg-white
+                        pl-10
+                        dark:border-[#214234]
+                        dark:bg-[#102418]
+                        dark:text-[#F3F8F3]
+                      "
+                    />
+                  </div>
+
+                  <p
+                    className="
+                      text-xs
+                      leading-5
+                      text-slate-500
+                      dark:text-[#7FA18E]
+                    "
+                  >
+                    This can be entered even when
+                    no responsible office is
+                    selected.
+                  </p>
+                </div>
               </div>
             </section>
 
