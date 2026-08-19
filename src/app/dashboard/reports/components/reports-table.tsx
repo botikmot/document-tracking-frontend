@@ -514,15 +514,15 @@ export function ReportsTable({
 
                     <td className="px-5 py-4">
                       <Badge
-                        variant="outline"
                         className={
                           statusBadge(
                             doc.officeStatus,
                           )
                         }
                       >
-                        {officeStatusLabel(
+                        {officeStatusDisplayLabel(
                           doc.officeStatus,
+                          doc.acted,
                         )}
                       </Badge>
                     </td>
@@ -831,6 +831,24 @@ function officeStatusLabel(
     default:
       return '—';
   }
+}
+
+function officeStatusDisplayLabel(
+  status?: string | null,
+  acted?: boolean,
+) {
+  const statusLabel =
+    officeStatusLabel(status);
+
+  if (acted) {
+    if (statusLabel === '—') {
+      return 'Acted';
+    }
+
+    return `Acted | ${statusLabel}`;
+  }
+
+  return statusLabel;
 }
 
 /*

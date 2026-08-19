@@ -42,6 +42,21 @@ type Attachment = {
   publicId: string;
 };
 
+type TurnaroundTime = {
+  days: number;
+  hours?: number;
+  minutes?: number;
+};
+
+const WORKING_DAY_OPTIONS =
+  Array.from(
+    {
+      length: 30,
+    },
+    (_, index) =>
+      index + 1,
+  );
+
 type PermitOption = {
   id: string;
   name: string;
@@ -81,7 +96,7 @@ const PERMIT_OPTIONS: PermitOption[] = [
     name: 'Supply Contracts (Naturally Grown Species)',
     classification: 'TECHNICAL',
     turnaround: {
-      days: 7,
+      days: 20,
     },
   },
   {
@@ -105,7 +120,7 @@ const PERMIT_OPTIONS: PermitOption[] = [
     name: 'Rattan Cutting Contract (RCC)',
     classification: 'TECHNICAL',
     turnaround: {
-      days: 7,
+      days: 20,
     },
   },
   {
@@ -113,7 +128,7 @@ const PERMIT_OPTIONS: PermitOption[] = [
     name: 'Rattan Processing Plant Permit (RPPP)',
     classification: 'TECHNICAL',
     turnaround: {
-      days: 7,
+      days: 20,
     },
   },
   {
@@ -249,6 +264,11 @@ export default function DocumentDialog({
         officeName:string;
       }[]
     >([]);
+
+  const [
+    workingDays,
+    setWorkingDays,
+  ] = useState('');
   
   const [routing, setRouting] = useState({
     toOfficeId:'',
@@ -690,36 +710,137 @@ const handleFileUpload =
 
   console.log('document::', document)
 
-  function calculatePermitDeadline(
-    turnaround: {
-      days: number;
-      hours?: number;
-      minutes?: number;
-    },
-  ) {
-    const deadline = new Date();
+  /*
+  |--------------------------------------------------------------------------
+  | WEEKEND CHECK
+  |--------------------------------------------------------------------------
+  */
 
-    deadline.setDate(
-      deadline.getDate() +
-        turnaround.days,
+  function isWeekend(
+    date: Date,
+  ) {
+    const day =
+      date.getDay();
+
+    return (
+      day === 0 || // Sunday
+      day === 6    // Saturday
+    );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | MOVE TO NEXT WORKING DAY
+  |--------------------------------------------------------------------------
+  */
+
+  function moveToNextWorkingDay(
+    date: Date,
+  ) {
+    const result =
+      new Date(date);
+
+    while (
+      isWeekend(result)
+    ) {
+      result.setDate(
+        result.getDate() + 1,
+      );
+    }
+
+    return result;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | ADD WORKING DAYS
+  |--------------------------------------------------------------------------
+  */
+
+  function addWorkingDays(
+    startDate: Date,
+    workingDays: number,
+  ) {
+    const result =
+      new Date(startDate);
+
+    let addedDays = 0;
+
+    while (
+      addedDays <
+      workingDays
+    ) {
+      result.setDate(
+        result.getDate() + 1,
+      );
+
+      if (
+        !isWeekend(result)
+      ) {
+        addedDays += 1;
+      }
+    }
+
+    return result;
+  }
+
+  function calculateWorkingDaysDeadline(
+    workingDays: number,
+  ) {
+    return addWorkingDays(
+      new Date(),
+      workingDays,
+    );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | CALCULATE PERMIT DEADLINE
+  |--------------------------------------------------------------------------
+  */
+
+  function calculatePermitDeadline(
+  turnaround:
+    TurnaroundTime,
+) {
+  const deadline =
+    addWorkingDays(
+      new Date(),
+      turnaround.days,
     );
 
-    if (turnaround.hours) {
-      deadline.setHours(
-        deadline.getHours() +
-          turnaround.hours,
-      );
-    }
-
-    if (turnaround.minutes) {
-      deadline.setMinutes(
-        deadline.getMinutes() +
-          turnaround.minutes,
-      );
-    }
-
-    return deadline;
+  if (
+    turnaround.hours
+  ) {
+    deadline.setHours(
+      deadline.getHours() +
+        turnaround.hours,
+    );
   }
+
+  if (
+    turnaround.minutes
+  ) {
+    deadline.setMinutes(
+      deadline.getMinutes() +
+        turnaround.minutes,
+    );
+  }
+
+  /*
+   * Safety in case adding hours/minutes
+   * pushes the deadline into a weekend.
+   */
+  while (
+    isWeekend(deadline)
+  ) {
+    deadline.setDate(
+      deadline.getDate() + 1,
+    );
+  }
+
+  return deadline;
+}
 
   
   return (
@@ -1108,46 +1229,210 @@ const handleFileUpload =
             <div className="grid gap-6 lg:grid-cols-2">
               {/* DOCUMENT CLASSIFICATION */}
 
-              {(!isRecords || isPermitDocument) && (
-                <div>
-                  <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
-                    Classification
-                  </Label>
+              {/* ============================================================
+                    DOCUMENT CLASSIFICATION + WORKING DAYS
+                ============================================================ */}
 
-                  <Select
-                    disabled={
-                      isPermitDocument ||
-                      isRecords
-                    }
-                    value={
-                      formData.classification
-                    }
-                    onValueChange={(value) =>
-                      setFormData({
-                        ...formData,
-                        classification:
-                          value,
-                      })
-                    }
+                {(!isRecords ||
+                  isPermitDocument) && (
+                  <div
+                    className="
+                      grid
+                      gap-4
+                      sm:grid-cols-[minmax(0,1fr)_180px]
+                    "
                   >
-                    <SelectTrigger className="h-12 rounded-2xl w-full border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
-                      <SelectValue placeholder="Select classification" />
-                    </SelectTrigger>
+                    {/* ======================================================
+                        CLASSIFICATION
+                    ======================================================= */}
 
-                    <SelectContent className="dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]">
-                      <SelectItem value="SIMPLE">
-                        Simple
-                      </SelectItem>
-                      <SelectItem value="COMPLEX">
-                        Complex
-                      </SelectItem>
-                      <SelectItem value="TECHNICAL">
-                        Highly Technical
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+                    <div>
+                      <Label
+                        className="
+                          mb-2
+                          block
+                          text-sm
+                          font-semibold
+                          text-slate-700
+                          dark:text-[#D7E8DD]
+                        "
+                      >
+                        Classification
+                      </Label>
+
+                      <Select
+                        disabled={
+                          isPermitDocument ||
+                          isRecords
+                        }
+                        value={
+                          formData.classification
+                        }
+                        onValueChange={(
+                          value,
+                        ) =>
+                          setFormData(
+                            (prev) => ({
+                              ...prev,
+
+                              classification:
+                                value,
+                            }),
+                          )
+                        }
+                      >
+                        <SelectTrigger
+                          className="
+                            h-12
+                            w-full
+                            rounded-2xl
+                            border-slate-200
+                            bg-slate-50
+                            transition-colors
+                            dark:border-[#214234]
+                            dark:bg-[#173227]
+                            dark:text-[#F3F8F3]
+                          "
+                        >
+                          <SelectValue
+                            placeholder="Select classification"
+                          />
+                        </SelectTrigger>
+
+                        <SelectContent
+                          className="
+                            dark:border-[#214234]
+                            dark:bg-[#102418]
+                            dark:text-[#F3F8F3]
+                          "
+                        >
+                          <SelectItem
+                            value="SIMPLE"
+                          >
+                            Simple
+                          </SelectItem>
+
+                          <SelectItem
+                            value="COMPLEX"
+                          >
+                            Complex
+                          </SelectItem>
+
+                          <SelectItem
+                            value="TECHNICAL"
+                          >
+                            Highly Technical
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* ======================================================
+                        WORKING DAYS
+                    ======================================================= */}
+
+                    <div>
+                      <Label
+                        className="
+                          mb-2
+                          block
+                          text-sm
+                          font-semibold
+                          text-slate-700
+                          dark:text-[#D7E8DD]
+                        "
+                      >
+                        Working Days
+                      </Label>
+
+                      <Select
+                        value={
+                          workingDays
+                        }
+                        disabled={
+                          isPermitDocument
+                        }
+                        onValueChange={(
+                          value,
+                        ) => {
+                          const days =
+                            Number(value);
+
+                          setWorkingDays(
+                            value,
+                          );
+
+                          const deadline =
+                            calculateWorkingDaysDeadline(
+                              days,
+                            );
+
+                          setFormData(
+                            (prev) => ({
+                              ...prev,
+
+                              deadline,
+                            }),
+                          );
+                        }}
+                      >
+                        <SelectTrigger
+                          className="
+                            h-12
+                            w-full
+                            rounded-2xl
+                            border-slate-200
+                            bg-slate-50
+                            transition-colors
+                            dark:border-[#214234]
+                            dark:bg-[#173227]
+                            dark:text-[#F3F8F3]
+                          "
+                        >
+                          <SelectValue
+                            placeholder="Days"
+                          />
+                        </SelectTrigger>
+
+                        <SelectContent
+                          className="
+                            max-h-[300px]
+                            dark:border-[#214234]
+                            dark:bg-[#102418]
+                            dark:text-[#F3F8F3]
+                          "
+                        >
+                          {WORKING_DAY_OPTIONS.map(
+                            (days) => (
+                              <SelectItem
+                                key={days}
+                                value={String(
+                                  days,
+                                )}
+                              >
+                                {days}{' '}
+                                {days === 1
+                                  ? 'Day'
+                                  : 'Days'}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
+
+                      <p
+                        className="
+                          mt-1.5
+                          text-[11px]
+                          text-slate-500
+                          dark:text-[#7FA18E]
+                        "
+                      >
+                        Excludes weekends
+                      </p>
+                    </div>
+                  </div>
+                )}
               {/* DOCUMENT TYPE */}
               <div>
                 <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
@@ -1391,19 +1676,6 @@ const handleFileUpload =
                   }
                 />
               </div>
-
-              {/* STATUS */}
-              {/* <div>
-                <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
-                  Initial Status
-                </Label>
-
-                <div className="flex h-10 items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 transition-colors dark:border-[#214234] dark:bg-[#173227]">
-                  <Badge className="rounded-full bg-amber-100 text-amber-700">
-                    Pending Review
-                  </Badge>
-                </div>
-              </div> */}
             </div>
 
             {mode === 'create' && (

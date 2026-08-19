@@ -37,10 +37,12 @@ export function ReportCards({
     totalDocuments: emptyDocumentSummary,
     incomingDocuments: emptyDocumentSummary,
     outgoingDocuments: emptyDocumentSummary,
+    actedDocuments: emptyDocumentSummary,
     completedDocuments: emptyDocumentSummary,
     pendingDocuments: emptyDocumentSummary,
     overdueDocuments: emptyDocumentSummary,
     completionRate: 0,
+    actionRate: 0,
     processingEfficiency: 0,
     averageProcessingHours: 0,
   };
@@ -141,16 +143,16 @@ export function ReportCards({
           <div className="relative flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                Completed / Acted
+                Acted
               </p>
 
               <h2 className="mt-3 text-5xl font-black text-[#102418] dark:text-white">
-                {data.completedDocuments.count}
+                {data.actedDocuments?.count ?? 0}
               </h2>
 
               <Badge className="mt-5 rounded-full bg-emerald-100 px-4 py-1 text-emerald-700">
-                {data.completionRate}%
-                Completion
+                {data.actionRate}%
+                Action Rate
               </Badge>
             </div>
 

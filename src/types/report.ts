@@ -99,6 +99,14 @@ export type ReportDocument = {
     | 'AWAITING_RECEIPT'
     | 'ON_TIME'
     | 'OVERDUE';
+
+  acted: boolean;
+
+  actionCount?: number;
+
+  lastActionAt?:
+    | string
+    | null;
 };
 
 export type DocumentSummary = {
@@ -111,6 +119,7 @@ export type ReportSummary = {
   incomingDocuments: DocumentSummary;
   outgoingDocuments: DocumentSummary;
   pendingDocuments: DocumentSummary;
+  actedDocuments: DocumentSummary;
   completedDocuments: DocumentSummary;
   overdueDocuments: DocumentSummary;
   completionRate: number;
@@ -138,6 +147,8 @@ export type Report = {
     pendingDocuments:
       DocumentSummary;
 
+    actedDocuments: DocumentSummary;
+
     completedDocuments:
       DocumentSummary;
 
@@ -145,6 +156,8 @@ export type Report = {
       DocumentSummary;
 
     completionRate: number;
+
+    actionRate: number;
 
     averageProcessingHours:
       number;

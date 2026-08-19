@@ -30,6 +30,8 @@ type Props = {
   outgoing?: number;
   pending?: number;
   completed?: number;
+  acted?: number;
+  actionRate?: number;
   overdue?: number;
   averageProcessingHours?: number;
   processingEfficiency?: number;
@@ -47,8 +49,10 @@ export function ExportButtons({
   outgoing = 0,
   pending = 0,
   completed = 0,
+  acted = 0,
   overdue = 0,
   averageProcessingHours = 0,
+  actionRate = 0,
   processingEfficiency = 0,
 }: Props) {
   return (
@@ -71,6 +75,8 @@ export function ExportButtons({
             outgoing={outgoing}
             pending={pending}
             completed={completed}
+            acted ={acted}
+            actionRate={actionRate}
             overdue={overdue}
             averageProcessingHours={averageProcessingHours}
             processingEfficiency={processingEfficiency}

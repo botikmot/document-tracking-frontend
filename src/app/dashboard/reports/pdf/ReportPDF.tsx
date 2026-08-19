@@ -139,6 +139,10 @@ type Props = {
 
   completed?: number;
 
+  acted?: number;
+
+  actionRate?: number;
+
   overdue?: number;
 
   averageProcessingHours?:
@@ -1536,7 +1540,11 @@ export function ReportPDF({
 
   completed = 0,
 
+  acted = 0,
+
   overdue = 0,
+
+  actionRate = 0,
 
   averageProcessingHours = 0,
 
@@ -1997,7 +2005,7 @@ export function ReportPDF({
                 />
 
                 <MetricCard
-                  label="Acted"
+                  label="Completed"
                   value={completed}
                 />
 
@@ -2043,12 +2051,12 @@ export function ReportPDF({
 
                 <MetricCard
                   label="Acted Upon"
-                  value={completed}
+                  value={acted}
                 />
 
                 <MetricCard
                   label="Action Rate"
-                  value={`${actedRate}%`}
+                  value={`${actionRate}%`}
                 />
 
                 <MetricCard

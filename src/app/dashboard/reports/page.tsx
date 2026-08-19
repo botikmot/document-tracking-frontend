@@ -125,8 +125,10 @@ export default function ReportsPage() {
             outgoing={report.summary.outgoingDocuments.count}
             pending={report.summary.pendingDocuments.count}
             completed={report.summary.completedDocuments.count}
+            acted={report.summary.actedDocuments?.count}
             overdue={report.summary.overdueDocuments.count}
             averageProcessingHours={report.summary.averageProcessingHours}
+            actionRate={report.summary.actionRate}
             processingEfficiency={report.summary.processingEfficiency}
           />
 
