@@ -133,10 +133,14 @@ export function useReports() {
       completedDocuments:
         emptyDocumentSummary,
 
+      actedDocuments: emptyDocumentSummary,
+
       overdueDocuments:
         emptyDocumentSummary,
 
       completionRate: 0,
+
+      actionRate: 0,
 
       averageProcessingHours:
         0,
