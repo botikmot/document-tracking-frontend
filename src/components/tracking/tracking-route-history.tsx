@@ -4,7 +4,6 @@ import {
   ArrowRight,
   Building2,
   CalendarClock,
-  CheckCircle2,
   Clock3,
   User2,
 } from 'lucide-react';
@@ -15,51 +14,13 @@ import {
 } from '@/components/ui/card';
 
 import { Badge } from '@/components/ui/badge';
+import { DocumentStatusBadge } from '../common/status-badge';
 
 type Props = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   routes: any[];
 };
 
-function statusBadge(status: string) {
-  switch (status) {
-    case 'COMPLETED':
-      return (
-        <Badge className="rounded-full bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
-          <CheckCircle2 className="mr-1 h-4 w-4" />
-          Completed
-        </Badge>
-      );
-
-    case 'RECEIVED':
-      return (
-        <Badge className="rounded-full bg-green-100 text-green-700 hover:bg-green-100">
-          Received
-        </Badge>
-      );
-
-    case 'IN_TRANSIT':
-      return (
-        <Badge className="rounded-full bg-blue-100 text-blue-700 hover:bg-blue-100">
-          In Transit
-        </Badge>
-      );
-
-    case 'FOR_REVIEW':
-      return (
-        <Badge className="rounded-full bg-amber-100 text-amber-700 hover:bg-amber-100">
-          For Review
-        </Badge>
-      );
-
-    default:
-      return (
-        <Badge className="rounded-full bg-slate-100 text-slate-700 hover:bg-slate-100">
-          {status}
-        </Badge>
-      );
-  }
-}
 
 function getDuration(sentAt: string, receivedAt?: string) {
   if (!receivedAt) return 'Still in transit';
@@ -160,7 +121,7 @@ export function TrackingRouteHistory({
                 </th>
 
                 <th className="pb-4">
-                  Status
+                  Document Status
                 </th>
 
               </tr>
@@ -268,9 +229,12 @@ export function TrackingRouteHistory({
 
                     <td className="py-6">
 
-                      {statusBadge(
-                        route.status,
-                      )}
+                      <DocumentStatusBadge
+                        status={
+                          route.documentStatus ??
+                          'ON_PROCESS'
+                        }
+                      />
 
                     </td>
 
@@ -310,9 +274,12 @@ export function TrackingRouteHistory({
 
                     </h3>
 
-                    {statusBadge(
-                      route.status,
-                    )}
+                    <DocumentStatusBadge
+                      status={
+                        route.documentStatus ??
+                        'ON_PROCESS'
+                      }
+                    />
 
                   </div>
 

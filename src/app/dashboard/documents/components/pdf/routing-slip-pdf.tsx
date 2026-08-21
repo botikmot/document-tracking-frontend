@@ -9,6 +9,7 @@ import {
   Text,
   View,
 } from '@react-pdf/renderer';
+import { RoutingHistoryItem } from '@/types/document';
 
 Font.register({
   family: 'Helvetica',
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
   },
 
   colRemarks: {
-    width: '50%',
+    width: '40%',
     padding: 6,
   },
 
@@ -197,6 +198,11 @@ const styles = StyleSheet.create({
     fontSize: 8,
   },
 
+  tableCellText: {
+    fontSize: 7,
+    lineHeight: 1.25,
+  },
+
 });
 
 type Props = {
@@ -211,7 +217,130 @@ type Props = {
   qrCode: string;
   officeCode: string;
   documentType: string;
+
+  routingHistory?: RoutingHistoryItem[];
 };
+
+function formatRoutingDate(
+  value?: string | null,
+) {
+  if (!value) {
+    return '-';
+  }
+
+  const date =
+    new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
+    return '-';
+  }
+
+  const datePart =
+    date.toLocaleDateString(
+      'en-US',
+      {
+        month: 'numeric',
+        day: 'numeric',
+        year: 'numeric',
+      },
+    );
+
+  const timePart =
+    date.toLocaleTimeString(
+      'en-US',
+      {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      },
+    );
+
+  return `${datePart} ${timePart}`;
+}
+
+function getOfficeLabel(
+  office: {
+    officeCode: string;
+    officeName: string;
+  },
+) {
+  /*
+   * Optional shorter Records label.
+   */
+  if (
+    office.officeCode ===
+    'RO-RECORDS'
+  ) {
+    return 'Records';
+  }
+
+  /*
+   * ORD is much shorter and cleaner
+   * inside the routing table.
+   */
+  if (
+    office.officeCode ===
+    'ORD'
+  ) {
+    return 'ORD';
+  }
+
+  return (
+    office.officeCode ||
+    office.officeName
+  );
+}
+
+function getRoutingRemarks(
+  item: RoutingHistoryItem,
+) {
+  const lines: string[] = [];
+
+  item.actions.forEach(
+    (action) => {
+      /*
+       * Comment / action text
+       */
+      if (
+        action.comment?.trim()
+      ) {
+        lines.push(
+          `Action: ${action.comment.trim()}`,
+        );
+      }
+
+      /*
+       * Attached supporting file
+       */
+      if (
+        action.fileName?.trim()
+      ) {
+        lines.push(
+          `Attachment: ${action.fileName.trim()}`,
+        );
+      }
+    },
+  );
+
+  /*
+   * Routing remarks
+   */
+  if (
+    item.routeRemarks?.trim()
+  ) {
+    lines.push(
+      `Remarks: ${item.routeRemarks.trim()}`,
+    );
+  }
+
+  return (
+    lines.join('\n') || '-'
+  );
+}
 
 export default function RoutingSlipPDF({
   trackingNumber,
@@ -224,6 +353,7 @@ export default function RoutingSlipPDF({
   qrCode,
   officeCode,
   documentType,
+  routingHistory = [],
 }: Props) {
 
   const isPermitDocument =
@@ -626,48 +756,162 @@ export default function RoutingSlipPDF({
             </View>
             </View>
 
-          {/* EMPTY ROWS */}
+          {/* ===================================== */}
+          {/* EXISTING ROUTING HISTORY */}
+          {/* ===================================== */}
+
+          {routingHistory.map(
+            (item) => (
+              <View
+                key={item.id}
+                style={
+                  styles.tableRow
+                }
+                wrap={false}
+              >
+                {/* FROM */}
+
+                <View
+                  style={
+                    styles.colFromTo
+                  }
+                >
+                  <Text
+                    style={
+                      styles.tableCellText
+                    }
+                  >
+                    {getOfficeLabel(
+                      item.fromOffice,
+                    )}
+                  </Text>
+                </View>
+
+                {/* DATE RECEIVED */}
+
+                <View
+                  style={
+                    styles.colDate
+                  }
+                >
+                  <Text
+                    style={
+                      styles.tableCellText
+                    }
+                  >
+                    {formatRoutingDate(
+                      item.dateReceived,
+                    )}
+                  </Text>
+                </View>
+
+                {/* TO */}
+
+                <View
+                  style={
+                    styles.colFromTo
+                  }
+                >
+                  <Text
+                    style={
+                      styles.tableCellText
+                    }
+                  >
+                    {getOfficeLabel(
+                      item.toOffice,
+                    )}
+                  </Text>
+                </View>
+
+                {/* DATE RELEASED */}
+
+                <View
+                  style={
+                    styles.colDate
+                  }
+                >
+                  <Text
+                    style={
+                      styles.tableCellText
+                    }
+                  >
+                    {formatRoutingDate(
+                      item.dateReleased,
+                    )}
+                  </Text>
+                </View>
+
+                {/* ACTION / REMARKS / STATUS */}
+
+                <View
+                  style={
+                    styles.colRemarks
+                  }
+                >
+                  <Text
+                    style={
+                      styles.tableCellText
+                    }
+                  >
+                    {getRoutingRemarks(
+                      item,
+                    )}
+                  </Text>
+                </View>
+              </View>
+            ),
+          )}
+
+          {/* ===================================== */}
+          {/* REMAINING BLANK ROWS */}
+          {/* ===================================== */}
 
           {Array.from({
-            length: 21,
-          }).map((_, index) => (
-            <View
-              key={index}
-              style={
-                styles.tableRow
-              }
-            >
+            length: Math.max(
+              0,
+              18 -
+                routingHistory.length,
+            ),
+          }).map(
+            (_, index) => (
               <View
+                key={`empty-${index}`}
                 style={
-                  styles.colFromTo
+                  styles.tableRow
                 }
-              /> 
+              >
+                <View
+                  style={
+                    styles.colFromTo
+                  }
+                />
 
-              <View
-                style={
-                  styles.colDate
-                }
-              />
+                <View
+                  style={
+                    styles.colDate
+                  }
+                />
 
-              <View
-                style={
-                  styles.colFromTo
-                }
-              /> 
+                <View
+                  style={
+                    styles.colFromTo
+                  }
+                />
 
-              <View
-                style={
-                  styles.colDate
-                }
-              />
+                <View
+                  style={
+                    styles.colDate
+                  }
+                />
 
-              <View
-                style={
-                  styles.colRemarks
-                }
-              />
-            </View>
-          ))}
+                <View
+                  style={
+                    styles.colRemarks
+                  }
+                />
+              </View>
+            ),
+          )}
         </View>
       </Page>
     </Document>

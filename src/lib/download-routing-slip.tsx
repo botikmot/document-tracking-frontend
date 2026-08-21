@@ -7,6 +7,7 @@ import {
 import { saveAs } from 'file-saver';
 
 import RoutingSlipPDF from '@/app/dashboard/documents/components/pdf/routing-slip-pdf';
+import { RoutingHistoryItem } from '@/types/document';
 
 type Props = {
   trackingNumber: string;
@@ -20,6 +21,7 @@ type Props = {
   qrCode: string;
   officeCode: string;
   documentType: string;
+  routingHistory?: RoutingHistoryItem[];
 };
 
 export async function downloadRoutingSlip(

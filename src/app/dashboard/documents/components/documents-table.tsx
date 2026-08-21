@@ -37,6 +37,7 @@ import { useNotificationStore } from '@/store/notification.store';
 import DocumentDialog from './document-dialog';
 import { EditDocumentDialog } from './edit-document-dialog';
 import { useAuthStore } from '@/store/auth.store';
+import { useRouter } from 'next/navigation';
 
 type OfficeOption = {
   id: string;
@@ -78,6 +79,8 @@ export function DocumentsTable({
   const [offices, setOffices] = useState<OfficeOption[]>([]);
 
   const [loadingOffices, setLoadingOffices] = useState(false);
+
+  const router = useRouter();
 
    const [
     selectedDocument,
@@ -168,9 +171,11 @@ export function DocumentsTable({
   const WORKFLOW_STATUSES = [
     'FOR_REVIEW',
     'FOR_APPROVAL',
+    'FOR_RELEASE',
     'ON_PROCESS',
     'APPROVED',
     'COMPLETED',
+    'END_TRANSACTION',
   ];
 
   const { markAsRead, notifications } = useNotificationStore();
@@ -642,21 +647,35 @@ export function DocumentsTable({
                         </DropdownMenuItem>
 
                         {/* TIMELINE */}
-                        <DropdownMenuItem
+                        {type === 'pending' && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+
+                              setSelectedDocument(
+                                doc,
+                              );
+
+                              setOpenTimeline(
+                                true,
+                              );
+                            }}
+                            className="cursor-pointer"
+                          >
+                            View Timeline
+                          </DropdownMenuItem>
+                        )}
+                      
+                        <DropdownMenuItem 
+                          className="cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
-
-                            setSelectedDocument(
-                              doc,
-                            );
-
-                            setOpenTimeline(
-                              true,
+                            router.push(
+                              `/track?tracking=${encodeURIComponent(doc.trackingNumber)}`
                             );
                           }}
-                          className="cursor-pointer"
                         >
-                          View Timeline
+                          Track
                         </DropdownMenuItem>
 
                         {canUpdate && (

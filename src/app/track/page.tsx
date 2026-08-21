@@ -19,7 +19,7 @@ import { TrackingRouteHistory } from '@/components/tracking/tracking-route-histo
 import Link from 'next/link';
 import SearchParamsContent from './search-params-content';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/auth.store';
+//import { useAuthStore } from '@/store/auth.store';
 
 export default function PublicTrackingPage() {
   const [loading, setLoading] = useState(false);
@@ -31,29 +31,48 @@ export default function PublicTrackingPage() {
   const router = useRouter();
 
   //const user = useAuthStore((state) => state.user);
-  const accessToken = useAuthStore((state) => state.accessToken);
+  //const accessToken = useAuthStore((state) => state.accessToken);
   /*
   |--------------------------------------------------------------------------
   | TRACK
   |--------------------------------------------------------------------------
   */
-  async function handleTrack(trackingNo?: string) {
-    const value = trackingNo ?? trackingNumber;
+  async function handleTrack(
+    trackingNo?: string,
+  ) {
+    const value =
+      trackingNo ??
+      trackingNumber;
 
-    if (!value.trim()) return;
+    if (!value.trim()) {
+      return;
+    }
 
     try {
       setLoading(true);
       setError('');
 
-      //const response = await api.get(`/track/${value}`);
-      const endpoint = accessToken ? `/documents/track/${value}` : `/track/${value}`;
-      const response = await api.get(endpoint);
+      const response =
+        await api.get(
+          `/track/${encodeURIComponent(
+            value.trim(),
+          )}`,
+        );
 
-      setDocument(response.data);
-    } catch {
+      setDocument(
+        response.data,
+      );
+    } catch (error) {
+      console.error(
+        'TRACK ERROR:',
+        error,
+      );
+
       setDocument(null);
-      setError('Tracking number not found.');
+
+      setError(
+        'Tracking number not found.',
+      );
     } finally {
       setLoading(false);
     }

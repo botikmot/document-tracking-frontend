@@ -33,6 +33,13 @@ import { downloadRoutingSlip } from '@/lib/download-routing-slip';
 import QRCode from 'qrcode';
 import { useAuthStore } from '@/store/auth.store';
 import { useState } from 'react';
+import {
+  Trash2,
+  Save,
+  X,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { api } from '@/lib/axios';
 
 interface Props {
   open: boolean;
@@ -66,6 +73,11 @@ export function DocumentDetailsDrawer({
   const [comment, setComment] = useState('');
   const [attachment, setAttachment] = useState<File | null>(null);
   const [submittingAction, setSubmittingAction] = useState(false);
+  const [editingActionId, setEditingActionId] = useState<string | null>(null);
+  const [editComment, setEditComment] = useState('');
+  const [editAttachment, setEditAttachment] = useState<File | null>(null);
+  const [updatingAction, setUpdatingAction] = useState(false);
+  const [deletingActionId, setDeletingActionId] = useState<string | null>(null);
 
   if (!document) {
     return null;
@@ -94,48 +106,107 @@ export function DocumentDetailsDrawer({
   const canEdit = Boolean(isOrdUser && documentIsInOrd);
 
   const handleDownloadRoutingSlip =
-  async () => {
-    const trackingUrl = `${window.location.origin}/track/${document.trackingNumber}`;
+    async () => {
+      try {
+        /*
+        |--------------------------------------------------------------------------
+        | GET LATEST ROUTING / ACTION HISTORY
+        |--------------------------------------------------------------------------
+        */
 
-    const qrCode =
-      await QRCode.toDataURL(
-        trackingUrl,
-      );
+        const historyResponse =
+          await api.get(
+            `/documents/${document.id}/routing-slip-history`,
+          );
 
-    await downloadRoutingSlip({
-      trackingNumber:
-        document.trackingNumber,
+        const routingHistory =
+          historyResponse.data
+            ?.routingHistory ?? [];
 
-      title:
-        document.title,
+        /*
+        |--------------------------------------------------------------------------
+        | TRACKING QR CODE
+        |--------------------------------------------------------------------------
+        */
 
-      description:
-        document.description,
+        const trackingUrl =
+          `${window.location.origin}/track/${document.trackingNumber}`;
 
-      sender:
-         document.senderType === 'OFFICE'
-          ? document.senderOffice?.officeName
-          : document.senderName,
+        const qrCode =
+          await QRCode.toDataURL(
+            trackingUrl,
+          );
 
-      classification:
-        document.classification,
+        /*
+        |--------------------------------------------------------------------------
+        | GENERATE ROUTING SLIP
+        |--------------------------------------------------------------------------
+        */
 
-      priority:
-        document.priority,
-      
-      addressee:
-            document.addressee,
+        await downloadRoutingSlip({
+          trackingNumber:
+            document.trackingNumber,
 
-      createdAt:
-        new Date(
-          document.createdAt,
-        ).toLocaleString(),
+          title:
+            document.title,
 
-      qrCode,
-      officeCode,
-      documentType: document.documentType?.name ?? ''
-    });
-  };
+          description:
+            document.description ??
+            '',
+
+          sender:
+            document.senderType ===
+            'OFFICE'
+              ? document
+                  .senderOffice
+                  ?.officeName ??
+                ''
+              : document
+                  .senderName ??
+                '',
+
+          classification:
+            document.classification ??
+            '',
+
+          priority:
+            document.priority ??
+            '',
+
+          addressee:
+            document.addressee ??
+            '',
+
+          createdAt:
+            new Date(
+              document.createdAt,
+            ).toLocaleString(),
+
+          qrCode,
+
+          officeCode,
+
+          documentType:
+            document.documentType
+              ?.name ?? '',
+
+          /*
+          * Latest routing + action
+          * history from backend.
+          */
+          routingHistory,
+        });
+      } catch (error) {
+        console.error(
+          'Failed to download routing slip:',
+          error,
+        );
+
+        toast.error(
+          'Failed to generate routing slip.',
+        );
+      }
+    };
 
   const getAttachmentUrl = (
     filePath: string,
@@ -200,6 +271,146 @@ export function DocumentDetailsDrawer({
       console.error('Submit action error:', error);
     } finally {
       setSubmittingAction(false);
+    }
+  };
+
+  const handleStartEditAction = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    action: any,
+  ) => {
+    setEditingActionId(
+      action.id,
+    );
+
+    setEditComment(
+      action.comment ?? '',
+    );
+
+    setEditAttachment(null);
+  };
+
+const handleCancelEditAction =
+  () => {
+    setEditingActionId(
+      null,
+    );
+
+    setEditComment('');
+
+    setEditAttachment(null);
+  };
+
+const handleUpdateAction =
+  async (
+    actionId: string,
+  ) => {
+    try {
+      setUpdatingAction(true);
+
+      const formData =
+        new FormData();
+
+      formData.append(
+        'comment',
+        editComment.trim(),
+      );
+
+      if (editAttachment) {
+        formData.append(
+          'file',
+          editAttachment,
+        );
+      }
+
+      const response =
+        await api.patch(
+          `/documents/${document.id}/actions/${actionId}`,
+          formData,
+          {
+            headers: {
+              'Content-Type':
+                'multipart/form-data',
+            },
+          },
+        );
+
+      setActions(
+        (prev) =>
+          prev.map(
+            (action) =>
+              action.id ===
+              actionId
+                ? response.data
+                : action,
+          ),
+      );
+
+      toast.success(
+        'Action updated successfully.',
+      );
+
+      handleCancelEditAction();
+    } catch (error) {
+      console.error(
+        'Update action failed:',
+        error,
+      );
+
+      toast.error(
+        'Failed to update action.',
+      );
+    } finally {
+      setUpdatingAction(false);
+    }
+  };
+
+  const handleDeleteAction =
+  async (
+    actionId: string,
+  ) => {
+    const confirmed =
+      window.confirm(
+        'Are you sure you want to delete this action?',
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeletingActionId(
+        actionId,
+      );
+
+      await api.delete(
+        `/documents/${document.id}/actions/${actionId}`,
+      );
+
+      setActions(
+        (prev) =>
+          prev.filter(
+            (action) =>
+              action.id !==
+              actionId,
+          ),
+      );
+
+      toast.success(
+        'Action deleted successfully.',
+      );
+    } catch (error) {
+      console.error(
+        'Delete action failed:',
+        error,
+      );
+
+      toast.error(
+        'Failed to delete action.',
+      );
+    } finally {
+      setDeletingActionId(
+        null,
+      );
     }
   };
 
@@ -603,17 +814,32 @@ export function DocumentDetailsDrawer({
 
               {/* ACTION HISTORY */}
               <div className="mt-5 space-y-3">
-                {actions.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500 dark:border-[#214234] dark:text-[#A9C5B6]">
-                    No actions recorded yet.
-                  </div>
-                ) : (
-                  actions.map((action) => (
+                {actions.map((action) => {
+                  /*
+                  * Only the user who created
+                  * this action can manage it.
+                  */
+                  const canManageAction =
+                    action.user?.id ===
+                    user?.userId;
+
+                  const isEditing =
+                    editingActionId ===
+                    action.id;
+
+                  const isDeleting =
+                    deletingActionId ===
+                    action.id;
+
+                  return (
                     <div
                       key={action.id}
                       className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-[#214234] dark:bg-[#102418]"
                     >
-                      {/* USER */}
+                      {/* ===================================== */}
+                      {/* USER / DATE / ACTION BUTTONS */}
+                      {/* ===================================== */}
+
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <p className="font-bold text-slate-900 dark:text-[#F3F8F3]">
@@ -622,53 +848,248 @@ export function DocumentDetailsDrawer({
                               : 'User'}
                           </p>
 
-                          {action.office?.officeName && (
+                          {action.office
+                            ?.officeName && (
                             <p className="text-xs text-slate-500 dark:text-[#A9C5B6]">
-                              {action.office.officeName}
+                              {
+                                action.office
+                                  .officeName
+                              }
                             </p>
                           )}
                         </div>
 
-                        <span className="text-xs text-slate-400">
-                          {new Date(
-                            action.createdAt,
-                          ).toLocaleString()}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-slate-400">
+                            {new Date(
+                              action.createdAt,
+                            ).toLocaleString()}
+                          </span>
+
+                          {/* ================================= */}
+                          {/* OWNER ONLY ACTIONS */}
+                          {/* ================================= */}
+
+                          {canManageAction &&
+                            !isEditing && (
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 cursor-pointer text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-[#173227]"
+                                  onClick={() =>
+                                    handleStartEditAction(
+                                      action,
+                                    )
+                                  }
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  disabled={
+                                    isDeleting
+                                  }
+                                  className="h-8 w-8 cursor-pointer text-slate-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                                  onClick={() =>
+                                    handleDeleteAction(
+                                      action.id,
+                                    )
+                                  }
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            )}
+                        </div>
                       </div>
 
-                      {/* COMMENT */}
-                      {action.comment && (
-                        <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-600 dark:text-[#A9C5B6]">
-                          {action.comment}
-                        </p>
-                      )}
+                      {/* ===================================== */}
+                      {/* EDIT MODE */}
+                      {/* ===================================== */}
 
-                      {/* ATTACHMENT */}
-                      {action.filePath && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="mt-4 cursor-pointer dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]"
-                          onClick={() =>
-                            window.open(
-                              getAttachmentUrl(
-                                action.filePath,
-                              ),
-                              '_blank',
-                              'noopener,noreferrer',
-                            )
-                          }
-                        >
-                          <Paperclip className="mr-2 h-4 w-4" />
+                      {isEditing ? (
+                        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/30 p-4 dark:border-emerald-900 dark:bg-emerald-950/10">
+                          {/* COMMENT */}
 
-                          {action.fileName ??
-                            'View Attachment'}
-                        </Button>
+                          <textarea
+                            value={
+                              editComment
+                            }
+                            onChange={(e) =>
+                              setEditComment(
+                                e.target.value,
+                              )
+                            }
+                            placeholder="Update comment..."
+                            rows={4}
+                            className="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-[#214234] dark:bg-[#07150D] dark:text-[#F3F8F3]"
+                          />
+
+                          {/* CURRENT ATTACHMENT */}
+
+                          {action.filePath && (
+                            <div className="mt-3 rounded-xl bg-white px-4 py-3 dark:bg-[#173227]">
+                              <p className="text-xs font-medium text-slate-500 dark:text-[#A9C5B6]">
+                                Current attachment
+                              </p>
+
+                              <div className="mt-1 flex items-center gap-2">
+                                <Paperclip className="h-4 w-4 text-slate-500" />
+
+                                <span className="truncate text-sm text-slate-700 dark:text-[#F3F8F3]">
+                                  {action.fileName ??
+                                    'Attachment'}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* NEW ATTACHMENT */}
+
+                          <div className="mt-3">
+                            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 px-4 py-3 text-sm text-slate-600 transition hover:bg-white dark:border-[#315844] dark:text-[#A9C5B6] dark:hover:bg-[#173227]">
+                              <Upload className="h-4 w-4" />
+
+                              {editAttachment
+                                ? editAttachment.name
+                                : action.filePath
+                                  ? 'Replace attachment'
+                                  : 'Add attachment'}
+
+                              <input
+                                type="file"
+                                hidden
+                                onChange={(
+                                  e,
+                                ) =>
+                                  setEditAttachment(
+                                    e.target
+                                      .files?.[0] ??
+                                      null,
+                                  )
+                                }
+                              />
+                            </label>
+                          </div>
+
+                          {/* SELECTED NEW FILE */}
+
+                          {editAttachment && (
+                            <div className="mt-3 flex items-center justify-between rounded-xl bg-white px-4 py-3 dark:bg-[#173227]">
+                              <div className="flex min-w-0 items-center gap-2">
+                                <Paperclip className="h-4 w-4 shrink-0 text-slate-500" />
+
+                                <span className="truncate text-sm text-slate-700 dark:text-[#F3F8F3]">
+                                  {
+                                    editAttachment.name
+                                  }
+                                </span>
+                              </div>
+
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() =>
+                                  setEditAttachment(
+                                    null,
+                                  )
+                                }
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          )}
+
+                          {/* EDIT BUTTONS */}
+
+                          <div className="mt-4 flex justify-end gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              disabled={
+                                updatingAction
+                              }
+                              onClick={
+                                handleCancelEditAction
+                              }
+                              className="cursor-pointer rounded-xl"
+                            >
+                              <X className="mr-2 h-4 w-4" />
+                              Cancel
+                            </Button>
+
+                            <Button
+                              type="button"
+                              disabled={
+                                updatingAction ||
+                                (!editComment.trim() &&
+                                  !editAttachment &&
+                                  !action.filePath)
+                              }
+                              onClick={() =>
+                                handleUpdateAction(
+                                  action.id,
+                                )
+                              }
+                              className="cursor-pointer rounded-xl"
+                            >
+                              <Save className="mr-2 h-4 w-4" />
+
+                              {updatingAction
+                                ? 'Saving...'
+                                : 'Save Changes'}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {/* ================================= */}
+                          {/* NORMAL COMMENT */}
+                          {/* ================================= */}
+
+                          {action.comment && (
+                            <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-600 dark:text-[#A9C5B6]">
+                              {action.comment}
+                            </p>
+                          )}
+
+                          {/* ================================= */}
+                          {/* ATTACHMENT */}
+                          {/* ================================= */}
+
+                          {action.filePath && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="mt-4 cursor-pointer dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]"
+                              onClick={() =>
+                                window.open(
+                                  getAttachmentUrl(
+                                    action.filePath,
+                                  ),
+                                  '_blank',
+                                  'noopener,noreferrer',
+                                )
+                              }
+                            >
+                              <Paperclip className="mr-2 h-4 w-4" />
+
+                              {action.fileName ??
+                                'View Attachment'}
+                            </Button>
+                          )}
+                        </>
                       )}
                     </div>
-                  ))
-                )}
+                  );
+                })}
               </div>
             </div>
 

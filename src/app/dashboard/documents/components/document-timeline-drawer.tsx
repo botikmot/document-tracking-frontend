@@ -25,6 +25,7 @@ import {
 import {
   ScrollArea,
 } from '@/components/ui/scroll-area';
+import { DocumentStatusBadge } from '@/components/common/status-badge';
 
 type Props = {
   open: boolean;
@@ -285,11 +286,12 @@ export function DocumentTimelineDrawer({
                             }
                           </h4>
 
-                          <Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-[#173227] dark:text-[#D7E8DD]">
-                            {
-                              route.status
+                          <DocumentStatusBadge
+                            status={
+                              route.documentStatus ??
+                              'ON_PROCESS'
                             }
-                          </Badge>
+                          />
                         </div>
 
                         <div className="mt-3 space-y-1 text-sm text-slate-500 dark:text-[#A9C5B6]">
