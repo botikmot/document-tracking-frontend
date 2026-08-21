@@ -99,20 +99,25 @@ export function ReportsTable({
       let rows =
         documents.filter(
           (doc) => {
-            const currentLocation =
-              getCurrentLocationLabel(
-                doc,
-                false,
-              ).toLowerCase();
-
             const responsibleParty =
               getResponsibleParty(
                 doc,
               ).toLowerCase();
 
-            const officeStatus =
-              officeStatusLabel(
-                doc.officeStatus,
+            const pendingOffice =
+              getPendingOffice(
+                doc,
+              ).toLowerCase();
+
+            const performanceStatus =
+              getReportStatus(
+                doc,
+              ).label.toLowerCase();
+
+            const remarks =
+              (
+                doc.latestRemarks ??
+                ''
               ).toLowerCase();
 
             return (
@@ -139,36 +144,40 @@ export function ReportsTable({
                 .includes(
                   normalizedSearch,
                 ) ||
-              currentLocation.includes(
-                normalizedSearch,
-              ) ||
               responsibleParty.includes(
                 normalizedSearch,
               ) ||
-              officeStatus.includes(
+              pendingOffice.includes(
+                normalizedSearch,
+              ) ||
+              performanceStatus.includes(
+                normalizedSearch,
+              ) ||
+              remarks.includes(
                 normalizedSearch,
               )
             );
           },
         );
 
-      rows = [...rows].sort(
-        (a, b) => {
-          const first =
-            new Date(
-              a.createdAt,
-            ).getTime();
+      rows =
+        [...rows].sort(
+          (a, b) => {
+            const first =
+              new Date(
+                a.createdAt,
+              ).getTime();
 
-          const second =
-            new Date(
-              b.createdAt,
-            ).getTime();
+            const second =
+              new Date(
+                b.createdAt,
+              ).getTime();
 
-          return sortAsc
-            ? first - second
-            : second - first;
-        },
-      );
+            return sortAsc
+              ? first - second
+              : second - first;
+          },
+        );
 
       return rows;
     }, [
@@ -352,7 +361,7 @@ export function ReportsTable({
           <table
             className="
               w-full
-              min-w-[1500px]
+              min-w-[1450px]
               text-slate-900
               dark:text-[#F3F8F3]
             "
@@ -369,58 +378,40 @@ export function ReportsTable({
               "
             >
               <tr>
-                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
-                  Tracking
+                <th className="px-4 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
+                  Tracking No.
                 </th>
 
-                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
+                <th className="px-4 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
                   Subject
                 </th>
 
-                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
-                  Type
-                </th>
-
-                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
-                  Classification
-                </th>
-
-                {/* RD #2 — ASA SIYA KARON */}
-
-                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
-                  Current Location
-                </th>
-
-                {/* RD #3 — UNSA IYANG STATUS */}
-
-                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
-                  Office Status
-                </th>
-
-                {/* RD #4 — KINSA RESPONSIBLE */}
-
-                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
+                <th className="px-4 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
                   Responsible Office / Person
                 </th>
 
-                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
-                  Allotted Time
+                <th className="px-4 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
+                  Classification
                 </th>
 
-                {/* RD #5 — PILA NA KADUGAY */}
-
-                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
-                  Time in Office
+                <th className="px-4 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
+                  Due Date / Total Processing Time
                 </th>
 
-                {/* RD #6 — OVERDUE BA */}
-
-                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
-                  Deadline Status
+                <th className="px-4 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
+                  Received Date
                 </th>
 
-                <th className="px-5 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
-                  Deadline
+                <th className="px-4 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
+                  Status
+                </th>
+
+                <th className="px-4 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
+                  Pending Office
+                </th>
+
+                <th className="px-4 py-4 text-left font-bold text-slate-700 dark:text-[#D7E8DD]">
+                  Remarks
                 </th>
               </tr>
             </thead>
@@ -431,209 +422,217 @@ export function ReportsTable({
 
             <tbody>
               {rows.map(
-                (doc) => (
-                  <tr
-                    key={doc.id}
-                    className="
-                      border-t
-                      border-slate-200
-                      transition-colors
-                      hover:bg-slate-50
-                      dark:border-[#214234]
-                      dark:hover:bg-[#102418]
-                    "
-                  >
-                    {/* TRACKING */}
+                (doc) => {
+                  const reportStatus =
+                    getReportStatus(
+                      doc,
+                    );
 
-                    <td
+                  return (
+                    <tr
+                      key={doc.id}
                       className="
-                        px-5
-                        py-4
-                        font-semibold
-                        text-[#102418]
-                        dark:text-[#F3F8F3]
+                        border-t
+                        border-slate-200
+                        transition-colors
+                        hover:bg-slate-50
+                        dark:border-[#214234]
+                        dark:hover:bg-[#102418]
                       "
                     >
-                      {doc.trackingNumber}
-                    </td>
+                      {/* ===================================== */}
+                      {/* TRACKING NUMBER */}
+                      {/* ===================================== */}
 
-                    {/* SUBJECT */}
-
-                    <td className="px-5 py-4">
-                      <div className="max-w-[230px]">
-                        <p className="font-medium">
-                          {doc.title}
+                      <td className="px-4 py-4">
+                        <p className="font-semibold text-[#102418] dark:text-[#F3F8F3]">
+                          {doc.trackingNumber}
                         </p>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* DOCUMENT TYPE */}
+                      {/* ===================================== */}
+                      {/* SUBJECT */}
+                      {/* ===================================== */}
 
-                    <td className="px-5 py-4">
-                      {doc.documentType}
-                    </td>
-
-                    {/* CLASSIFICATION */}
-
-                    <td className="px-5 py-4">
-                      {doc.classification ===
-                      'TECHNICAL'
-                        ? 'HIGHLY TECHNICAL'
-                        : doc.classification ??
-                          '—'}
-                    </td>
-
-                    {/* CURRENT LOCATION */}
-
-                    <td className="px-5 py-4">
-                      <div className="max-w-[220px]">
-                        {doc.currentLocation
-                          ?.isInTransit && (
-                          <p
-                            className="
-                              mb-1
-                              text-xs
-                              font-semibold
-                              text-amber-600
-                              dark:text-amber-400
-                            "
-                          >
-                            In Transit →
+                      <td className="px-4 py-4">
+                        <div className="max-w-[240px]">
+                          <p className="font-medium">
+                            {doc.title}
                           </p>
-                        )}
+                        </div>
+                      </td>
 
-                        <p className="font-medium">
-                          {getCurrentLocationLabel(
-                            doc,
-                          )}
-                        </p>
-                      </div>
-                    </td>
+                      {/* ===================================== */}
+                      {/* RESPONSIBLE OFFICE / PERSON */}
+                      {/* ===================================== */}
 
-                    {/* OFFICE STATUS */}
-
-                    <td className="px-5 py-4">
-                      <Badge
-                        className={
-                          statusBadge(
-                            doc.officeStatus,
-                          )
-                        }
-                      >
-                        {officeStatusDisplayLabel(
-                          doc.officeStatus,
-                          doc.acted,
-                        )}
-                      </Badge>
-                    </td>
-
-                    {/* RESPONSIBLE PARTY */}
-
-                    <td className="px-5 py-4">
-                      <div className="max-w-[230px]">
-                        <p className="font-medium">
-                          {getResponsibleParty(
-                            doc,
-                          )}
-                        </p>
-
-                        {doc.responsibleOffice
-                          ?.officeName && (
-                          <p
-                            className="
-                              mt-0.5
-                              text-xs
-                              text-slate-500
-                              dark:text-[#7FA18E]
-                            "
-                          >
-                            Responsible Office
+                      <td className="px-4 py-4">
+                        <div className="max-w-[220px]">
+                          <p className="font-medium">
+                            {getResponsibleParty(
+                              doc,
+                            )}
                           </p>
-                        )}
 
-                        {!doc
-                          .responsibleOffice
-                          ?.officeName &&
-                          doc.responsiblePerson && (
-                            <p
-                              className="
-                                mt-0.5
-                                text-xs
-                                text-slate-500
-                                dark:text-[#7FA18E]
-                              "
-                            >
-                              Responsible Person
+                          {doc.responsibleOffice
+                            ?.officeName && (
+                            <p className="mt-1 text-xs text-slate-500 dark:text-[#7FA18E]">
+                              Responsible Office
                             </p>
                           )}
-                      </div>
-                    </td>
 
-                    {/* ALLOTTED TIME */}
+                          {!doc
+                            .responsibleOffice
+                            ?.officeName &&
+                            doc.responsiblePerson && (
+                              <p className="mt-1 text-xs text-slate-500 dark:text-[#7FA18E]">
+                                Responsible Person
+                              </p>
+                            )}
+                        </div>
+                      </td>
 
-                    <td className="px-5 py-4">
-                      {doc.allottedTimeMs
-                        ? formatDuration(
-                            doc.allottedTimeMs,
-                          )
-                        : '—'}
-                    </td>
+                      {/* ===================================== */}
+                      {/* CLASSIFICATION */}
+                      {/* ===================================== */}
 
-                    {/* TIME IN OFFICE */}
+                      <td className="px-4 py-4">
+                        <span className="text-sm font-medium">
+                          {doc.classification ===
+                          'TECHNICAL'
+                            ? 'HIGHLY TECHNICAL'
+                            : doc.classification ??
+                              '—'}
+                        </span>
+                      </td>
 
-                    <td className="px-5 py-4">
-                      {isAwaitingReceipt(
-                        doc.officeStatus,
-                      )
-                        ? (
-                            <span className="text-slate-500">
-                              Not Received
+                      {/* ===================================== */}
+                      {/* DUE DATE / TOTAL PROCESSING TIME */}
+                      {/* ===================================== */}
+
+                      <td className="px-4 py-4">
+                        <div className="min-w-[170px]">
+                          <p className="font-medium">
+                            {formatReportDate(
+                              doc.deadline,
+                            )}
+                          </p>
+
+                          <p className="mt-1 text-xs text-slate-500 dark:text-[#7FA18E]">
+                            {formatTotalProcessingTime(
+                              doc.allottedTimeMs,
+                            )}
+                          </p>
+                        </div>
+                      </td>
+
+                      {/* ===================================== */}
+                      {/* RECEIVED DATE */}
+                      {/* ===================================== */}
+
+                      <td className="px-4 py-4">
+                        <div className="min-w-[145px]">
+                          {doc.receivedAt ? (
+                            <>
+                              <p className="text-sm font-medium">
+                                {formatReceivedDate(
+                                  doc.receivedAt,
+                                )}
+                              </p>
+                            </>
+                          ) : (
+                            <span className="text-sm text-slate-400">
+                              Not received
                             </span>
-                          )
-                        : formatDuration(
-                            doc.timeInOfficeMs,
-                            {
-                              showSeconds:
-                                true,
-                            },
                           )}
-                    </td>
+                        </div>
+                      </td>
 
-                    {/* DEADLINE STATUS */}
+                      {/* ===================================== */}
+                      {/* PERFORMANCE / DEADLINE STATUS */}
+                      {/* ===================================== */}
 
-                    <td className="px-5 py-4">
-                      <Badge
-                        variant="outline"
-                        className={
-                          deadlineStatusBadge(
-                            doc.deadlineStatus,
-                          )
-                        }
-                      >
-                        {deadlineStatusLabel(
-                          doc.deadlineStatus,
-                        )}
-                      </Badge>
-                    </td>
+                      <td className="px-4 py-4">
+                        <div className="min-w-[190px]">
+                          <Badge
+                            variant="outline"
+                            className={
+                              reportStatus.className
+                            }
+                          >
+                            {reportStatus.label}
+                          </Badge>
 
-                    {/* DEADLINE */}
+                          {isDocumentCompleted(
+                            doc,
+                          ) &&
+                            doc.completedAt && (
+                              <p className="mt-1.5 text-xs font-medium text-slate-600 dark:text-[#A9C5B6]">
+                                {formatReceivedDate(
+                                  doc.completedAt,
+                                )}
+                              </p>
+                            )}
 
-                    <td className="px-5 py-4">
-                      {doc.deadline
-                        ? new Date(
-                            doc.deadline,
-                          ).toLocaleDateString(
-                            undefined,
-                            {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric',
-                            },
-                          )
-                        : '—'}
-                    </td>
-                  </tr>
-                ),
+                          {reportStatus.detail && (
+                            <p
+                              className={`
+                                mt-1
+                                text-xs
+                                ${
+                                  reportStatus.type ===
+                                  'late'
+                                    ? 'text-orange-600 dark:text-orange-400'
+                                    : 'text-slate-500 dark:text-[#7FA18E]'
+                                }
+                              `}
+                            >
+                              {reportStatus.detail}
+                            </p>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* ===================================== */}
+                      {/* PENDING OFFICE */}
+                      {/* ===================================== */}
+
+                      <td className="px-4 py-4">
+                        <div className="max-w-[220px]">
+                          {doc.currentLocation
+                            ?.isInTransit &&
+                            !isDocumentCompleted(
+                              doc,
+                            ) && (
+                              <p className="mb-1 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                                In Transit
+                              </p>
+                            )}
+
+                          <p className="font-medium">
+                            {getPendingOffice(
+                              doc,
+                            )}
+                          </p>
+                        </div>
+                      </td>
+
+                      {/* ===================================== */}
+                      {/* REMARKS */}
+                      {/* ===================================== */}
+
+                      <td className="px-4 py-4">
+                        <div className="max-w-[260px]">
+                          <p className="text-sm leading-6 text-slate-600 dark:text-[#A9C5B6]">
+                            {doc.latestRemarks
+                              ?.trim() ||
+                              '—'}
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                },
               )}
 
               {/* EMPTY STATE */}
@@ -641,7 +640,7 @@ export function ReportsTable({
               {rows.length === 0 && (
                 <tr>
                   <td
-                    colSpan={11}
+                    colSpan={9}
                     className="
                       py-16
                       text-center
@@ -737,32 +736,6 @@ export function ReportsTable({
   );
 }
 
-/*
-|--------------------------------------------------------------------------
-| Current Location
-|--------------------------------------------------------------------------
-*/
-
-function getCurrentLocationLabel(
-  doc: ReportDocument,
-  showTransitPrefix = false,
-) {
-  const officeName =
-    doc.currentLocation
-      ?.officeName ??
-    doc.office ??
-    '—';
-
-  if (
-    showTransitPrefix &&
-    doc.currentLocation
-      ?.isInTransit
-  ) {
-    return `In Transit → ${officeName}`;
-  }
-
-  return officeName;
-}
 
 /*
 |--------------------------------------------------------------------------
@@ -800,216 +773,460 @@ function getResponsibleParty(
 
 /*
 |--------------------------------------------------------------------------
-| Office Status
+| DOCUMENT COMPLETION
 |--------------------------------------------------------------------------
 */
 
-function officeStatusLabel(
-  status?: string | null,
+function isDocumentCompleted(
+  doc: ReportDocument,
 ) {
-  switch (status) {
-    case 'AWAITING_RECEIPT':
-    case 'PENDING':
-      return 'Awaiting Receipt';
-
-    case 'IN_CUSTODY':
-    case 'RECEIVED':
-      return 'In Custody';
-
-    case 'FORWARDED':
-      return 'Forwarded';
-
-    case 'COMPLETED':
-      return 'Completed';
-
-    case 'RETURNED':
-      return 'Returned';
-
-    case 'UNKNOWN':
-      return 'Unknown';
-
-    default:
-      return '—';
-  }
-}
-
-function officeStatusDisplayLabel(
-  status?: string | null,
-  acted?: boolean,
-) {
-  const statusLabel =
-    officeStatusLabel(status);
-
-  if (acted) {
-    if (statusLabel === '—') {
-      return 'Acted';
-    }
-
-    return `Acted | ${statusLabel}`;
-  }
-
-  return statusLabel;
+  return (
+    doc.status ===
+      'COMPLETED' ||
+    doc.status ===
+      'END_TRANSACTION' ||
+    doc.officeStatus ===
+      'COMPLETED' ||
+    Boolean(doc.acted)
+  );
 }
 
 /*
 |--------------------------------------------------------------------------
-| Office Status Badge
+| REPORT DATE
 |--------------------------------------------------------------------------
 */
 
-function statusBadge(
-  status?: string | null,
+function formatReportDate(
+  value?: string | null,
 ) {
-  switch (status) {
-    case 'COMPLETED':
-      return `
-        border-emerald-200
-        bg-emerald-100
-        text-emerald-700
-        dark:border-emerald-800
-        dark:bg-emerald-950/50
-        dark:text-emerald-300
-      `;
+  if (!value) {
+    return 'No due date';
+  }
 
-    case 'FORWARDED':
-      return `
-        border-violet-200
-        bg-violet-100
-        text-violet-700
-        dark:border-violet-800
-        dark:bg-violet-950/50
-        dark:text-violet-300
-      `;
+  const date =
+    new Date(value);
 
-    case 'IN_CUSTODY':
-    case 'RECEIVED':
-      return `
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
+    return '—';
+  }
+
+  return date.toLocaleDateString(
+    'en-PH',
+    {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    },
+  );
+}
+
+/*
+|--------------------------------------------------------------------------
+| RECEIVED DATE
+|--------------------------------------------------------------------------
+*/
+
+function formatReceivedDate(
+  value?: string | null,
+) {
+  if (!value) {
+    return '—';
+  }
+
+  const date =
+    new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
+    return '—';
+  }
+
+  return date.toLocaleString(
+    'en-PH',
+    {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    },
+  );
+}
+
+/*
+|--------------------------------------------------------------------------
+| TOTAL PROCESSING TIME
+|--------------------------------------------------------------------------
+|
+| Report requirement:
+| show total allotted processing time
+| in hours.
+|
+| Example:
+| 72 hours
+|--------------------------------------------------------------------------
+*/
+
+function formatTotalProcessingTime(
+  milliseconds?:
+    | number
+    | null,
+) {
+  if (
+    milliseconds === null ||
+    milliseconds === undefined
+  ) {
+    return 'No processing time';
+  }
+
+  const hours =
+    Math.round(
+      milliseconds /
+        (1000 * 60 * 60),
+    );
+
+  if (hours <= 0) {
+    return '< 1 hour';
+  }
+
+  return `${hours} hour${
+    hours === 1
+      ? ''
+      : 's'
+  }`;
+}
+
+/*
+|--------------------------------------------------------------------------
+| RELATIVE DURATION
+|--------------------------------------------------------------------------
+*/
+
+function formatRelativeDuration(
+  milliseconds: number,
+) {
+  const safeMilliseconds =
+    Math.abs(milliseconds);
+
+  if (
+    safeMilliseconds <
+    60 * 1000
+  ) {
+    return '<1m';
+  }
+
+  const totalMinutes =
+    Math.floor(
+      safeMilliseconds /
+        (1000 * 60),
+    );
+
+  const days =
+    Math.floor(
+      totalMinutes /
+        1440,
+    );
+
+  const hours =
+    Math.floor(
+      (totalMinutes %
+        1440) /
+        60,
+    );
+
+  const minutes =
+    totalMinutes %
+    60;
+
+  const parts: string[] =
+    [];
+
+  if (days > 0) {
+    parts.push(
+      `${days}d`,
+    );
+  }
+
+  if (hours > 0) {
+    parts.push(
+      `${hours}h`,
+    );
+  }
+
+  /*
+   * Show minutes when duration
+   * is below one day.
+   */
+  if (
+    days === 0 &&
+    minutes > 0
+  ) {
+    parts.push(
+      `${minutes}m`,
+    );
+  }
+
+  return (
+    parts.join(' ') ||
+    '<1m'
+  );
+}
+
+/*
+|--------------------------------------------------------------------------
+| REPORT PERFORMANCE STATUS
+|--------------------------------------------------------------------------
+*/
+
+function getReportStatus(
+  doc: ReportDocument,
+) {
+  const completed =
+    doc.status === 'COMPLETED' ||
+    doc.status === 'END_TRANSACTION';
+
+  /*
+  |--------------------------------------------------------------------------
+  | NO DEADLINE
+  |--------------------------------------------------------------------------
+  */
+
+  if (!doc.deadline) {
+    return {
+      label: completed
+        ? 'Completed'
+        : 'No Due Date',
+
+      detail: undefined,
+
+      type: completed
+        ? 'completed'
+        : 'neutral',
+
+      className: completed
+        ? `
+          border-emerald-200
+          bg-emerald-100
+          text-emerald-700
+          dark:border-emerald-800
+          dark:bg-emerald-950/50
+          dark:text-emerald-300
+        `
+        : `
+          border-slate-200
+          bg-slate-100
+          text-slate-600
+          dark:border-slate-700
+          dark:bg-slate-800
+          dark:text-slate-300
+        `,
+    };
+  }
+
+  const deadline =
+    new Date(
+      doc.deadline,
+    ).getTime();
+
+  /*
+  |--------------------------------------------------------------------------
+  | COMPLETED
+  |--------------------------------------------------------------------------
+  */
+
+  if (completed) {
+    if (!doc.completedAt) {
+      return {
+        label: 'Completed',
+        detail: undefined,
+        type: 'completed',
+
+        className: `
+          border-emerald-200
+          bg-emerald-100
+          text-emerald-700
+          dark:border-emerald-800
+          dark:bg-emerald-950/50
+          dark:text-emerald-300
+        `,
+      };
+    }
+
+    const completedAt =
+      new Date(
+        doc.completedAt,
+      ).getTime();
+
+    /*
+     * IMPORTANT:
+     *
+     * positive = completed BEFORE deadline
+     * negative = completed AFTER deadline
+     */
+    const difference =
+      deadline -
+      completedAt;
+
+    /*
+    |--------------------------------------------------------------------------
+    | COMPLETED BEFORE / EXACTLY ON DEADLINE
+    |--------------------------------------------------------------------------
+    */
+
+    if (difference >= 0) {
+      return {
+        label: 'Completed',
+
+        detail:
+          `${formatRelativeDuration(
+            difference,
+          )} remaining`,
+
+        type: 'completed',
+
+        className: `
+          border-emerald-200
+          bg-emerald-100
+          text-emerald-700
+          dark:border-emerald-800
+          dark:bg-emerald-950/50
+          dark:text-emerald-300
+        `,
+      };
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | COMPLETED AFTER DEADLINE
+    |--------------------------------------------------------------------------
+    */
+
+    return {
+      label: 'Completed',
+
+      detail:
+        `${formatRelativeDuration(
+          Math.abs(
+            difference,
+          ),
+        )} late`,
+
+      type: 'late',
+
+      className: `
+        border-orange-200
+        bg-orange-100
+        text-orange-700
+        dark:border-orange-800
+        dark:bg-orange-950/50
+        dark:text-orange-300
+      `,
+    };
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | ACTIVE DOCUMENT
+  |--------------------------------------------------------------------------
+  */
+
+  const difference =
+    deadline -
+    Date.now();
+
+  /*
+  |--------------------------------------------------------------------------
+  | ACTIVE + BEFORE DEADLINE
+  |--------------------------------------------------------------------------
+  */
+
+  if (difference >= 0) {
+    return {
+      label: 'On Time',
+
+      detail:
+        `${formatRelativeDuration(
+          difference,
+        )} remaining`,
+
+      type: 'ontime',
+
+      className: `
         border-blue-200
         bg-blue-100
         text-blue-700
         dark:border-blue-800
         dark:bg-blue-950/50
         dark:text-blue-300
-      `;
-
-    case 'AWAITING_RECEIPT':
-    case 'PENDING':
-      return `
-        border-amber-200
-        bg-amber-100
-        text-amber-700
-        dark:border-amber-800
-        dark:bg-amber-950/50
-        dark:text-amber-300
-      `;
-
-    case 'RETURNED':
-      return `
-        border-red-200
-        bg-red-100
-        text-red-700
-        dark:border-red-800
-        dark:bg-red-950/50
-        dark:text-red-300
-      `;
-
-    default:
-      return `
-        border-slate-200
-        bg-slate-100
-        text-slate-600
-        dark:border-slate-700
-        dark:bg-slate-800
-        dark:text-slate-300
-      `;
+      `,
+    };
   }
+
+  /*
+  |--------------------------------------------------------------------------
+  | ACTIVE + AFTER DEADLINE
+  |--------------------------------------------------------------------------
+  */
+
+  return {
+    label:
+      `Overdue by ${formatRelativeDuration(
+        Math.abs(
+          difference,
+        ),
+      )}`,
+
+    detail: undefined,
+
+    type: 'overdue',
+
+    className: `
+      border-red-200
+      bg-red-100
+      text-red-700
+      dark:border-red-800
+      dark:bg-red-950/50
+      dark:text-red-300
+    `,
+  };
 }
 
 /*
 |--------------------------------------------------------------------------
-| Awaiting Receipt
+| PENDING OFFICE
 |--------------------------------------------------------------------------
 */
 
-function isAwaitingReceipt(
-  status?: string | null,
+function getPendingOffice(
+  doc: ReportDocument,
 ) {
+  /*
+   * Completed/end transaction documents
+   * are no longer pending anywhere.
+   */
+
+  if (
+    isDocumentCompleted(
+      doc,
+    )
+  ) {
+    return '—';
+  }
+
   return (
-    status ===
-      'AWAITING_RECEIPT' ||
-    status === 'PENDING'
+    doc.currentLocation
+      ?.officeName ??
+    doc.office ??
+    '—'
   );
-}
-
-/*
-|--------------------------------------------------------------------------
-| Deadline Status
-|--------------------------------------------------------------------------
-*/
-
-function deadlineStatusLabel(
-  status?: string | null,
-) {
-  switch (status) {
-    case 'OVERDUE':
-      return 'Overdue';
-
-    case 'ON_TIME':
-      return 'On Time';
-
-    case 'AWAITING_RECEIPT':
-      return 'Awaiting Receipt';
-
-    case 'NO_DEADLINE':
-      return 'No Deadline';
-
-    default:
-      return '—';
-  }
-}
-
-function deadlineStatusBadge(
-  status?: string | null,
-) {
-  switch (status) {
-    case 'OVERDUE':
-      return `
-        border-red-200
-        bg-red-100
-        text-red-700
-        dark:border-red-800
-        dark:bg-red-950/50
-        dark:text-red-300
-      `;
-
-    case 'ON_TIME':
-      return `
-        border-emerald-200
-        bg-emerald-100
-        text-emerald-700
-        dark:border-emerald-800
-        dark:bg-emerald-950/50
-        dark:text-emerald-300
-      `;
-
-    case 'AWAITING_RECEIPT':
-      return `
-        border-amber-200
-        bg-amber-100
-        text-amber-700
-        dark:border-amber-800
-        dark:bg-amber-950/50
-        dark:text-amber-300
-      `;
-
-    default:
-      return `
-        border-slate-200
-        bg-slate-100
-        text-slate-600
-        dark:border-slate-700
-        dark:bg-slate-800
-        dark:text-slate-300
-      `;
-  }
 }

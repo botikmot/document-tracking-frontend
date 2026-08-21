@@ -107,6 +107,13 @@ export type ReportDocument = {
   lastActionAt?:
     | string
     | null;
+
+  receivedAt: string | null;
+
+  officeCompletedAt: string | null;
+  completedAt: string | null;
+
+  latestRemarks: string | null;
 };
 
 export type DocumentSummary = {
