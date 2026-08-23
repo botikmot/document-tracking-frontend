@@ -1,3 +1,11 @@
+import { clientApi } from '@/lib/client-api';
+
+import type {
+  ClientLoginDto,
+  ClientLoginResponse,
+  ClientUser,
+} from '@/types/client-auth';
+
 export interface VerifyEmailResponse {
   message: string;
 }
@@ -40,3 +48,29 @@ export async function verifyClientEmail(
 
   return data;
 }
+
+export const clientAuthService = {
+  async login(
+    dto: ClientLoginDto,
+  ) {
+    return clientApi<ClientLoginResponse>(
+      '/client-auth/login',
+      {
+        method: 'POST',
+        body: JSON.stringify(dto),
+      },
+    );
+  },
+
+  async me(
+    token: string,
+  ) {
+    return clientApi<ClientUser>(
+      '/client-auth/me',
+      {
+        method: 'GET',
+        token,
+      },
+    );
+  },
+};

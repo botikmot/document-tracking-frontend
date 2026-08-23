@@ -9,8 +9,7 @@ import {
 
 import { styles } from './pdf-styles';
 
-const LOGO =
-  '/images/denr_logov2.png';
+const LOGO = '/images/denr_logov2.png';
 
 /*
 |--------------------------------------------------------------------------
@@ -25,8 +24,6 @@ type OfficeStatus =
   | 'COMPLETED'
   | 'RETURNED'
   | 'UNKNOWN'
-
-  // Legacy values
   | 'PENDING'
   | 'RECEIVED'
   | null;
@@ -53,8 +50,11 @@ type DocumentItem = {
   status: string;
 
   /*
-   * Current Location
-   */
+  |--------------------------------------------------------------------------
+  | CURRENT LOCATION
+  |--------------------------------------------------------------------------
+  */
+
   currentLocation?:
     | {
         officeId?: string;
@@ -66,19 +66,28 @@ type DocumentItem = {
     | null;
 
   /*
-   * Legacy fallback
-   */
+  |--------------------------------------------------------------------------
+  | LEGACY / FALLBACK OFFICE
+  |--------------------------------------------------------------------------
+  */
+
   office?: string;
 
   /*
-   * Office-relative status
-   */
+  |--------------------------------------------------------------------------
+  | OFFICE STATUS
+  |--------------------------------------------------------------------------
+  */
+
   officeStatus:
     OfficeStatus;
 
   /*
-   * Responsibility
-   */
+  |--------------------------------------------------------------------------
+  | RESPONSIBILITY
+  |--------------------------------------------------------------------------
+  */
+
   responsibleOffice?:
     | {
         id: string;
@@ -94,6 +103,12 @@ type DocumentItem = {
   responsibleParty?:
     | string
     | null;
+
+  /*
+  |--------------------------------------------------------------------------
+  | DEADLINE / PROCESSING
+  |--------------------------------------------------------------------------
+  */
 
   deadline:
     | string
@@ -112,8 +127,49 @@ type DocumentItem = {
   deadlineStatus?:
     DeadlineStatus;
 
+  /*
+  |--------------------------------------------------------------------------
+  | IMPORTANT DATES
+  |--------------------------------------------------------------------------
+  */
+
   createdAt: string;
+
+  /*
+   * Business rule:
+   *
+   * Document creation in eDATS
+   * = official received date.
+   */
+  receivedAt?:
+    | string
+    | null;
+
+  /*
+   * Actual COMPLETED /
+   * END_TRANSACTION timestamp
+   * from status history.
+   */
+  completedAt?:
+    | string
+    | null;
+
+  /*
+  |--------------------------------------------------------------------------
+  | LATEST REMARKS / ACTION
+  |--------------------------------------------------------------------------
+  */
+
+  latestRemarks?:
+    | string
+    | null;
 };
+
+/*
+|--------------------------------------------------------------------------
+| PROPS
+|--------------------------------------------------------------------------
+*/
 
 type Props = {
   documents:
@@ -154,6 +210,27 @@ type Props = {
 
 /*
 |--------------------------------------------------------------------------
+| REPORT STATUS
+|--------------------------------------------------------------------------
+*/
+
+type ReportStatusType =
+  | 'completed'
+  | 'ontime'
+  | 'overdue'
+  | 'late'
+  | 'neutral';
+
+type ReportStatusResult = {
+  label: string;
+
+  detail?: string;
+
+  type: ReportStatusType;
+};
+
+/*
+|--------------------------------------------------------------------------
 | LOCAL STYLES
 |--------------------------------------------------------------------------
 */
@@ -162,7 +239,7 @@ const localStyles =
   StyleSheet.create({
     /*
     |--------------------------------------------------------------------------
-    | Report Overview
+    | REPORT OVERVIEW
     |--------------------------------------------------------------------------
     */
 
@@ -246,6 +323,7 @@ const localStyles =
       paddingVertical: 6,
 
       alignItems: 'center',
+
       justifyContent:
         'center',
 
@@ -288,26 +366,25 @@ const localStyles =
       color: '#006838',
 
       fontWeight: 'bold',
+
+      fontSize: 7,
+      lineHeight: 1.15,
     },
 
     /*
     |--------------------------------------------------------------------------
-    | Table
+    | TABLE
     |--------------------------------------------------------------------------
     |
-    | Same order as ReportsTable:
-    |
-    | Tracking
+    | Tracking No.
     | Subject
-    | Type
+    | Responsible Office / Person
     | Classification
-    | Routing / Custody
-    | Office Status
-    | Priority
-    | Allotted Time
-    | Time in Office
-    | Deadline Status
-    | Deadline
+    | Due Date / Total Processing Time
+    | Received Date
+    | Status
+    | Pending Office
+    | Remarks
     |
     */
 
@@ -316,12 +393,15 @@ const localStyles =
       backgroundColor: '#006838',
       borderTopLeftRadius: 4,
       borderTopRightRadius: 4,
-      minHeight: 30,
+
+      minHeight: 34,
     },
 
     tableRow: {
       flexDirection: 'row',
-      minHeight: 29,
+
+      minHeight: 38,
+
       borderBottomWidth: 0.5,
       borderBottomColor: '#D1D5DB',
     },
@@ -331,152 +411,163 @@ const localStyles =
     },
 
     headerCell: {
-      paddingHorizontal: 3,
-      paddingVertical: 6,
-      fontSize: 5.7,
+      paddingHorizontal: 4,
+      paddingVertical: 7,
+
+      fontSize: 6.3,
+      lineHeight: 1.25,
+
       fontWeight: 'bold',
+
       color: '#FFFFFF',
     },
 
     cell: {
-      paddingHorizontal: 3,
-      paddingVertical: 6,
-      fontSize: 5.8,
+      paddingHorizontal: 4,
+      paddingVertical: 7,
+
+      fontSize: 6.3,
+      lineHeight: 1.3,
+
       color: '#374151',
     },
 
+    cellBox: {
+      paddingHorizontal: 4,
+      paddingVertical: 7,
+    },
+
+    cellPrimary: {
+      fontSize: 6.3,
+      lineHeight: 1.3,
+
+      color: '#374151',
+    },
+
+    cellStrong: {
+      fontSize: 6.3,
+      lineHeight: 1.3,
+
+      color: '#1F2937',
+
+      fontWeight: 'bold',
+    },
+
+    cellSubtle: {
+      marginTop: 2,
+
+      fontSize: 5.6,
+      lineHeight: 1.25,
+
+      color: '#6B7280',
+    },
+
+    statusDate: {
+      marginTop: 2,
+
+      fontSize: 5.6,
+
+      color: '#4B5563',
+    },
+
+    statusDetail: {
+      marginTop: 2,
+
+      fontSize: 5.6,
+
+      color: '#6B7280',
+    },
+
     /*
-    * Total = 100%
+    |--------------------------------------------------------------------------
+    | COLUMN WIDTHS
+    |--------------------------------------------------------------------------
+    |
+    | Total = 100%
+    |
     */
 
     tracking: {
-      width: '10%',
+      width: '9%',
     },
 
     subject: {
-      width: '12%',
-    },
-
-    type: {
-      width: '8%',
-    },
-
-    classification: {
-      width: '8%',
-    },
-
-    currentLocation: {
-      width: '10%',
-    },
-
-    officeStatus: {
-      width: '8%',
+      width: '13%',
     },
 
     responsible: {
       width: '12%',
     },
 
-    allottedTime: {
-      width: '7%',
+    classification: {
+      width: '8%',
     },
 
-    timeInOffice: {
-      width: '7%',
+    dueProcessing: {
+      width: '13%',
     },
 
-    deadlineStatus: {
-      width: '9%',
+    receivedDate: {
+      width: '11%',
     },
 
-    deadline: {
-      width: '9%',
+    reportStatus: {
+      width: '15%',
     },
 
-    officePending: {
-      color: '#B45309',
+    pendingOffice: {
+      width: '11%',
+    },
+
+    remarks: {
+      width: '8%',
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATUS COLORS
+    |--------------------------------------------------------------------------
+    */
+
+    statusCompleted: {
+      color: '#047857',
+
       fontWeight: 'bold',
     },
 
-    officeReceived: {
+    statusOnTime: {
       color: '#1D4ED8',
+
       fontWeight: 'bold',
     },
 
-    officeForwarded: {
-      color: '#6D28D9',
-      fontWeight: 'bold',
-    },
-
-    officeCompleted: {
-      color: '#047857',
-      fontWeight: 'bold',
-    },
-
-    officeReturned: {
-      color: '#B91C1C',
-      fontWeight: 'bold',
-    },
-
-    deadlineOverdue: {
+    statusOverdue: {
       color: '#DC2626',
+
       fontWeight: 'bold',
     },
 
-    deadlineOnTime: {
-      color: '#047857',
+    statusLate: {
+      color: '#EA580C',
+
       fontWeight: 'bold',
     },
 
-    deadlineAwaiting: {
-      color: '#B45309',
-      fontWeight: 'bold',
-    },
-
-    deadlineNone: {
+    statusNeutral: {
       color: '#6B7280',
+
+      fontWeight: 'bold',
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | Office Status Colors
-    |--------------------------------------------------------------------------
-    */
-
-    /*
-    |--------------------------------------------------------------------------
-    | Priority
-    |--------------------------------------------------------------------------
-    */
-
-    priorityHigh: {
+    statusDetailLate: {
       color: '#DC2626',
 
       fontWeight: 'bold',
     },
 
-    priorityMedium: {
-      color: '#B45309',
-
-      fontWeight: 'bold',
-    },
-
-    priorityLow: {
-      color: '#047857',
-
-      fontWeight: 'bold',
-    },
-
     /*
     |--------------------------------------------------------------------------
-    | Deadline Status
-    |--------------------------------------------------------------------------
-    */
-  
-
-    /*
-    |--------------------------------------------------------------------------
-    | Compact Header
+    | COMPACT HEADER
     |--------------------------------------------------------------------------
     */
 
@@ -502,7 +593,7 @@ const localStyles =
 
     /*
     |--------------------------------------------------------------------------
-    | Footer
+    | FOOTER
     |--------------------------------------------------------------------------
     */
 
@@ -562,110 +653,308 @@ function formatDate(
 
       month: 'short',
 
-      day: '2-digit',
+      day: 'numeric',
     },
   );
 }
+
+/*
+|--------------------------------------------------------------------------
+| DATE + TIME
+|--------------------------------------------------------------------------
+*/
+
+function formatDateTime(
+  date?: string | null,
+) {
+  if (!date) {
+    return '-';
+  }
+
+  const value =
+    new Date(date);
+
+  if (
+    Number.isNaN(
+      value.getTime(),
+    )
+  ) {
+    return '-';
+  }
+
+  return value.toLocaleString(
+    'en-PH',
+    {
+      year: 'numeric',
+
+      month: 'short',
+
+      day: 'numeric',
+
+      hour: 'numeric',
+
+      minute: '2-digit',
+
+      hour12: true,
+    },
+  );
+}
+
+/*
+|--------------------------------------------------------------------------
+| RESPONSIBLE OFFICE / PERSON
+|--------------------------------------------------------------------------
+*/
 
 function getResponsibleParty(
   doc: DocumentItem,
 ) {
   /*
-   * Responsible Office has priority.
+   * Responsible Office
+   * has highest priority.
    */
+
   if (
     doc.responsibleOffice
       ?.officeName
   ) {
-    return doc
-      .responsibleOffice
-      .officeName;
+    return {
+      label:
+        doc.responsibleOffice
+          .officeName,
+
+      description:
+        'Responsible Office',
+    };
   }
 
   /*
-   * Then Responsible Person.
+   * Responsible Person.
    */
+
   if (
     doc.responsiblePerson
       ?.trim()
   ) {
-    return doc
-      .responsiblePerson
-      .trim();
+    return {
+      label:
+        doc.responsiblePerson
+          .trim(),
+
+      description:
+        'Responsible Person',
+    };
   }
 
   /*
-   * Backend convenience field fallback.
+   * Backend convenience
+   * field fallback.
    */
+
   if (
     doc.responsibleParty
       ?.trim()
   ) {
-    return doc
-      .responsibleParty
-      .trim();
+    return {
+      label:
+        doc.responsibleParty
+          .trim(),
+
+      description: null,
+    };
   }
 
-  return '-';
+  return {
+    label: '-',
+
+    description: null,
+  };
 }
 
 /*
 |--------------------------------------------------------------------------
-| DURATION
+| CLASSIFICATION
 |--------------------------------------------------------------------------
 */
 
-function formatDuration(
-  milliseconds?:
-    | number
+function getClassificationLabel(
+  classification?:
+    | string
     | null,
-
-  showSeconds = false,
 ) {
-  if (
-    milliseconds ===
-      null ||
-    milliseconds ===
-      undefined
-  ) {
+  if (!classification) {
     return '-';
   }
 
   if (
-    milliseconds > 0 &&
-    milliseconds < 1000
+    classification ===
+    'TECHNICAL'
   ) {
-    return '<1s';
+    return 'HIGHLY TECHNICAL';
   }
 
-  const totalSeconds =
+  return classification.replaceAll(
+    '_',
+    ' ',
+  );
+}
+
+/*
+|--------------------------------------------------------------------------
+| CURRENT / PENDING OFFICE
+|--------------------------------------------------------------------------
+*/
+
+function getCurrentLocation(
+  doc: DocumentItem,
+) {
+  /*
+   * Already formatted string.
+   */
+
+  if (
+    typeof doc.currentLocation ===
+    'string'
+  ) {
+    return (
+      doc.currentLocation ||
+      doc.office ||
+      '-'
+    );
+  }
+
+  const officeName =
+    doc.currentLocation
+      ?.officeName ??
+    doc.office ??
+    '-';
+
+  /*
+   * If route is still in transit,
+   * show the destination.
+   */
+
+  if (
+    doc.currentLocation
+      ?.isInTransit
+  ) {
+    return `In Transit → ${officeName}`;
+  }
+
+  return officeName;
+}
+
+function getPendingOffice(
+  doc: DocumentItem,
+) {
+  const reportStatus =
+    getReportStatus(doc);
+
+  /*
+   * Only show the office/location
+   * when the document is currently overdue.
+   */
+  if (
+    reportStatus.type !==
+    'overdue'
+  ) {
+    return '-';
+  }
+
+  return getCurrentLocation(doc);
+}
+
+/*
+|--------------------------------------------------------------------------
+| TOTAL PROCESSING TIME
+|--------------------------------------------------------------------------
+|
+| Example:
+|
+| 48 hours
+| 72 hours
+| < 1 hour
+|
+*/
+
+function formatTotalProcessingTime(
+  milliseconds?:
+    | number
+    | null,
+) {
+  if (
+    milliseconds === null ||
+    milliseconds === undefined
+  ) {
+    return 'No processing time';
+  }
+
+  const hours =
+    milliseconds /
+    (1000 * 60 * 60);
+
+  if (hours < 1) {
+    return '< 1 hour';
+  }
+
+  const roundedHours =
+    Math.round(hours);
+
+  return `${roundedHours} hour${
+    roundedHours === 1
+      ? ''
+      : 's'
+  }`;
+}
+
+/*
+|--------------------------------------------------------------------------
+| RELATIVE DURATION
+|--------------------------------------------------------------------------
+|
+| Used by:
+|
+| On Time
+| Overdue
+| Completed early
+| Completed late
+|
+*/
+
+function formatRelativeDuration(
+  milliseconds: number,
+) {
+  const safeMilliseconds =
+    Math.abs(milliseconds);
+
+  if (
+    safeMilliseconds <
+    60 * 1000
+  ) {
+    return '<1m';
+  }
+
+  const totalMinutes =
     Math.floor(
-      milliseconds /
-        1000,
+      safeMilliseconds /
+        (1000 * 60),
     );
 
   const days =
     Math.floor(
-      totalSeconds /
-        86400,
+      totalMinutes /
+        1440,
     );
 
   const hours =
     Math.floor(
-      (totalSeconds %
-        86400) /
-        3600,
-    );
-
-  const minutes =
-    Math.floor(
-      (totalSeconds %
-        3600) /
+      (totalMinutes %
+        1440) /
         60,
     );
 
-  const seconds =
-    totalSeconds % 60;
+  const minutes =
+    totalMinutes % 60;
 
   const parts: string[] =
     [];
@@ -674,6 +963,14 @@ function formatDuration(
     parts.push(
       `${days}d`,
     );
+
+    if (hours > 0) {
+      parts.push(
+        `${hours}h`,
+      );
+    }
+
+    return parts.join(' ');
   }
 
   if (hours > 0) {
@@ -688,24 +985,10 @@ function formatDuration(
     );
   }
 
-  if (
-    showSeconds &&
-    seconds > 0
-  ) {
-    parts.push(
-      `${seconds}s`,
-    );
-  }
-
-  if (
-    parts.length === 0
-  ) {
-    return showSeconds
-      ? '0s'
-      : '0m';
-  }
-
-  return parts.join(' ');
+  return (
+    parts.join(' ') ||
+    '<1m'
+  );
 }
 
 /*
@@ -736,7 +1019,8 @@ function formatAverageHours(
     );
 
   const remainingMinutes =
-    totalMinutes % 1440;
+    totalMinutes %
+    1440;
 
   const displayHours =
     Math.floor(
@@ -778,312 +1062,312 @@ function formatAverageHours(
 
 /*
 |--------------------------------------------------------------------------
-| CLASSIFICATION
+| DOCUMENT COMPLETED CHECK
 |--------------------------------------------------------------------------
 */
 
-function getClassificationLabel(
-  classification?:
-    | string
-    | null,
+function isDocumentCompleted(
+  doc: DocumentItem,
 ) {
-  if (!classification) {
-    return '-';
-  }
+  return (
+    doc.status ===
+      'COMPLETED' ||
+    doc.status ===
+      'END_TRANSACTION'
+  );
+}
+
+/*
+|--------------------------------------------------------------------------
+| REPORT STATUS
+|--------------------------------------------------------------------------
+|
+| Rules:
+|
+| ACTIVE + before deadline
+| → On Time
+| → 2d 5h remaining
+|
+| ACTIVE + past deadline
+| → Overdue by 1d 4h
+|
+| COMPLETED + before deadline
+| → Completed
+| → Aug 20, 2026, 10:00 AM
+| → 3h 29m remaining
+|
+| COMPLETED + after deadline
+| → Completed
+| → Aug 21, 2026, 9:00 AM
+| → 19h 31m late
+|
+| NO DEADLINE
+| → No Due Date
+|
+*/
+
+function getReportStatus(
+  doc: DocumentItem,
+): ReportStatusResult {
+  const completed =
+    isDocumentCompleted(
+      doc,
+    );
+
+  /*
+  |--------------------------------------------------------------------------
+  | COMPLETED DOCUMENT WITHOUT DEADLINE
+  |--------------------------------------------------------------------------
+  */
 
   if (
-    classification ===
-    'TECHNICAL'
+    completed &&
+    !doc.deadline
   ) {
-    return 'HIGHLY TECHNICAL';
+    return {
+      label: 'Completed',
+
+      type: 'completed',
+    };
   }
 
-  return classification
-    .replaceAll(
-      '_',
-      ' ',
-    );
-}
+  /*
+  |--------------------------------------------------------------------------
+  | ACTIVE DOCUMENT WITHOUT DEADLINE
+  |--------------------------------------------------------------------------
+  */
 
-/*
-|--------------------------------------------------------------------------
-| ROUTING / CUSTODY
-|--------------------------------------------------------------------------
-*/
-
-function getCurrentLocation(
-  doc: DocumentItem,
-) {
-  if (
-    typeof doc.currentLocation ===
-    'string'
-  ) {
-    return (
-      doc.currentLocation ||
-      '-'
-    );
-  }
-
-  const officeName =
-    doc.currentLocation
-      ?.officeName ??
-    doc.office ??
-    '-';
-
-  if (
-    doc.currentLocation
-      ?.isInTransit
-  ) {
-    return `In Transit → ${officeName}`;
-  }
-
-  return officeName;
-}
-
-/*
-|--------------------------------------------------------------------------
-| OFFICE STATUS
-|--------------------------------------------------------------------------
-*/
-
-function getOfficeStatusLabel(
-  status?: OfficeStatus,
-) {
-  switch (status) {
-    case 'AWAITING_RECEIPT':
-    case 'PENDING':
-      return 'Awaiting Receipt';
-
-    case 'IN_CUSTODY':
-    case 'RECEIVED':
-      return 'In Custody';
-
-    case 'FORWARDED':
-      return 'Forwarded';
-
-    case 'COMPLETED':
-      return 'Completed';
-
-    case 'RETURNED':
-      return 'Returned';
-
-    case 'UNKNOWN':
-    default:
-      return '-';
-  }
-}
-
-function getOfficeStatusStyle(
-  status?: OfficeStatus,
-) {
-  switch (status) {
-    case 'AWAITING_RECEIPT':
-    case 'PENDING':
-      return localStyles
-        .officePending;
-
-    case 'IN_CUSTODY':
-    case 'RECEIVED':
-      return localStyles
-        .officeReceived;
-
-    case 'FORWARDED':
-      return localStyles
-        .officeForwarded;
-
-    case 'COMPLETED':
-      return localStyles
-        .officeCompleted;
-
-    case 'RETURNED':
-      return localStyles
-        .officeReturned;
-
-    default:
-      return {};
-  }
-}
-
-/*
-|--------------------------------------------------------------------------
-| PRIORITY
-|--------------------------------------------------------------------------
-*/
-
-function getPriorityLabel(
-  priority?:
-    | string
-    | null,
-) {
-  if (!priority) {
-    return '-';
-  }
-
-  return priority
-    .replaceAll(
-      '_',
-      ' ',
-    );
-}
-
-function getPriorityStyle(
-  priority?:
-    | string
-    | null,
-) {
-  switch (priority) {
-    case 'HIGH':
-    case 'URGENT':
-      return localStyles
-        .priorityHigh;
-
-    case 'MEDIUM':
-      return localStyles
-        .priorityMedium;
-
-    case 'LOW':
-      return localStyles
-        .priorityLow;
-
-    default:
-      return {};
-  }
-}
-
-/*
-|--------------------------------------------------------------------------
-| DEADLINE STATUS
-|--------------------------------------------------------------------------
-*/
-
-function getDeadlineStatusLabel(
-  doc: DocumentItem,
-) {
-  switch (
-    doc.deadlineStatus
-  ) {
-    case 'NO_DEADLINE':
-      return 'No Deadline';
-
-    case 'AWAITING_RECEIPT':
-      return 'Awaiting Receipt';
-
-    case 'OVERDUE':
-      return 'Overdue';
-
-    case 'ON_TIME':
-      return 'On Time';
-
-    default:
-      if (!doc.deadline) {
-        return 'No Deadline';
-      }
-
-      if (
-        doc.isOverdue
-      ) {
-        return 'Overdue';
-      }
-
-      return 'On Time';
-  }
-}
-
-function getDeadlineStatusStyle(
-  doc: DocumentItem,
-) {
-  switch (
-    doc.deadlineStatus
-  ) {
-    case 'OVERDUE':
-      return localStyles
-        .deadlineOverdue;
-
-    case 'ON_TIME':
-      return localStyles
-        .deadlineOnTime;
-
-    case 'AWAITING_RECEIPT':
-      return localStyles
-        .deadlineAwaiting;
-
-    case 'NO_DEADLINE':
-      return localStyles
-        .deadlineNone;
-
-    default:
-      if (
-        doc.isOverdue
-      ) {
-        return localStyles
-          .deadlineOverdue;
-      }
-
-      return localStyles
-        .deadlineNone;
-  }
-}
-
-/*
-|--------------------------------------------------------------------------
-| DEADLINE DATE STYLE
-|--------------------------------------------------------------------------
-*/
-
-function getDeadlineDateStyle(
-  doc: DocumentItem,
-) {
   if (!doc.deadline) {
-    return {};
-  }
+    return {
+      label: 'No Due Date',
 
-  if (
-    doc.isOverdue ||
-    doc.deadlineStatus ===
-      'OVERDUE'
-  ) {
-    return localStyles
-      .deadlineOverdue;
+      type: 'neutral',
+    };
   }
 
   const deadline =
     new Date(
       doc.deadline,
-    );
+    ).getTime();
+
+  /*
+   * Invalid deadline fallback.
+   */
 
   if (
     Number.isNaN(
-      deadline.getTime(),
+      deadline,
     )
   ) {
-    return {};
+    return {
+      label: '-',
+
+      type: 'neutral',
+    };
   }
 
-  const now =
-    new Date();
+  /*
+  |--------------------------------------------------------------------------
+  | COMPLETED DOCUMENT
+  |--------------------------------------------------------------------------
+  */
+
+  if (completed) {
+    /*
+     * If completion timestamp
+     * isn't available yet.
+     */
+
+    if (!doc.completedAt) {
+      return {
+        label: 'Completed',
+
+        type: 'completed',
+      };
+    }
+
+    const completedAt =
+      new Date(
+        doc.completedAt,
+      ).getTime();
+
+    if (
+      Number.isNaN(
+        completedAt,
+      )
+    ) {
+      return {
+        label: 'Completed',
+
+        type: 'completed',
+      };
+    }
+
+    /*
+     * Positive:
+     * completed before deadline.
+     *
+     * Negative:
+     * completed after deadline.
+     */
+
+    const difference =
+      deadline -
+      completedAt;
+
+    /*
+     * Completed before or
+     * exactly on deadline.
+     */
+
+    if (
+      difference >= 0
+    ) {
+      return {
+        label: 'Completed',
+
+        detail:
+          `${formatRelativeDuration(
+            difference,
+          )} remaining`,
+
+        type: 'completed',
+      };
+    }
+
+    /*
+     * Completed after deadline.
+     */
+
+    return {
+      label: 'Completed',
+
+      detail:
+        `${formatRelativeDuration(
+          Math.abs(
+            difference,
+          ),
+        )} late`,
+
+      type: 'late',
+    };
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | ACTIVE DOCUMENT
+  |--------------------------------------------------------------------------
+  */
 
   const difference =
-    deadline.getTime() -
-    now.getTime();
+    deadline -
+    Date.now();
 
-  const days =
-    Math.ceil(
-      difference /
-        (1000 *
-          60 *
-          60 *
-          24),
-    );
+  /*
+   * Still within deadline.
+   */
 
   if (
-    days >= 0 &&
-    days <= 3
+    difference >= 0
   ) {
-    return localStyles
-      .deadlineAwaiting;
+    return {
+      label: 'On Time',
+
+      detail:
+        `${formatRelativeDuration(
+          difference,
+        )} remaining`,
+
+      type: 'ontime',
+    };
   }
 
-  return {};
+  /*
+   * Deadline already passed.
+   */
+
+  return {
+    label:
+      `Overdue by ${formatRelativeDuration(
+        Math.abs(
+          difference,
+        ),
+      )}`,
+
+    type: 'overdue',
+  };
+}
+
+/*
+|--------------------------------------------------------------------------
+| REPORT STATUS STYLE
+|--------------------------------------------------------------------------
+*/
+
+function getReportStatusStyle(
+  type: ReportStatusType,
+) {
+  switch (type) {
+    case 'completed':
+      return localStyles
+        .statusCompleted;
+
+    case 'ontime':
+      return localStyles
+        .statusOnTime;
+
+    case 'overdue':
+      return localStyles
+        .statusOverdue;
+
+    case 'late':
+      return localStyles
+        .statusLate;
+
+    default:
+      return localStyles
+        .statusNeutral;
+  }
+}
+
+/*
+|--------------------------------------------------------------------------
+| LATEST REMARKS
+|--------------------------------------------------------------------------
+*/
+
+function getLatestRemarks(
+  doc: DocumentItem,
+) {
+  const remarks =
+    doc.latestRemarks
+      ?.trim();
+
+  if (!remarks) {
+    return '-';
+  }
+
+  /*
+   * Keep summary report rows
+   * reasonably compact.
+   *
+   * Increase this if you want
+   * longer remarks in the PDF.
+   */
+
+  const MAX_LENGTH = 140;
+
+  if (
+    remarks.length >
+    MAX_LENGTH
+  ) {
+    return `${remarks.slice(
+      0,
+      MAX_LENGTH - 3,
+    )}...`;
+  }
+
+  return remarks;
 }
 
 /*
@@ -1156,14 +1440,18 @@ function TableHeader() {
         localStyles.tableHeader
       }
     >
+      {/* TRACKING */}
+
       <Text
         style={[
           localStyles.headerCell,
           localStyles.tracking,
         ]}
       >
-        Tracking
+        Tracking No.
       </Text>
+
+      {/* SUBJECT */}
 
       <Text
         style={[
@@ -1174,41 +1462,7 @@ function TableHeader() {
         Subject
       </Text>
 
-      <Text
-        style={[
-          localStyles.headerCell,
-          localStyles.type,
-        ]}
-      >
-        Type
-      </Text>
-
-      <Text
-        style={[
-          localStyles.headerCell,
-          localStyles.classification,
-        ]}
-      >
-        Classification
-      </Text>
-
-      <Text
-        style={[
-          localStyles.headerCell,
-          localStyles.currentLocation,
-        ]}
-      >
-        Current Location
-      </Text>
-
-      <Text
-        style={[
-          localStyles.headerCell,
-          localStyles.officeStatus,
-        ]}
-      >
-        Office Status
-      </Text>
+      {/* RESPONSIBLE */}
 
       <Text
         style={[
@@ -1219,40 +1473,70 @@ function TableHeader() {
         Responsible Office / Person
       </Text>
 
-      <Text
-        style={[
-          localStyles.headerCell,
-          localStyles.allottedTime,
-        ]}
-      >
-        Allotted Time
-      </Text>
+      {/* CLASSIFICATION */}
 
       <Text
         style={[
           localStyles.headerCell,
-          localStyles.timeInOffice,
+          localStyles.classification,
         ]}
       >
-        Time in Office
+        Classification
       </Text>
+
+      {/* DUE DATE + PROCESSING */}
 
       <Text
         style={[
           localStyles.headerCell,
-          localStyles.deadlineStatus,
+          localStyles.dueProcessing,
         ]}
       >
-        Deadline Status
+        Due Date / Total Processing Time
       </Text>
+
+      {/* RECEIVED DATE */}
 
       <Text
         style={[
           localStyles.headerCell,
-          localStyles.deadline,
+          localStyles.receivedDate,
         ]}
       >
-        Deadline
+        Received Date
+      </Text>
+
+      {/* STATUS */}
+
+      <Text
+        style={[
+          localStyles.headerCell,
+          localStyles.reportStatus,
+        ]}
+      >
+        Status
+      </Text>
+
+      {/* PENDING OFFICE */}
+
+      <Text
+        style={[
+          localStyles.headerCell,
+          localStyles.pendingOffice,
+        ]}
+      >
+        Pending Office
+      </Text>
+
+      {/* REMARKS */}
+
+      <Text
+        style={[
+          localStyles.headerCell,
+          localStyles.remarks,
+        ]}
+      >
+        Remarks
       </Text>
     </View>
   );
@@ -1269,13 +1553,21 @@ function TableRow({
   index,
 }: {
   doc: DocumentItem;
+
   index: number;
 }) {
-  const awaitingReceipt =
-    doc.officeStatus ===
-      'AWAITING_RECEIPT' ||
-    doc.officeStatus ===
-      'PENDING';
+  const reportStatus =
+    getReportStatus(doc);
+
+  const completed =
+    isDocumentCompleted(
+      doc,
+    );
+
+  const responsible =
+    getResponsibleParty(
+      doc,
+    );
 
   return (
     <View
@@ -1289,12 +1581,15 @@ function TableRow({
           : {},
       ]}
     >
-      {/* Tracking */}
+      {/* ================================================================
+          TRACKING NUMBER
+      ================================================================= */}
 
       <Text
         style={[
           localStyles.cell,
           localStyles.tracking,
+
           {
             fontWeight:
               'bold',
@@ -1307,7 +1602,9 @@ function TableRow({
         {doc.trackingNumber}
       </Text>
 
-      {/* Subject */}
+      {/* ================================================================
+          SUBJECT
+      ================================================================= */}
 
       <Text
         style={[
@@ -1318,23 +1615,50 @@ function TableRow({
         {doc.title}
       </Text>
 
-      {/* Type */}
+      {/* ================================================================
+          RESPONSIBLE OFFICE / PERSON
+      ================================================================= */}
 
-      <Text
+      <View
         style={[
-          localStyles.cell,
-          localStyles.type,
+          localStyles.cellBox,
+          localStyles.responsible,
         ]}
       >
-        {doc.documentType}
-      </Text>
+        <Text
+          style={
+            localStyles.cellPrimary
+          }
+        >
+          {responsible.label}
+        </Text>
 
-      {/* Classification */}
+        {responsible.description && (
+          <Text
+            style={
+              localStyles
+                .cellSubtle
+            }
+          >
+            {
+              responsible.description
+            }
+          </Text>
+        )}
+      </View>
+
+      {/* ================================================================
+          CLASSIFICATION
+      ================================================================= */}
 
       <Text
         style={[
           localStyles.cell,
           localStyles.classification,
+
+          {
+            fontSize: 5.4,
+          },
         ]}
       >
         {getClassificationLabel(
@@ -1342,110 +1666,145 @@ function TableRow({
         )}
       </Text>
 
-      {/* Current Location */}
+      {/* ================================================================
+          DUE DATE / TOTAL PROCESSING TIME
+      ================================================================= */}
+
+      <View
+        style={[
+          localStyles.cellBox,
+          localStyles.dueProcessing,
+        ]}
+      >
+        <Text
+          style={
+            localStyles.cellPrimary
+          }
+        >
+          {doc.deadline
+            ? formatDate(
+                doc.deadline,
+              )
+            : 'No due date'}
+        </Text>
+
+        <Text
+          style={
+            localStyles.cellSubtle
+          }
+        >
+          {formatTotalProcessingTime(
+            doc.allottedTimeMs,
+          )}
+        </Text>
+      </View>
+
+      {/* ================================================================
+          RECEIVED DATE
+      ================================================================= */}
 
       <Text
         style={[
           localStyles.cell,
-          localStyles.currentLocation,
+          localStyles.receivedDate,
         ]}
       >
-        {getCurrentLocation(
-          doc,
+        {formatDateTime(
+          doc.receivedAt ??
+            doc.createdAt,
         )}
       </Text>
 
-      {/* Office Status */}
+      {/* ================================================================
+          STATUS
+      ================================================================= */}
+
+      <View
+        style={[
+          localStyles.cellBox,
+          localStyles.reportStatus,
+        ]}
+      >
+        {/* Main Status */}
+
+        <Text
+          style={[
+            localStyles.cellStrong,
+
+            getReportStatusStyle(
+              reportStatus.type,
+            ),
+          ]}
+        >
+          {reportStatus.label}
+        </Text>
+
+        {/* Completion Date */}
+
+        {completed &&
+          doc.completedAt && (
+            <Text
+              style={
+                localStyles
+                  .statusDate
+              }
+            >
+              {formatDateTime(
+                doc.completedAt,
+              )}
+            </Text>
+          )}
+
+        {/* Remaining / Late */}
+
+        {reportStatus.detail && (
+          <Text
+            style={[
+              localStyles
+                .statusDetail,
+
+              reportStatus.type ===
+                'late' ||
+              reportStatus.type ===
+                'overdue'
+                ? localStyles
+                    .statusDetailLate
+                : {},
+            ]}
+          >
+            {reportStatus.detail}
+          </Text>
+        )}
+      </View>
+
+      {/* ================================================================
+          PENDING / CURRENT OFFICE
+      ================================================================= */}
 
       <Text
         style={[
           localStyles.cell,
-          localStyles.officeStatus,
-
-          getOfficeStatusStyle(
-            doc.officeStatus,
-          ),
+          localStyles.pendingOffice,
         ]}
       >
-        {getOfficeStatusLabel(
-          doc.officeStatus,
-        )}
+        {getPendingOffice(doc)}
       </Text>
 
-      {/* Responsible Office / Person */}
+      {/* ================================================================
+          REMARKS
+      ================================================================= */}
 
       <Text
         style={[
           localStyles.cell,
-          localStyles.responsible,
+          localStyles.remarks,
+
+          {
+            fontSize: 5.2,
+          },
         ]}
       >
-        {getResponsibleParty(
-          doc,
-        )}
-      </Text>
-
-      {/* Allotted Time */}
-
-      <Text
-        style={[
-          localStyles.cell,
-          localStyles.allottedTime,
-        ]}
-      >
-        {formatDuration(
-          doc.allottedTimeMs,
-        )}
-      </Text>
-
-      {/* Time in Office */}
-
-      <Text
-        style={[
-          localStyles.cell,
-          localStyles.timeInOffice,
-        ]}
-      >
-        {awaitingReceipt
-          ? 'Not Received'
-          : formatDuration(
-              doc.timeInOfficeMs,
-              true,
-            )}
-      </Text>
-
-      {/* Deadline Status */}
-
-      <Text
-        style={[
-          localStyles.cell,
-          localStyles.deadlineStatus,
-
-          getDeadlineStatusStyle(
-            doc,
-          ),
-        ]}
-      >
-        {getDeadlineStatusLabel(
-          doc,
-        )}
-      </Text>
-
-      {/* Deadline */}
-
-      <Text
-        style={[
-          localStyles.cell,
-          localStyles.deadline,
-
-          getDeadlineDateStyle(
-            doc,
-          ),
-        ]}
-      >
-        {formatDate(
-          doc.deadline,
-        )}
+        {getLatestRemarks(doc)}
       </Text>
     </View>
   );
@@ -1456,14 +1815,23 @@ function TableRow({
 | PAGINATION
 |--------------------------------------------------------------------------
 |
-| First page has Report Information + Summary + Performance.
-| Therefore fewer rows are used on page 1.
+| First page contains:
+|
+| - DENR Header
+| - Report Information
+| - Document Summary
+| - Office Performance
+| - Document Table
+|
+| Rows are slightly taller now because
+| Status, Responsibility, Due Date and
+| Remarks may contain multiple lines.
 |
 */
 
-const FIRST_PAGE_ROWS = 5;
+const FIRST_PAGE_ROWS = 4;
 
-const OTHER_PAGE_ROWS = 14;
+const OTHER_PAGE_ROWS = 10;
 
 function paginateDocuments(
   documents:
@@ -1517,14 +1885,12 @@ function paginateDocuments(
 export function ReportPDF({
   documents,
 
-  officeName =
-    'N/A',
+  officeName = 'N/A',
 
   reportName =
     'Document Tracking Report',
 
-  reportType =
-    'General',
+  reportType = 'General',
 
   year,
 
@@ -1552,19 +1918,18 @@ export function ReportPDF({
 }: Props) {
   /*
   |--------------------------------------------------------------------------
-  | Generated
+  | GENERATED DATE
   |--------------------------------------------------------------------------
   */
 
   const generatedAt =
-    new Date()
-      .toLocaleString(
-        'en-PH',
-      );
+    new Date().toLocaleString(
+      'en-PH',
+    );
 
   /*
   |--------------------------------------------------------------------------
-  | Report Name
+  | DISPLAY REPORT NAME
   |--------------------------------------------------------------------------
   */
 
@@ -1586,8 +1951,7 @@ export function ReportPDF({
     displayReportName =
       'Quarterly Report';
   } else if (
-    reportType ===
-    'annual'
+    reportType === 'annual'
   ) {
     displayReportName =
       'Annual Report';
@@ -1595,75 +1959,54 @@ export function ReportPDF({
 
   /*
   |--------------------------------------------------------------------------
-  | Month
+  | MONTH NAME
   |--------------------------------------------------------------------------
   */
 
-  const getMonthName =
-    () => {
-      if (
-        reportType !==
-          'monthly' ||
-        !month
-      ) {
-        return '-';
-      }
+  const getMonthName = () => {
+    if (
+      reportType !==
+        'monthly' ||
+      !month
+    ) {
+      return '-';
+    }
 
-      return new Date(
-        year ??
-          new Date()
-            .getFullYear(),
+    return new Date(
+      year ??
+        new Date()
+          .getFullYear(),
 
-        month - 1,
-      ).toLocaleString(
-        'en-US',
-        {
-          month: 'long',
-        },
-      );
-    };
-
-  /*
-  |--------------------------------------------------------------------------
-  | Performance
-  |--------------------------------------------------------------------------
-  */
-
-  const actedRate =
-    documents.length ===
-      0
-      ? 0
-      : Number(
-          (
-            (completed /
-              documents.length) *
-            100
-          ).toFixed(1),
-        );
+      month - 1,
+    ).toLocaleString(
+      'en-US',
+      {
+        month: 'long',
+      },
+    );
+  };
 
   /*
   |--------------------------------------------------------------------------
-  | Pagination
+  | PAGINATION
   |--------------------------------------------------------------------------
   */
 
   const {
     firstPage,
     otherPages,
-  } =
-    paginateDocuments(
-      documents,
-    );
+  } = paginateDocuments(
+    documents,
+  );
 
   /*
   |--------------------------------------------------------------------------
-  | Render
+  | RENDER
   |--------------------------------------------------------------------------
   */
 
   return (
     <Document>
-
       {/* ================================================================
           FIRST PAGE
       ================================================================= */}
@@ -1673,7 +2016,6 @@ export function ReportPDF({
         orientation="landscape"
         style={styles.page}
       >
-
         {/* ==============================================================
             HEADER
         =============================================================== */}
@@ -1746,7 +2088,6 @@ export function ReportPDF({
               .reportOverview
           }
         >
-
           {/* ============================================================
               REPORT INFORMATION
           ============================================================= */}
@@ -1766,7 +2107,7 @@ export function ReportPDF({
               REPORT INFORMATION
             </Text>
 
-            {/* Office */}
+            {/* OFFICE */}
 
             <View
               style={
@@ -1793,7 +2134,7 @@ export function ReportPDF({
               </Text>
             </View>
 
-            {/* Report Name */}
+            {/* REPORT NAME */}
 
             <View
               style={
@@ -1824,7 +2165,7 @@ export function ReportPDF({
               </Text>
             </View>
 
-            {/* Year */}
+            {/* YEAR */}
 
             <View
               style={
@@ -1848,63 +2189,65 @@ export function ReportPDF({
               </Text>
             </View>
 
-            {/* Month */}
+            {/* MONTH */}
 
             {reportType ===
               'monthly' &&
               month && (
-              <View
-                style={
-                  styles.metadataRow
-                }
-              >
-                <Text
+                <View
                   style={
-                    styles.metadataLabel
+                    styles.metadataRow
                   }
                 >
-                  Month
-                </Text>
+                  <Text
+                    style={
+                      styles.metadataLabel
+                    }
+                  >
+                    Month
+                  </Text>
 
-                <Text
-                  style={
-                    styles.metadataValue
-                  }
-                >
-                  {getMonthName()}
-                </Text>
-              </View>
-            )}
+                  <Text
+                    style={
+                      styles.metadataValue
+                    }
+                  >
+                    {
+                      getMonthName()
+                    }
+                  </Text>
+                </View>
+              )}
 
-            {/* Quarter */}
+            {/* QUARTER */}
 
             {reportType ===
               'quarterly' &&
               quarter && (
-              <View
-                style={
-                  styles.metadataRow
-                }
-              >
-                <Text
+                <View
                   style={
-                    styles.metadataLabel
+                    styles.metadataRow
                   }
                 >
-                  Quarter
-                </Text>
+                  <Text
+                    style={
+                      styles.metadataLabel
+                    }
+                  >
+                    Quarter
+                  </Text>
 
-                <Text
-                  style={
-                    styles.metadataValue
-                  }
-                >
-                  Q{quarter}
-                </Text>
-              </View>
-            )}
+                  <Text
+                    style={
+                      styles.metadataValue
+                    }
+                  >
+                    Q{quarter}
+                  </Text>
+                </View>
+              )}
 
-            {/* Generated */}
+            {/* GENERATED */}
 
             <View
               style={
@@ -1928,7 +2271,7 @@ export function ReportPDF({
               </Text>
             </View>
 
-            {/* Total */}
+            {/* TOTAL */}
 
             <View
               style={
@@ -1948,15 +2291,13 @@ export function ReportPDF({
                   styles.metadataValue
                 }
               >
-                {
-                  documents.length
-                }
+                {documents.length}
               </Text>
             </View>
           </View>
 
           {/* ============================================================
-              SUMMARY / PERFORMANCE
+              DOCUMENT SUMMARY / OFFICE PERFORMANCE
           ============================================================= */}
 
           <View
@@ -1965,7 +2306,6 @@ export function ReportPDF({
                 .metricsPanel
             }
           >
-
             {/* DOCUMENT SUMMARY */}
 
             <View
@@ -2150,7 +2490,6 @@ export function ReportPDF({
             orientation="landscape"
             style={styles.page}
           >
-
             {/* COMPACT HEADER */}
 
             <View
