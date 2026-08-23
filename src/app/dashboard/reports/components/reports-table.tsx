@@ -988,6 +988,19 @@ function formatRelativeDuration(
 |--------------------------------------------------------------------------
 */
 
+/*
+|--------------------------------------------------------------------------
+| REPORT PERFORMANCE STATUS
+|--------------------------------------------------------------------------
+|
+| Main label:
+| → Always use actual document status
+|
+| Detail:
+| → Deadline / processing performance
+|
+*/
+
 function getReportStatus(
   doc: ReportDocument,
 ) {
@@ -997,17 +1010,24 @@ function getReportStatus(
 
   /*
   |--------------------------------------------------------------------------
+  | DISPLAY STATUS
+  |--------------------------------------------------------------------------
+  */
+
+  const statusLabel =
+    doc.status;
+
+  /*
+  |--------------------------------------------------------------------------
   | NO DEADLINE
   |--------------------------------------------------------------------------
   */
 
   if (!doc.deadline) {
     return {
-      label: completed
-        ? 'Completed'
-        : 'No Due Date',
+      label: statusLabel,
 
-      detail: undefined,
+      detail: 'No Due Date',
 
       type: completed
         ? 'completed'
@@ -1040,15 +1060,48 @@ function getReportStatus(
 
   /*
   |--------------------------------------------------------------------------
-  | COMPLETED
+  | INVALID DEADLINE
+  |--------------------------------------------------------------------------
+  */
+
+  if (
+    Number.isNaN(
+      deadline,
+    )
+  ) {
+    return {
+      label: statusLabel,
+      detail: undefined,
+      type: 'neutral',
+
+      className: `
+        border-slate-200
+        bg-slate-100
+        text-slate-600
+        dark:border-slate-700
+        dark:bg-slate-800
+        dark:text-slate-300
+      `,
+    };
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | COMPLETED / END TRANSACTION
   |--------------------------------------------------------------------------
   */
 
   if (completed) {
+    /*
+     * No completion timestamp.
+     */
+
     if (!doc.completedAt) {
       return {
-        label: 'Completed',
+        label: statusLabel,
+
         detail: undefined,
+
         type: 'completed',
 
         className: `
@@ -1067,25 +1120,50 @@ function getReportStatus(
         doc.completedAt,
       ).getTime();
 
+    if (
+      Number.isNaN(
+        completedAt,
+      )
+    ) {
+      return {
+        label: statusLabel,
+
+        detail: undefined,
+
+        type: 'completed',
+
+        className: `
+          border-emerald-200
+          bg-emerald-100
+          text-emerald-700
+          dark:border-emerald-800
+          dark:bg-emerald-950/50
+          dark:text-emerald-300
+        `,
+      };
+    }
+
     /*
-     * IMPORTANT:
+     * Positive:
+     * completed BEFORE deadline
      *
-     * positive = completed BEFORE deadline
-     * negative = completed AFTER deadline
+     * Negative:
+     * completed AFTER deadline
      */
+
     const difference =
       deadline -
       completedAt;
 
     /*
     |--------------------------------------------------------------------------
-    | COMPLETED BEFORE / EXACTLY ON DEADLINE
+    | COMPLETED BEFORE / ON DEADLINE
     |--------------------------------------------------------------------------
     */
 
     if (difference >= 0) {
       return {
-        label: 'Completed',
+        label: statusLabel,
 
         detail:
           `${formatRelativeDuration(
@@ -1112,7 +1190,7 @@ function getReportStatus(
     */
 
     return {
-      label: 'Completed',
+      label: statusLabel,
 
       detail:
         `${formatRelativeDuration(
@@ -1146,13 +1224,13 @@ function getReportStatus(
 
   /*
   |--------------------------------------------------------------------------
-  | ACTIVE + BEFORE DEADLINE
+  | ACTIVE + WITHIN DEADLINE
   |--------------------------------------------------------------------------
   */
 
   if (difference >= 0) {
     return {
-      label: 'On Time',
+      label: statusLabel,
 
       detail:
         `${formatRelativeDuration(
@@ -1174,19 +1252,19 @@ function getReportStatus(
 
   /*
   |--------------------------------------------------------------------------
-  | ACTIVE + AFTER DEADLINE
+  | ACTIVE + OVERDUE
   |--------------------------------------------------------------------------
   */
 
   return {
-    label:
+    label: statusLabel,
+
+    detail:
       `Overdue by ${formatRelativeDuration(
         Math.abs(
           difference,
         ),
       )}`,
-
-    detail: undefined,
 
     type: 'overdue',
 
