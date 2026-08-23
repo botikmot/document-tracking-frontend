@@ -723,8 +723,8 @@ function getResponsibleParty(
         doc.responsibleOffice
           .officeName,
 
-      description:
-        'Responsible Office',
+     /*  description:
+        'Responsible Office', */
     };
   }
 
@@ -1829,9 +1829,9 @@ function TableRow({
 |
 */
 
-const FIRST_PAGE_ROWS = 4;
+const FIRST_PAGE_ROWS = 3;
 
-const OTHER_PAGE_ROWS = 10;
+const OTHER_PAGE_ROWS = 9;
 
 function paginateDocuments(
   documents:
