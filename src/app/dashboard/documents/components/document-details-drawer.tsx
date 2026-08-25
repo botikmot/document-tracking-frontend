@@ -99,11 +99,105 @@ export function DocumentDetailsDrawer({
   const API_URL = process.env.NEXT_PUBLIC_URL?.replace(/\/$/, '') ?? '';
 
   const API_URL2 = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '';
-  const officeCode = user?.offices[0].officeCode;
+  const officeCode = user?.offices?.[0]?.officeCode ?? '';
 
   const documentIsInOrd = document?.currentOffice?.officeCode === 'ORD';
 
   const canEdit = Boolean(isOrdUser && documentIsInOrd);
+
+  const formatEnumLabel = (value?: string | null) => {
+    if (!value) return 'N/A';
+
+    return value
+      .toLowerCase()
+      .split('_')
+      .map(
+        (word) =>
+          word.charAt(0).toUpperCase() +
+          word.slice(1),
+      )
+      .join(' ');
+  };
+
+  const getInternalSourceLabel = (
+    scope?: string | null,
+  ) => {
+    switch (scope) {
+      case 'LOCAL_CARAGA':
+        return 'Within DENR Caraga';
+
+      case 'OTHER_REGION':
+        return 'Other DENR Regional Office';
+
+      case 'CENTRAL_OFFICE':
+        return 'DENR Central Office';
+
+      default:
+        return 'N/A';
+    }
+  };
+
+  const getMonitoringCategoryLabel = (
+    category?: string | null,
+  ) => {
+    switch (category) {
+      case 'PERMIT':
+        return 'Permit';
+
+      case 'SURVEY_RETURN':
+        return 'Survey Return';
+
+      case 'GENERAL':
+        return 'General';
+
+      default:
+        return 'General';
+    }
+  };
+
+  const getDocumentSender = () => {
+    /*
+    * INTERNAL - LOCAL CARAGA
+    */
+    if (
+      document.sourceClass === 'INTERNAL' &&
+      document.internalSourceScope ===
+        'LOCAL_CARAGA'
+    ) {
+      return (
+        document.senderOffice?.officeName ||
+        document.senderOrganization ||
+        document.senderName ||
+        'N/A'
+      );
+    }
+
+    /*
+    * INTERNAL - OTHER REGION
+    * INTERNAL - CENTRAL OFFICE
+    */
+    if (
+      document.sourceClass === 'INTERNAL'
+    ) {
+      return (
+        document.senderOrganization ||
+        document.senderOffice?.officeName ||
+        document.senderName ||
+        'N/A'
+      );
+    }
+
+    /*
+    * EXTERNAL
+    */
+    return (
+      document.senderOrganization ||
+      document.senderName ||
+      document.senderOffice?.officeName ||
+      'N/A'
+    );
+  };
+
 
   const handleDownloadRoutingSlip =
     async () => {
@@ -154,16 +248,7 @@ export function DocumentDetailsDrawer({
             document.description ??
             '',
 
-          sender:
-            document.senderType ===
-            'OFFICE'
-              ? document
-                  .senderOffice
-                  ?.officeName ??
-                ''
-              : document
-                  .senderName ??
-                '',
+          sender: getDocumentSender(),
 
           classification:
             document.classification ??
@@ -454,29 +539,49 @@ const handleUpdateAction =
                 <p className="mt-1 text-sm text-slate-500 dark:text-[#A9C5B6]">
                   Sender:{'  '}
                   <span className="font-bold dark:text-[#F3F8F3]">
-                  {
-                    document.senderType === 'OFFICE' ? document.senderOffice.officeName : document.senderName
-                  }
+                  {getDocumentSender()}
                   </span>
                 </p>
 
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Badge className="rounded-full bg-blue-100 text-blue-700">
-                    {
-                      document
-                        .documentType
-                        ?.name
-                    }
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {/* DOCUMENT TYPE */}
+                  <Badge className="rounded-full bg-slate-100 px-3 py-1 text-slate-700 hover:bg-slate-100 dark:bg-[#173227] dark:text-[#D7E8DD]">
+                    {document.documentType?.name || 'Document'}
                   </Badge>
 
-                  <Badge className="rounded-full bg-emerald-100 text-emerald-700">
-                    {
-                      document
-                        .currentStatus
-                        ?.name
-                    }
+                  {/* STATUS */}
+                  <Badge className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300">
+                    {formatEnumLabel(
+                      document.currentStatus?.name,
+                    )}
                   </Badge>
-                  
+
+                  {/* SOURCE */}
+                  {document.sourceClass && (
+                    <Badge
+                      className={
+                        document.sourceClass === 'INTERNAL'
+                          ? 'rounded-full bg-green-100 px-3 py-1 text-green-700 hover:bg-green-100 dark:bg-green-950/40 dark:text-green-300'
+                          : 'rounded-full bg-blue-100 px-3 py-1 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300'
+                      }
+                    >
+                      {formatEnumLabel(
+                        document.sourceClass,
+                      )}
+                    </Badge>
+                  )}
+
+                  {/* SPECIAL MONITORING */}
+                  {document.monitoringCategory &&
+                    document.monitoringCategory !==
+                      'GENERAL' && (
+                      <Badge className="rounded-full bg-amber-100 px-3 py-1 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300">
+                        {getMonitoringCategoryLabel(
+                          document.monitoringCategory,
+                        )}
+                      </Badge>
+                    )}
+
                   <div className="ml-auto flex items-center gap-2">
                     {canEdit && (
                       <Button
@@ -495,14 +600,13 @@ const handleUpdateAction =
                       variant="outline"
                       size="sm"
                       className="cursor-pointer rounded-xl dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
-                      onClick={() =>
-                        handleDownloadRoutingSlip()
+                      onClick={
+                        handleDownloadRoutingSlip
                       }
                     >
                       Download Routing Slip
                     </Button>
                   </div>
-
                 </div>
               </div>
             </div>
@@ -521,6 +625,199 @@ const handleUpdateAction =
           </div>
 
           <Separator className="dark:bg-[#214234]" />
+
+          {/* ===================================== */}
+          {/* SOURCE & MONITORING CLASSIFICATION */}
+          {/* ===================================== */}
+
+          <div>
+            <div className="mb-4">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-[#F3F8F3]">
+                Source & Monitoring
+              </h3>
+
+              <p className="mt-1 text-sm text-slate-500 dark:text-[#A9C5B6]">
+                Document origin, monitoring category,
+                and routing profile.
+              </p>
+            </div>
+
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-[#214234] dark:bg-[#102418]">
+              <div className="grid md:grid-cols-2 lg:grid-cols-4">
+                {/* SOURCE CLASS */}
+                <div className="border-b border-slate-200 p-5 dark:border-[#214234] md:border-r lg:border-b-0">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Source
+                  </p>
+
+                  <div className="mt-2">
+                    <Badge
+                      className={
+                        document.sourceClass ===
+                        'INTERNAL'
+                          ? 'rounded-full bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-950/40 dark:text-green-300'
+                          : 'rounded-full bg-blue-100 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300'
+                      }
+                    >
+                      {formatEnumLabel(
+                        document.sourceClass,
+                      )}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* INTERNAL SCOPE */}
+                <div className="border-b border-slate-200 p-5 dark:border-[#214234] lg:border-b-0 lg:border-r">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Internal Source
+                  </p>
+
+                  <p className="mt-2 font-bold text-slate-900 dark:text-[#F3F8F3]">
+                    {document.sourceClass ===
+                    'INTERNAL'
+                      ? getInternalSourceLabel(
+                          document.internalSourceScope,
+                        )
+                      : 'Not Applicable'}
+                  </p>
+                </div>
+
+                {/* MONITORING CATEGORY */}
+                <div className="border-b border-slate-200 p-5 dark:border-[#214234] md:border-r lg:border-b-0">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Monitoring
+                  </p>
+
+                  <p className="mt-2 font-bold text-slate-900 dark:text-[#F3F8F3]">
+                    {getMonitoringCategoryLabel(
+                      document.monitoringCategory,
+                    )}
+                  </p>
+                </div>
+
+                {/* ROUTING PROFILE */}
+                <div className="p-5">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Routing Profile
+                  </p>
+
+                  <p className="mt-2 font-bold text-slate-900 dark:text-[#F3F8F3]">
+                    {document.routingProfile ===
+                    'DIRECT_TO_ACTION_OFFICE'
+                      ? 'Direct to Action Office'
+                      : 'Standard Routing'}
+                  </p>
+                </div>
+              </div>
+
+              {/* SPECIAL DOCUMENT NOTICE */}
+              {(document.monitoringCategory ===
+                'PERMIT' ||
+                document.monitoringCategory ===
+                  'SURVEY_RETURN') && (
+                <div className="border-t border-amber-200 bg-amber-50 px-5 py-4 dark:border-amber-900/50 dark:bg-amber-950/20">
+                  <div className="flex gap-3">
+                    <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+
+                    <div>
+                      <p className="font-semibold text-amber-900 dark:text-amber-300">
+                        Special Monitoring Document
+                      </p>
+
+                      <p className="mt-1 text-sm leading-6 text-amber-700 dark:text-amber-400">
+                        This document is monitored
+                        separately and may proceed
+                        directly to the responsible
+                        processing office without using
+                        the standard RED / ARD routing
+                        flow.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="mb-3 text-lg font-bold text-slate-900 dark:text-[#F3F8F3]">
+              Sender Information
+            </h3>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* ACTUAL SENDER */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-[#214234] dark:bg-[#102418]">
+                <div className="flex items-start gap-3">
+                  <Building2 className="mt-0.5 h-5 w-5 text-slate-500 dark:text-[#A9C5B6]" />
+
+                  <div>
+                    <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
+                      Originating Office / Sender
+                    </p>
+
+                    <p className="mt-1 font-bold text-slate-900 dark:text-[#F3F8F3]">
+                      {getDocumentSender()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* SENDER TYPE */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-[#214234] dark:bg-[#102418]">
+                <div className="flex items-start gap-3">
+                  <UserRound className="mt-0.5 h-5 w-5 text-slate-500 dark:text-[#A9C5B6]" />
+
+                  <div>
+                    <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
+                      Sender Type
+                    </p>
+
+                    <p className="mt-1 font-bold text-slate-900 dark:text-[#F3F8F3]">
+                      {document.sourceClass ===
+                      'INTERNAL'
+                        ? 'DENR Office'
+                        : formatEnumLabel(
+                            document.senderType,
+                          )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* CONTACT PERSON */}
+              {document.senderName && (
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-[#214234] dark:bg-[#102418]">
+                  <div className="flex items-start gap-3">
+                    <UserRound className="mt-0.5 h-5 w-5 text-slate-500" />
+
+                    <div>
+                      <p className="text-sm text-slate-500">
+                        Contact Person / Sender Name
+                      </p>
+
+                      <p className="mt-1 font-bold text-slate-900 dark:text-[#F3F8F3]">
+                        {document.senderName}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* CONTACT */}
+              {document.senderContact && (
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-[#214234] dark:bg-[#102418]">
+                  <p className="text-sm text-slate-500">
+                    Contact Information
+                  </p>
+
+                  <p className="mt-1 font-bold text-slate-900 dark:text-[#F3F8F3]">
+                    {document.senderContact}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
 
           {/* DETAILS GRID */}
           <div className="grid gap-5 md:grid-cols-2">

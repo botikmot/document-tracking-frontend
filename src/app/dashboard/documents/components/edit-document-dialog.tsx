@@ -196,6 +196,11 @@ const CONFIDENTIALITY_LEVELS = [
   },
 ];
 
+const WORKING_DAY_OPTIONS = Array.from(
+  { length: 30 },
+  (_, index) => index + 1,
+);
+
 /*
 |--------------------------------------------------------------------------
 | Helpers
@@ -248,6 +253,43 @@ function toDateTimeLocal(
 
   return `${year}-${month}-${day}T${hour}:${minute}`;
 }
+
+function isWeekend(date: Date) {
+  const day = date.getDay();
+
+  return day === 0 || day === 6;
+}
+
+function addWorkingDays(
+  startDate: Date,
+  workingDays: number,
+) {
+  const result = new Date(startDate);
+
+  let addedDays = 0;
+
+  while (addedDays < workingDays) {
+    result.setDate(
+      result.getDate() + 1,
+    );
+
+    if (!isWeekend(result)) {
+      addedDays += 1;
+    }
+  }
+
+  return result;
+}
+
+function calculateWorkingDaysDeadline(
+  workingDays: number,
+) {
+  return addWorkingDays(
+    new Date(),
+    workingDays,
+  );
+}
+
 
 /*
 |--------------------------------------------------------------------------
@@ -342,6 +384,11 @@ export function EditDocumentDialog({
       document.deadline,
     ),
   );
+
+  const [
+    workingDays,
+    setWorkingDays,
+  ] = useState('');
 
   const [
     submitting,
@@ -738,9 +785,7 @@ export function EditDocumentDialog({
                   </Label>
 
                   <Select
-                    value={
-                      classification
-                    }
+                    value={classification}
                     disabled={
                       submitting ||
                       !editable
@@ -768,21 +813,85 @@ export function EditDocumentDialog({
                       {CLASSIFICATIONS.map(
                         (item) => (
                           <SelectItem
-                            key={
-                              item.value
-                            }
-                            value={
-                              item.value
-                            }
+                            key={item.value}
+                            value={item.value}
                           >
-                            {
-                              item.label
-                            }
+                            {item.label}
                           </SelectItem>
                         ),
                       )}
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* WORKING DAYS */}
+
+                <div className="space-y-2">
+                  <Label>
+                    Working Days
+                  </Label>
+
+                  <Select
+                    value={workingDays}
+                    disabled={
+                      submitting ||
+                      !editable
+                    }
+                    onValueChange={(value) => {
+                      const days =
+                        Number(value);
+
+                      setWorkingDays(
+                        value,
+                      );
+
+                      const calculatedDeadline =
+                        calculateWorkingDaysDeadline(
+                          days,
+                        );
+
+                      setDeadline(
+                        toDateTimeLocal(
+                          calculatedDeadline.toISOString(),
+                        ),
+                      );
+                    }}
+                  >
+                    <SelectTrigger
+                      className="
+                        h-11
+                        w-full
+                        rounded-xl
+                        border-slate-200
+                        bg-white
+                        dark:border-[#214234]
+                        dark:bg-[#102418]
+                        dark:text-[#F3F8F3]
+                      "
+                    >
+                      <SelectValue placeholder="Days" />
+                    </SelectTrigger>
+
+                    <SelectContent className="max-h-[300px]">
+                      {WORKING_DAY_OPTIONS.map(
+                        (days) => (
+                          <SelectItem
+                            key={days}
+                            value={String(days)}
+                          >
+                            {days}{' '}
+                            {days === 1
+                              ? 'Day'
+                              : 'Days'}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
+
+                  <p className="text-[11px] text-slate-500 dark:text-[#7FA18E]">
+                    Excludes Saturdays and Sundays
+                  </p>
                 </div>
 
                 {/* PRIORITY */}

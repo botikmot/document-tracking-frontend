@@ -33,6 +33,11 @@ import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { downloadRoutingSlip } from '@/lib/download-routing-slip';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/auth.store';
+import type {
+  DocumentMonitoringCategory,
+  DocumentSourceClass,
+  InternalSourceScope,
+} from '@/types/document';
 
 type Attachment = {
   fileName: string;
@@ -241,6 +246,14 @@ export default function DocumentDialog({
     classification: isRecords ? 'UNCLASSIFIED' : 'SIMPLE',
     priority: 'MEDIUM',
     confidentialityLevel: 'PUBLIC',
+    // ==========================================
+    // NEW DOCUMENT CLASSIFICATION
+    // ==========================================
+
+    sourceClass: '' as DocumentSourceClass | '',
+    internalSourceScope: '' as InternalSourceScope | '',
+    monitoringCategory: 'GENERAL' as DocumentMonitoringCategory,
+
     senderType: 'OFFICE',
     senderOfficeId: '',
     senderName: '',
@@ -286,6 +299,9 @@ export default function DocumentDialog({
     classification: doc.classification || 'SIMPLE',
     priority: doc.priority || 'MEDIUM',
     confidentialityLevel: doc.confidentialityLevel || 'PUBLIC',
+    sourceClass: doc.sourceClass || '',
+    internalSourceScope: doc.internalSourceScope || '',
+    monitoringCategory: doc.monitoringCategory || 'GENERAL',
     senderType: doc.senderType || 'OFFICE',
     senderOfficeId: doc.senderOfficeId || undefined,
     senderName: doc.senderName || '',
@@ -314,55 +330,133 @@ export default function DocumentDialog({
     }
   };
 
-  const fetchTrackingNumber =
-    async () => {
+  const fetchTrackingNumber = async () => {
       try {
-        const response = await api.get('/documents/next-tracking-number');
-          setTrackingNumber(response.data.trackingNumber);
+        /*
+        * ==========================================
+        * TRACKING NUMBER
+        * ==========================================
+        */
 
-        const typesRes = await api.get('/document-types');
-        const types = typesRes.data;
-        console.log('doc types:', types)
-        setDocumentTypes(types);
-
-        // Auto-select Memorandum for create mode
         if (mode === 'create') {
+          const response =
+            await api.get(
+              '/documents/next-tracking-number',
+            );
 
-          const officesRes = await api.get('/offices/accessible');
-          setOffices(
-            officesRes.data
+          setTrackingNumber(
+            response.data.trackingNumber,
+          );
+        } else if (document?.trackingNumber) {
+          setTrackingNumber(
+            document.trackingNumber,
+          );
+        }
+
+        /*
+        * ==========================================
+        * DOCUMENT TYPES
+        * ==========================================
+        */
+
+        const typesRes =
+          await api.get(
+            '/document-types',
           );
 
-          const memorandum = types.find(
-            (type: { id: string; name: string }) =>
-              type.name.toLowerCase() === 'memorandum'
+        const types =
+          typesRes.data;
+
+        setDocumentTypes(
+          types,
+        );
+
+        /*
+        * ==========================================
+        * OFFICES
+        *
+        * IMPORTANT:
+        * Load for BOTH create and edit.
+        * ==========================================
+        */
+
+        const officesRes =
+          await api.get(
+            '/offices/accessible',
           );
+
+        setOffices(
+          officesRes.data,
+        );
+
+        /*
+        * ==========================================
+        * CREATE DEFAULTS
+        * ==========================================
+        */
+
+        if (mode === 'create') {
+          const memorandum =
+            types.find(
+              (type: {
+                id: string;
+                name: string;
+              }) =>
+                type.name
+                  .trim()
+                  .toLowerCase() ===
+                'memorandum',
+            );
 
           if (memorandum) {
-            setFormData((prev) => ({
-              ...prev,
-              documentTypeId: memorandum.id,
-            }));
+            setFormData(
+              (prev) => ({
+                ...prev,
+
+                documentTypeId:
+                  memorandum.id,
+              }),
+            );
           }
         }
 
-        const meRes = await api.get('/auth/me');
-        console.log('meRes:', meRes)
-        const office = meRes.data.officeUsers?.[0]?.office;
+        /*
+        * ==========================================
+        * CURRENT USER OFFICE
+        * ==========================================
+        */
+
+        const meRes =
+          await api.get(
+            '/auth/me',
+          );
+
+        const office =
+          meRes.data
+            .officeUsers?.[0]
+            ?.office;
+
         if (office) {
-          setCurrentOffice(office);
+          setCurrentOffice(
+            office,
+          );
         }
       } catch (error) {
-        console.error(error);
+        console.error(
+          'Failed to load document form data:',
+          error,
+        );
+
+        toast.error(
+          'Failed to load document form data.',
+        );
       }
     };
 
   useEffect(() => {
-      const load = async () => {
-      await fetchTrackingNumber();
-      };
-      void load();
-  }, []);
+    void fetchTrackingNumber();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, document?.id]);
 
   
   const handleSubmit =
@@ -374,6 +468,73 @@ export default function DocumentDialog({
       if(!formData.title?.trim()) {
         toast.error('Please provide a document title.')
         return
+      }
+
+      if (!formData.sourceClass) {
+        toast.error(
+          'Please classify the document as Internal or External.',
+        );
+
+        return;
+      }
+
+      if (
+        formData.sourceClass === 'INTERNAL' &&
+        !formData.internalSourceScope
+      ) {
+        toast.error(
+          'Please select the internal source.',
+        );
+
+        return;
+      }
+
+      if (
+        formData.sourceClass === 'INTERNAL' &&
+        formData.internalSourceScope ===
+          'LOCAL_CARAGA' &&
+        !formData.senderOfficeId
+      ) {
+        toast.error(
+          'Please select the originating DENR office.',
+        );
+
+        return;
+      }
+
+      if (
+        formData.sourceClass === 'INTERNAL' &&
+        formData.internalSourceScope ===
+          'OTHER_REGION' &&
+        !formData.senderOrganization.trim()
+      ) {
+        toast.error(
+          'Please enter the originating DENR Regional Office.',
+        );
+
+        return;
+      }
+
+      if (
+        formData.sourceClass === 'EXTERNAL' &&
+        !formData.senderType
+      ) {
+        toast.error(
+          'Please select the external sender type.',
+        );
+
+        return;
+      }
+
+      if (
+        formData.monitoringCategory === 'PERMIT' &&
+        !formData.permitId
+      ) {
+        toast.error(
+          'Please select the permit type.',
+        );
+
+        return;
       }
       
 
@@ -409,10 +570,28 @@ export default function DocumentDialog({
             formData.priority,
           confidentialityLevel:
             formData.confidentialityLevel,
+
+          sourceClass:
+            formData.sourceClass,
+
+          internalSourceScope:
+            formData.sourceClass === 'INTERNAL'
+              ? formData.internalSourceScope
+              : undefined,
+
+          monitoringCategory:
+            formData.sourceClass === 'EXTERNAL'
+              ? formData.monitoringCategory
+              : 'GENERAL',
+
           senderType:
             formData.senderType,
           senderOfficeId:
-            formData.senderOfficeId,
+            formData.sourceClass === 'INTERNAL' &&
+            formData.internalSourceScope === 'LOCAL_CARAGA' &&
+            formData.senderOfficeId
+              ? formData.senderOfficeId
+              : undefined,
           senderName:
             formData.senderName,
           senderOrganization:
@@ -425,25 +604,85 @@ export default function DocumentDialog({
         console.log('data:', payload);
         let res;
 
-        if (mode === 'edit' && document?.id) {
-            const payload = {
-                title: formData.title,
-                description: formData.description,
-                deadline: formData.deadline,
-                documentTypeId: formData.documentTypeId,
-                addressee: formData.addressee,
-                classification: formData.classification,
-                priority: formData.priority,
-                confidentialityLevel: formData.confidentialityLevel,
-                senderType: formData.senderType,
-                senderOfficeId: formData.senderOfficeId?.trim() ? formData.senderOfficeId : undefined,
-                senderName: formData.senderName,
-                senderOrganization: formData.senderOrganization,
-                senderContact: formData.senderContact,
-                attachments: attachments,
-            };
+       if (mode === 'edit' && document?.id) {
+          const payload = {
+            title:
+              formData.title.trim(),
 
-            res = await api.patch(`/documents/${document.id}`, payload);
+            description:
+              formData.description,
+
+            deadline:
+              formData.deadline,
+
+            documentTypeId:
+              formData.documentTypeId,
+
+            addressee:
+              formData.addressee,
+
+            classification:
+              formData.classification,
+
+            priority:
+              formData.priority,
+
+            confidentialityLevel:
+              formData.confidentialityLevel,
+
+            // ==========================================
+            // SOURCE / MONITORING
+            // ==========================================
+
+            sourceClass:
+              formData.sourceClass,
+
+            internalSourceScope:
+              formData.sourceClass === 'INTERNAL'
+                ? formData.internalSourceScope
+                : undefined,
+
+            monitoringCategory:
+              formData.sourceClass === 'EXTERNAL'
+                ? formData.monitoringCategory
+                : 'GENERAL',
+
+            // ==========================================
+            // SENDER
+            // ==========================================
+
+            senderType:
+              formData.sourceClass === 'INTERNAL'
+                ? 'OFFICE'
+                : formData.senderType,
+
+            senderOfficeId:
+              formData.sourceClass === 'INTERNAL' &&
+              formData.internalSourceScope ===
+                'LOCAL_CARAGA' &&
+              formData.senderOfficeId
+                ? formData.senderOfficeId
+                : undefined,
+
+            senderName:
+              formData.senderName?.trim() ||
+              undefined,
+
+            senderOrganization:
+              formData.senderOrganization?.trim() ||
+              undefined,
+
+            senderContact:
+              formData.senderContact?.trim() ||
+              undefined,
+
+            attachments,
+          };
+
+          res = await api.patch(
+            `/documents/${document.id}`,
+            payload,
+          );
         } else {
             res = await api.post('/documents', payload);
 
@@ -702,10 +941,16 @@ const handleFileUpload =
     );
 
   const isPermitDocument =
-    selectedDocumentType?.name
-      ?.trim()
-      .toLowerCase() ===
-    'permits';
+    formData.monitoringCategory ===
+    'PERMIT';
+
+  const isSurveyReturnDocument =
+    formData.monitoringCategory ===
+    'SURVEY_RETURN';
+
+  const isSpecialDocument =
+    isPermitDocument ||
+    isSurveyReturnDocument;
 
 
   console.log('document::', document)
@@ -1005,6 +1250,253 @@ const handleFileUpload =
           </section>
 
           {/* ===================================== */}
+          {/* SOURCE & MONITORING */}
+          {/* ===================================== */}
+
+          <section className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-sm transition-colors dark:border-[#214234] dark:bg-[#102418]">
+            <div className="mb-7 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 dark:bg-emerald-900/40">
+                <Shield className="h-6 w-6 text-emerald-700" />
+              </div>
+
+              <div>
+                <h2 className="text-xl font-black text-[#102418] dark:text-[#F3F8F3]">
+                  Source & Monitoring Classification
+                </h2>
+
+                <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
+                  Classify where the document originated and how it should be monitored.
+                </p>
+              </div>
+            </div>
+
+            {/* SOURCE CLASS */}
+            <div>
+              <Label className="mb-3 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+                Document Source
+              </Label>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                {/* INTERNAL */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+
+                      sourceClass: 'INTERNAL',
+
+                      internalSourceScope: '',
+
+                      monitoringCategory: 'GENERAL',
+
+                      senderType: 'OFFICE',
+
+                      senderOfficeId: '',
+
+                      senderName: '',
+
+                      senderOrganization: '',
+
+                      senderContact: '',
+                    }))
+                  }
+                  className={`rounded-2xl border p-5 text-left transition-all ${
+                    formData.sourceClass === 'INTERNAL'
+                      ? 'border-green-600 bg-green-50 ring-2 ring-green-600/10 dark:border-green-500 dark:bg-green-950/30'
+                      : 'border-slate-200 bg-slate-50 hover:border-green-300 dark:border-[#214234] dark:bg-[#173227]'
+                  }`}
+                >
+                  <p className="font-bold text-[#102418] dark:text-[#F3F8F3]">
+                    Internal
+                  </p>
+
+                  <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-[#A9C5B6]">
+                    Documents originating from DENR offices,
+                    including Caraga, other DENR regions,
+                    and Central Office.
+                  </p>
+                </button>
+
+                {/* EXTERNAL */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+
+                      sourceClass: 'EXTERNAL',
+
+                      internalSourceScope: '',
+
+                      monitoringCategory: 'GENERAL',
+
+                      senderType:
+                        prev.senderType === 'OFFICE'
+                          ? ''
+                          : prev.senderType,
+
+                      senderOfficeId: '',
+                    }))
+                  }
+                  className={`rounded-2xl border p-5 text-left transition-all ${
+                    formData.sourceClass === 'EXTERNAL'
+                      ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-600/10 dark:border-blue-500 dark:bg-blue-950/30'
+                      : 'border-slate-200 bg-slate-50 hover:border-blue-300 dark:border-[#214234] dark:bg-[#173227]'
+                  }`}
+                >
+                  <p className="font-bold text-[#102418] dark:text-[#F3F8F3]">
+                    External
+                  </p>
+
+                  <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-[#A9C5B6]">
+                    Applications, requests, communications,
+                    permits and survey returns originating
+                    outside DENR.
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            {/* INTERNAL SCOPE */}
+            {formData.sourceClass === 'INTERNAL' && (
+              <div className="mt-7 rounded-2xl border border-green-200 bg-green-50/50 p-5 dark:border-green-900 dark:bg-green-950/20">
+                <Label className="mb-3 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+                  Internal Source
+                </Label>
+
+                <Select
+                    value={formData.internalSourceScope}
+                    onValueChange={(value) => {
+                      const scope = value as InternalSourceScope;
+
+                      setFormData((prev) => ({
+                        ...prev,
+
+                        internalSourceScope: scope,
+
+                        senderType: 'OFFICE',
+
+                        senderOfficeId: '',
+
+                        senderName: '',
+
+                        senderOrganization:
+                          scope === 'CENTRAL_OFFICE'
+                            ? 'DENR Central Office'
+                            : '',
+
+                        senderContact: '',
+                      }));
+                    }}
+                  >
+                  <SelectTrigger className="h-12 w-full rounded-2xl border-slate-200 bg-white dark:border-[#214234] dark:bg-[#173227]">
+                    <SelectValue placeholder="Select internal source" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="LOCAL_CARAGA">
+                      Within DENR Caraga
+                    </SelectItem>
+
+                    <SelectItem value="OTHER_REGION">
+                      Other DENR Regional Office
+                    </SelectItem>
+
+                    <SelectItem value="CENTRAL_OFFICE">
+                      DENR Central Office
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* EXTERNAL CATEGORY */}
+            {formData.sourceClass === 'EXTERNAL' && (
+              <div className="mt-7 rounded-2xl border border-blue-200 bg-blue-50/50 p-5 dark:border-blue-900 dark:bg-blue-950/20">
+                <Label className="mb-3 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+                  External Document Category
+                </Label>
+
+                <div className="grid gap-3 md:grid-cols-3">
+                  {[
+                    {
+                      value: 'GENERAL',
+                      label: 'General',
+                      description:
+                        'Regular external communication',
+                    },
+                    {
+                      value: 'PERMIT',
+                      label: 'Permit',
+                      description:
+                        'Separate permit monitoring',
+                    },
+                    {
+                      value: 'SURVEY_RETURN',
+                      label: 'Survey Return',
+                      description:
+                        'Separate survey monitoring',
+                    },
+                  ].map((item) => {
+                    const selected =
+                      formData.monitoringCategory ===
+                      item.value;
+
+                    return (
+                      <button
+                        key={item.value}
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+
+                            monitoringCategory:
+                              item.value as DocumentMonitoringCategory,
+
+                            permitId:
+                              item.value === 'PERMIT'
+                                ? prev.permitId
+                                : '',
+
+                            deadline:
+                              item.value === 'PERMIT'
+                                ? prev.deadline
+                                : undefined,
+                          }))
+                        }
+                        className={`rounded-2xl border p-4 text-left transition-all ${
+                          selected
+                            ? 'border-blue-600 bg-white shadow-sm ring-2 ring-blue-600/10 dark:border-blue-500 dark:bg-[#173227]'
+                            : 'border-blue-100 bg-white/60 hover:border-blue-300 dark:border-[#214234] dark:bg-[#102418]'
+                        }`}
+                      >
+                        <p className="font-bold text-[#102418] dark:text-[#F3F8F3]">
+                          {item.label}
+                        </p>
+
+                        <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-[#A9C5B6]">
+                          {item.description}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {(isPermitDocument ||
+                  isSurveyReturnDocument) && (
+                  <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
+                    This document uses special monitoring and
+                    may be routed directly to the responsible
+                    processing office without passing through
+                    the standard RED / ARD workflow.
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* ===================================== */}
           {/* SENDER INFORMATION */}
           {/* ===================================== */}
           <section className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-sm transition-colors dark:border-[#214234] dark:bg-[#102418]">
@@ -1025,80 +1517,150 @@ const handleFileUpload =
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
+              {/* ===================================== */}
               {/* SENDER TYPE */}
-              <div className="lg:col-span-2">
-                <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
-                  Sender Type
-                </Label>
-
-                <Select
-                  value={formData.senderType}
-                  onValueChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    senderType: value,
-                    senderOfficeId:
-                      value === 'OFFICE' &&
-                      currentOffice
-                        ? currentOffice.id
-                        : '',
-
-                    senderName: '',
-                    senderOrganization: '',
-                    senderContact: '',
-                  })
-                }
-                >
-                  <SelectTrigger className="h-12 w-1/2 rounded-2xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
-                    <SelectValue placeholder="Select sender type" />
-                  </SelectTrigger>
-
-                  <SelectContent className="dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]">
-                    <SelectItem value="OFFICE">
-                      Office
-                    </SelectItem>
-
-                    <SelectItem value="CLIENT">
-                      Client / Citizen
-                    </SelectItem>
-
-                    <SelectItem value="AGENCY">
-                      Government Agency
-                    </SelectItem>
-
-                    <SelectItem value="COMPANY">
-                      Company / Organization
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* ===================================== */}
-              {/* OFFICE */}
               {/* ===================================== */}
 
-              {formData.senderType ===
-                'OFFICE' &&
-                currentOffice && (
+              {formData.sourceClass === 'INTERNAL' ? (
+                <div className="lg:col-span-2">
+                  <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+                    Sender Type
+                  </Label>
+
+                  <div className="flex h-12 items-center rounded-2xl border border-green-200 bg-green-50 px-4 dark:border-green-800 dark:bg-green-950/20">
+                    <span className="font-semibold text-green-800 dark:text-green-300">
+                      DENR Office
+                    </span>
+                  </div>
+
+                  <p className="mt-2 text-xs text-slate-500 dark:text-[#A9C5B6]">
+                    Internal documents originate from a DENR office.
+                  </p>
+                </div>
+              ) : formData.sourceClass === 'EXTERNAL' ? (
+                <div className="lg:col-span-2">
+                  <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
+                    Sender Type
+                  </Label>
+
+                  <Select
+                    value={formData.senderType}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+
+                        senderType: value,
+
+                        senderOfficeId: '',
+
+                        senderName: '',
+
+                        senderOrganization: '',
+
+                        senderContact: '',
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="h-12 w-full rounded-2xl border-slate-200 bg-slate-50 transition-colors dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] sm:w-1/2">
+                      <SelectValue placeholder="Select sender type" />
+                    </SelectTrigger>
+
+                    <SelectContent className="dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]">
+                      <SelectItem value="CLIENT">
+                        Client / Citizen
+                      </SelectItem>
+
+                      <SelectItem value="AGENCY">
+                        Government Agency
+                      </SelectItem>
+
+                      <SelectItem value="COMPANY">
+                        Company / Organization
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
+
+              {/* ===================================== */}
+              {/* INTERNAL - LOCAL CARAGA */}
+              {/* ===================================== */}
+
+              {formData.sourceClass === 'INTERNAL' &&
+                formData.internalSourceScope === 'LOCAL_CARAGA' && (
                   <div className="lg:col-span-2">
                     <Label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-[#D7E8DD]">
-                      Originating Office
+                      Originating DENR Office
                     </Label>
 
-                    <div className="flex h-12 items-center rounded-2xl border border-green-200 bg-green-50 px-4 transition-colors dark:border-green-700 dark:bg-green-900/20">
-                      <p className="font-semibold text-green-800 dark:text-green-300">
-                        {
-                          currentOffice.officeName
-                        }
-                      </p>
-                    </div>
+                    <Select
+                      value={formData.senderOfficeId}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          senderOfficeId: value,
+                        }))
+                      }
+                    >
+                      <SelectTrigger className="h-12 w-full rounded-2xl border-slate-200 bg-slate-50 dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3]">
+                        <SelectValue placeholder="Select originating office" />
+                      </SelectTrigger>
 
-                    <p className="mt-2 text-xs text-slate-500">
-                      Automatically selected from
-                      your assigned office
+                      <SelectContent className="dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]">
+                        {offices.map((office) => (
+                          <SelectItem
+                            key={office.id}
+                            value={office.id}
+                          >
+                            {office.officeName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <p className="mt-2 text-xs text-slate-500 dark:text-[#A9C5B6]">
+                      Select the actual DENR office that sent the document.
                     </p>
                   </div>
                 )}
+
+                {formData.sourceClass === 'INTERNAL' &&
+                  formData.internalSourceScope ===
+                    'OTHER_REGION' && (
+                    <div className="lg:col-span-2">
+                      <Label className="mb-2 block text-sm font-semibold">
+                        Originating DENR Regional Office
+                      </Label>
+
+                      <Input
+                        value={formData.senderOrganization}
+                        placeholder="e.g. DENR Region XI"
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            senderOrganization: e.target.value,
+                          }))
+                        }
+                        className="h-12 rounded-2xl"
+                      />
+                    </div>
+                  )}
+
+                  {formData.sourceClass === 'INTERNAL' &&
+                    formData.internalSourceScope ===
+                      'CENTRAL_OFFICE' && (
+                      <div className="lg:col-span-2">
+                        <Label className="mb-2 block text-sm font-semibold">
+                          Originating Office
+                        </Label>
+
+                        <div className="flex h-12 items-center rounded-2xl border border-green-200 bg-green-50 px-4 dark:border-green-800 dark:bg-green-950/20">
+                          <span className="font-semibold text-green-800 dark:text-green-300">
+                            DENR Central Office
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
               {/* ===================================== */}
               {/* CLIENT */}
