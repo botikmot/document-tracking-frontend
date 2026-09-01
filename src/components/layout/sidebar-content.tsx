@@ -63,12 +63,25 @@ export function SidebarContent() {
       (state) => state.logout,
     );
 
-  const isOrdUser =
+  const allowedTransactionOfficeCodes = [
+    'ORD',
+    'RO-ARD-ADMIN',
+    'RO-ARD-TECH',
+  ];
+
+  const isTransactionAuthorizedUser =
     user?.offices?.some(
-      (item) =>
-        item.office?.officeCode === 'ORD' ||
-        item.officeCode === 'ORD',
+      (item) => {
+        const officeCode =
+          item.office?.officeCode ??
+          item.officeCode;
+
+        return allowedTransactionOfficeCodes.includes(
+          officeCode,
+        );
+      },
     ) ?? false;
+
 
   const menus = [
     {
@@ -117,11 +130,11 @@ export function SidebarContent() {
         '/dashboard/reports',
       icon: ChartColumn,
     },
-    ...(isOrdUser
+    ...(isTransactionAuthorizedUser
     ? [
         {
-          label: 'Records Monitoring',
-          href: '/dashboard/records-monitoring',
+          label: 'Transactions',
+          href: '/dashboard/transactions',
           icon: Eye,
         },
       ]
