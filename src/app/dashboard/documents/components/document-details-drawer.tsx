@@ -29,7 +29,7 @@ import { Button } from '@/components/ui/button';
 import {
   Separator,
 } from '@/components/ui/separator';
-import { downloadRoutingSlip } from '@/lib/download-routing-slip';
+import { downloadRoutingSlip, downloadRoutingSlipV2 } from '@/lib/download-routing-slip';
 import QRCode from 'qrcode';
 import { useAuthStore } from '@/store/auth.store';
 import { useState } from 'react';
@@ -199,14 +199,10 @@ export function DocumentDetailsDrawer({
   };
 
 
-  const handleDownloadRoutingSlip =
+  /* const handleDownloadRoutingSlip =
     async () => {
       try {
-        /*
-        |--------------------------------------------------------------------------
-        | GET LATEST ROUTING / ACTION HISTORY
-        |--------------------------------------------------------------------------
-        */
+       
 
         const historyResponse =
           await api.get(
@@ -217,11 +213,7 @@ export function DocumentDetailsDrawer({
           historyResponse.data
             ?.routingHistory ?? [];
 
-        /*
-        |--------------------------------------------------------------------------
-        | TRACKING QR CODE
-        |--------------------------------------------------------------------------
-        */
+       
 
         const trackingUrl =
           `${window.location.origin}/track/${document.trackingNumber}`;
@@ -231,11 +223,7 @@ export function DocumentDetailsDrawer({
             trackingUrl,
           );
 
-        /*
-        |--------------------------------------------------------------------------
-        | GENERATE ROUTING SLIP
-        |--------------------------------------------------------------------------
-        */
+       
 
         await downloadRoutingSlip({
           trackingNumber:
@@ -275,11 +263,196 @@ export function DocumentDetailsDrawer({
             document.documentType
               ?.name ?? '',
 
-          /*
-          * Latest routing + action
-          * history from backend.
-          */
+          
           routingHistory,
+        });
+      } catch (error) {
+        console.error(
+          'Failed to download routing slip:',
+          error,
+        );
+
+        toast.error(
+          'Failed to generate routing slip.',
+        );
+      }
+    }; */
+
+    const handleDownloadRoutingSlip = async () => {
+      try {
+        /*
+        |--------------------------------------------------------------------------
+        | GET COMPLETE ROUTING SLIP DATA
+        |--------------------------------------------------------------------------
+        */
+
+        const historyResponse = await api.get(
+          `/documents/${document.id}/routing-slip-history`,
+        );
+
+        const routingSlip = historyResponse.data;
+
+        const routingDocument = routingSlip?.document;
+        const routingHistory =
+          routingSlip?.routingHistory ?? [];
+
+        const instructions = routingSlip?.instructions ?? {
+          red: [],
+          ard: [],
+          division: [],
+        };
+
+        /*
+        |--------------------------------------------------------------------------
+        | TRACKING QR CODE
+        |--------------------------------------------------------------------------
+        */
+
+        const trackingUrl =
+          `${window.location.origin}/track/${document.trackingNumber}`;
+
+        const qrCode = await QRCode.toDataURL(
+          trackingUrl,
+          {
+            margin: 1,
+            width: 180,
+          },
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | GENERATE ROUTING SLIP PDF
+        |--------------------------------------------------------------------------
+        */
+
+        await downloadRoutingSlipV2({
+          trackingNumber:
+            routingSlip?.trackingNumber ??
+            document.trackingNumber,
+
+          title:
+            routingDocument?.title ??
+            document.title,
+
+          description:
+            routingDocument?.description ??
+            document.description ??
+            '',
+
+          sender:
+            routingDocument?.senderName ??
+            getDocumentSender(),
+
+          senderOrganization:
+            routingDocument?.senderOrganization ??
+            '',
+
+          senderContact:
+            routingDocument?.senderContact ??
+            '',
+
+          senderOffice:
+            routingDocument?.senderOffice ?? null,
+
+          addressee:
+            routingDocument?.addressee ??
+            document.addressee ??
+            '',
+
+          referenceNumber:
+            routingDocument?.referenceNumber ??
+            '',
+
+          sourceClass:
+            routingDocument?.sourceClass ??
+            '',
+
+          internalSourceScope:
+            routingDocument?.internalSourceScope ??
+            '',
+
+          monitoringCategory:
+            routingDocument?.monitoringCategory ??
+            '',
+
+          routingProfile:
+            routingDocument?.routingProfile ??
+            '',
+
+          classification:
+            routingDocument?.classification ??
+            document.classification ??
+            '',
+
+          priority:
+            routingDocument?.priority ??
+            document.priority ??
+            '',
+
+          confidentialityLevel:
+            routingDocument?.confidentialityLevel ??
+            '',
+
+          deadline:
+            routingDocument?.deadline ??
+            null,
+
+          createdAt:
+            routingDocument?.createdAt ??
+            document.createdAt,
+
+          currentStatus:
+            routingDocument?.currentStatus ?? null,
+
+          currentOffice:
+            routingDocument?.currentOffice ?? null,
+
+          responsibleOffice:
+            routingDocument?.responsibleOffice ?? null,
+
+          responsiblePerson:
+            routingDocument?.responsiblePerson ??
+            null,
+
+          totalAgeDays:
+            routingDocument?.totalAgeDays ??
+            0,
+
+          currentOfficeAgeDays:
+            routingDocument?.currentOfficeAgeDays ??
+            0,
+
+          qrCode,
+
+          officeCode,
+
+          documentType:
+            document.documentType?.name ?? '',
+
+          /*
+          |--------------------------------------------------------------------------
+          | ROUTING HISTORY
+          |--------------------------------------------------------------------------
+          */
+
+          routingHistory,
+
+          /*
+          |--------------------------------------------------------------------------
+          | INSTRUCTIONS
+          |--------------------------------------------------------------------------
+          */
+
+          instructions,
+
+          /*
+          |--------------------------------------------------------------------------
+          | ALL ACTIONS
+          |--------------------------------------------------------------------------
+          */
+
+          allActions:
+            routingSlip?.allActions ?? [],
         });
       } catch (error) {
         console.error(
@@ -833,8 +1006,8 @@ const handleUpdateAction =
 
                   <h4 className="font-bold text-slate-900 dark:text-[#F3F8F3]">
                     {document.classification ===
-                    'TECHNICAL'
-                      ? 'HIGHLY TECHNICAL'
+                    'HIGHLY_TECHNICAL'
+                      ? 'HIGHLY HIGHLY_TECHNICAL'
                       : document.classification ||
                         'N/A'}
                   </h4>

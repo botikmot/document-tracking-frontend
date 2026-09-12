@@ -68,7 +68,7 @@ type PermitOption = {
   classification:
     | 'SIMPLE'
     | 'COMPLEX'
-    | 'TECHNICAL';
+    | 'HIGHLY_TECHNICAL';
 
   turnaround: {
     days: number;
@@ -99,7 +99,7 @@ const PERMIT_OPTIONS: PermitOption[] = [
   {
     id: 'supply-contracts-naturally-grown',
     name: 'Supply Contracts (Naturally Grown Species)',
-    classification: 'TECHNICAL',
+    classification: 'HIGHLY_TECHNICAL',
     turnaround: {
       days: 20,
     },
@@ -123,7 +123,7 @@ const PERMIT_OPTIONS: PermitOption[] = [
   {
     id: 'rattan-cutting-contract',
     name: 'Rattan Cutting Contract (RCC)',
-    classification: 'TECHNICAL',
+    classification: 'HIGHLY_TECHNICAL',
     turnaround: {
       days: 20,
     },
@@ -131,7 +131,7 @@ const PERMIT_OPTIONS: PermitOption[] = [
   {
     id: 'rattan-processing-plant-permit',
     name: 'Rattan Processing Plant Permit (RPPP)',
-    classification: 'TECHNICAL',
+    classification: 'HIGHLY_TECHNICAL',
     turnaround: {
       days: 20,
     },
@@ -139,7 +139,7 @@ const PERMIT_OPTIONS: PermitOption[] = [
   {
     id: 'feasibility-permit',
     name: 'Feasibility Permit',
-    classification: 'TECHNICAL',
+    classification: 'HIGHLY_TECHNICAL',
     turnaround: {
       days: 20,
     },
@@ -147,7 +147,7 @@ const PERMIT_OPTIONS: PermitOption[] = [
   {
     id: 'wood-processing-plant-permit',
     name: 'Wood Processing Plant (WPP) Permit',
-    classification: 'TECHNICAL',
+    classification: 'HIGHLY_TECHNICAL',
     turnaround: {
       days: 20,
     },
@@ -155,7 +155,7 @@ const PERMIT_OPTIONS: PermitOption[] = [
   {
     id: 'private-land-timber-permit',
     name: 'Private Land Timber Permit (PLTP)',
-    classification: 'TECHNICAL',
+    classification: 'HIGHLY_TECHNICAL',
     turnaround: {
       days: 11,
       hours: 1,
@@ -166,7 +166,7 @@ const PERMIT_OPTIONS: PermitOption[] = [
   {
     id: 'community-based-forest-management',
     name: 'Community Based-Forest Management (CBFM)',
-    classification: 'TECHNICAL',
+    classification: 'HIGHLY_TECHNICAL',
     turnaround: {
       days: 20,
     },
@@ -174,7 +174,7 @@ const PERMIT_OPTIONS: PermitOption[] = [
   {
     id: 'gratuitous-special-use-permit',
     name: 'Gratuitous Special Use Permit (GSUP)',
-    classification: 'TECHNICAL',
+    classification: 'HIGHLY_TECHNICAL',
     turnaround: {
       days: 20,
     },
@@ -182,7 +182,7 @@ const PERMIT_OPTIONS: PermitOption[] = [
   {
     id: 'special-tree-cutting-earth-balling',
     name: 'Special Tree Cutting and Earth-balling Permit',
-    classification: 'TECHNICAL',
+    classification: 'HIGHLY_TECHNICAL',
     turnaround: {
       days: 20,
     },
@@ -190,7 +190,7 @@ const PERMIT_OPTIONS: PermitOption[] = [
   {
     id: 'sustainable-forest-land-management',
     name: 'Sustainable Forest Land Management Agreement',
-    classification: 'TECHNICAL',
+    classification: 'HIGHLY_TECHNICAL',
     turnaround: {
       days: 20,
     },
@@ -199,7 +199,7 @@ const PERMIT_OPTIONS: PermitOption[] = [
   {
     id: 'water-permit',
     name: 'Water Permit',
-    classification: 'TECHNICAL',
+    classification: 'HIGHLY_TECHNICAL',
     turnaround: {
       days: 15,
     },
@@ -244,7 +244,7 @@ export default function DocumentDialog({
     permitId: '',
     addressee: '',
     classification: isRecords ? 'UNCLASSIFIED' : 'SIMPLE',
-    priority: 'MEDIUM',
+    priority: 'ROUTINE',
     confidentialityLevel: 'PUBLIC',
     // ==========================================
     // NEW DOCUMENT CLASSIFICATION
@@ -1881,7 +1881,7 @@ const handleFileUpload =
                           </SelectItem>
 
                           <SelectItem
-                            value="TECHNICAL"
+                            value="HIGHLY_TECHNICAL"
                           >
                             Highly Technical
                           </SelectItem>
@@ -2163,15 +2163,15 @@ const handleFileUpload =
                   </SelectTrigger>
 
                   <SelectContent className="dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]">
-                    <SelectItem value="LOW">
+                   {/*  <SelectItem value="LOW">
                       Low
-                    </SelectItem>
+                    </SelectItem> */}
 
-                    <SelectItem value="MEDIUM">
+                    <SelectItem value="ROUTINE">
                       Medium
                     </SelectItem>
 
-                    <SelectItem value="HIGH">
+                    <SelectItem value="IMMEDIATE">
                       High
                     </SelectItem>
 

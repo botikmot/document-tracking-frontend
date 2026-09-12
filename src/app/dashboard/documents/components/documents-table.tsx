@@ -248,7 +248,7 @@ export function DocumentsTable({
       case 'COMPLEX':
         return 'bg-orange-100 text-orange-700 border-orange-200';
 
-      case 'TECHNICAL':
+      case 'HIGHLY_TECHNICAL':
         return 'bg-red-200 text-red-700 border-red-300';
 
       default:
@@ -362,6 +362,9 @@ export function DocumentsTable({
       ]),
     ).values(),
   );
+
+
+  console.log('all documents::',documents)
 
   return (
     <>
@@ -518,7 +521,7 @@ export function DocumentsTable({
                             )}`}
                           >
                             {
-                              doc.classification === 'TECHNICAL' ? 'HIGHLY TECHNICAL' : doc.classification
+                              doc.classification === 'HIGHLY_TECHNICAL' ? 'HIGHLY HIGHLY_TECHNICAL' : doc.classification
                             }
                           </Badge>
                         </div>

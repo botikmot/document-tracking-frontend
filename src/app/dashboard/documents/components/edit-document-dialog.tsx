@@ -153,11 +153,11 @@ const PRIORITIES = [
     label: 'Low',
   },
   {
-    value: 'MEDIUM',
+    value: 'ROUTINE',
     label: 'Medium',
   },
   {
-    value: 'HIGH',
+    value: 'IMMEDIATE',
     label: 'High',
   },
   {
@@ -176,7 +176,7 @@ const CLASSIFICATIONS = [
     label: 'Complex',
   },
   {
-    value: 'TECHNICAL',
+    value: 'HIGHLY_TECHNICAL',
     label: 'Highly Technical',
   },
 ];

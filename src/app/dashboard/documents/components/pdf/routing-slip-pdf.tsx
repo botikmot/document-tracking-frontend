@@ -598,8 +598,8 @@ export default function RoutingSlipPDF({
               </View>
             ) : (
               <Text style={styles.infoValue}>
-                {classification === 'TECHNICAL'
-                  ? 'HIGHLY TECHNICAL'
+                {classification === 'HIGHLY_TECHNICAL'
+                  ? 'HIGHLY HIGHLY_TECHNICAL'
                   : classification}
               </Text>
             )}

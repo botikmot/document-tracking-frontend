@@ -699,7 +699,7 @@ const handleFileUpload = async (
                   <SelectItem value="COMPLEX">
                     Complex
                   </SelectItem>
-                  <SelectItem value="TECHNICAL">
+                  <SelectItem value="HIGHLY_TECHNICAL">
                     Highly Technical
                   </SelectItem>
                 </SelectContent>
@@ -759,15 +759,15 @@ const handleFileUpload = async (
                   </SelectTrigger>
 
                   <SelectContent>
-                    <SelectItem value="LOW">
+                   {/*  <SelectItem value="LOW">
                       Low
-                    </SelectItem>
+                    </SelectItem> */}
 
-                    <SelectItem value="MEDIUM">
+                    <SelectItem value="ROUTINE">
                       Medium
                     </SelectItem>
 
-                    <SelectItem value="HIGH">
+                    <SelectItem value="IMMEDIATE">
                       High
                     </SelectItem>
 

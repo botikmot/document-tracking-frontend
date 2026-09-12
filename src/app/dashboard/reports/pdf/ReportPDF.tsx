@@ -788,9 +788,9 @@ function getClassificationLabel(
 
   if (
     classification ===
-    'TECHNICAL'
+    'HIGHLY_TECHNICAL'
   ) {
-    return 'HIGHLY TECHNICAL';
+    return 'HIGHLY HIGHLY_TECHNICAL';
   }
 
   return classification.replaceAll(

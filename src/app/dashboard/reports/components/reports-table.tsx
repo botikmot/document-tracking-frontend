@@ -499,8 +499,8 @@ export function ReportsTable({
                       <td className="px-4 py-4">
                         <span className="text-sm font-medium">
                           {doc.classification ===
-                          'TECHNICAL'
-                            ? 'HIGHLY TECHNICAL'
+                          'HIGHLY_TECHNICAL'
+                            ? 'HIGHLY HIGHLY_TECHNICAL'
                             : doc.classification ??
                               '—'}
                         </span>

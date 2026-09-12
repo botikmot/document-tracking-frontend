@@ -7,7 +7,12 @@ import {
 import { saveAs } from 'file-saver';
 
 import RoutingSlipPDF from '@/app/dashboard/documents/components/pdf/routing-slip-pdf';
-import { RoutingHistoryItem } from '@/types/document';
+import RoutingSlipPDFV2 from '@/app/dashboard/documents/components/pdf/routing-slip-pdf-v2';
+
+import type {
+  RoutingHistoryItem,
+  RoutingSlipPdfV2Data,
+} from '@/types/document';
 
 type Props = {
   trackingNumber: string;
@@ -36,5 +41,20 @@ export async function downloadRoutingSlip(
   saveAs(
     blob,
     `${data.trackingNumber}-routing-slip.pdf`,
+  );
+}
+
+export async function downloadRoutingSlipV2(
+  data: RoutingSlipPdfV2Data,
+) {
+  const blob = await pdf(
+    <RoutingSlipPDFV2
+      data={data}
+    />,
+  ).toBlob();
+
+  saveAs(
+    blob,
+    `${data.trackingNumber}-routing-slip-v2.pdf`,
   );
 }

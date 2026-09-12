@@ -67,6 +67,8 @@ export function SidebarContent() {
     'ORD',
     'RO-ARD-ADMIN',
     'RO-ARD-TECH',
+    'RO-ARD',
+    'PENRO-ADN',
   ];
 
   const isTransactionAuthorizedUser =
