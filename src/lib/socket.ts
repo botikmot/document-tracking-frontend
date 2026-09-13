@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 
 export const socket = io(
-  'https://concentration-kitchen-reading-reproductive.trycloudflare.com/', // http://localhost:4000', //
+  'https://lane-proposals-lap-peterson.trycloudflare.com/', // http://localhost:4000', //
   {
     autoConnect: false,
 
