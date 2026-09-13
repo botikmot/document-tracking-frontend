@@ -355,7 +355,7 @@ export function EditDocumentDialog({
   ] = useState(
     () =>
       document.priority ??
-      'MEDIUM',
+      'ROUTINE',
   );
 
   const [

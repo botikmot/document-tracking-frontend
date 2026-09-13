@@ -59,7 +59,7 @@ export default function CreateDocumentDialog(
     documentTypeId: '',
     addressee: '',
     classification: 'SIMPLE',
-    priority: 'MEDIUM',
+    priority: 'ROUTINE',
     confidentialityLevel: 'PUBLIC',
     senderType: 'OFFICE',
     senderOfficeId: '',

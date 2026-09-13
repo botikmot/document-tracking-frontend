@@ -5,7 +5,6 @@ import {
   View,
   Image,
   StyleSheet,
-  type Style,
 } from '@react-pdf/renderer';
 
 import type {
@@ -845,7 +844,7 @@ function RoutingHistoryTable({
                     styles.statusPill,
                     isInProgress
                       ? styles.statusPillProgress
-                      : undefined,
+                      : {},
                   ]}
                 >
                   <Text
@@ -853,7 +852,7 @@ function RoutingHistoryTable({
                       styles.statusPillText,
                       isInProgress
                         ? styles.statusPillProgressText
-                        : undefined,
+                        : {},
                     ]}
                   >
                     {displayValue(route.status)}

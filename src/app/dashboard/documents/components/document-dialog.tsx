@@ -297,7 +297,7 @@ export default function DocumentDialog({
     permitId: doc.permitId || '',
     addressee: doc.addressee || '',
     classification: doc.classification || 'SIMPLE',
-    priority: doc.priority || 'MEDIUM',
+    priority: doc.priority || 'ROUTINE',
     confidentialityLevel: doc.confidentialityLevel || 'PUBLIC',
     sourceClass: doc.sourceClass || '',
     internalSourceScope: doc.internalSourceScope || '',

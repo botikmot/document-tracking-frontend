@@ -49,7 +49,7 @@ function priorityColor(priority: string) {
     case 'HIGH':
       return 'bg-orange-100 text-orange-700';
 
-    case 'MEDIUM':
+    case 'ROUTINE':
       return 'bg-amber-100 text-amber-700';
 
     default:
