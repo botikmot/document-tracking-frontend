@@ -9,7 +9,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/axios';
@@ -29,21 +29,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import { Input } from '@/components/ui/input';
-import { RouteDocumentDialog } from './route-document-dialog';
-import { DocumentTimelineDrawer } from './document-timeline-drawer';
 import { DocumentDetailsDrawer } from './document-details-drawer';
 import { toast } from 'sonner';
 import { useNotificationStore } from '@/store/notification.store';
 import DocumentDialog from './document-dialog';
-import { EditDocumentDialog } from './edit-document-dialog';
-import { useAuthStore } from '@/store/auth.store';
 import { useRouter } from 'next/navigation';
-
-type OfficeOption = {
-  id: string;
-  officeCode: string;
-  officeName: string;
-};
 
 export function DocumentsTable({
   documents,
@@ -69,16 +59,6 @@ export function DocumentsTable({
   setSearch?: (value: string,) => void;
 }) {
 
-  const user = useAuthStore((state) => state.user)
-
-  const [openEdit, setOpenEdit] = useState(false);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [documentToEdit, setDocumentToEdit] = useState<any>(null);
-
-  const [offices, setOffices] = useState<OfficeOption[]>([]);
-
-  const [loadingOffices, setLoadingOffices] = useState(false);
 
   const router = useRouter();
 
@@ -89,84 +69,13 @@ export function DocumentsTable({
   ] = useState<any | null>(null);
 
   const [
-    openTimeline,
-    setOpenTimeline,
-  ] = useState(false);
-
-  const [
     openDetails,
     setOpenDetails,
   ] = useState(false);
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const loadOffices = async () => {
-      try {
-        setLoadingOffices(true);
-
-        const response =
-          await api.get(
-            '/offices/accessible',
-          );
-
-        if (!cancelled) {
-          const officeList: OfficeOption[] =
-            response.data ?? [];
-
-          const uniqueOffices = Array.from(
-            new Map(
-              officeList.map((office) => [
-                office.id,
-                office,
-              ]),
-            ).values(),
-          );
-
-          setOffices(uniqueOffices);
-        }
-      } catch (error) {
-        console.error(
-          'Failed to load accessible offices:',
-          error,
-        );
-
-        if (!cancelled) {
-          setOffices([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingOffices(false);
-        }
-      }
-    };
-
-    void loadOffices();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-
-  const isOrdUser = user?.offices?.some(
-      (item) =>
-        item.office?.officeCode === 'ORD' ||
-        item.officeCode === 'ORD',
-    );
-
-  const documentIsInOrd = selectedDocument?.currentOffice?.officeCode === 'ORD';
-
-  const canEditDocument =
-      Boolean(
-        isOrdUser &&
-        documentIsInOrd,
-      );
-  
+  // Incremented each time a document is opened so the workspace initializes
+  // its local form state from the latest selected row without a reset effect.
+  const [workspaceSession, setWorkspaceSession] = useState(0);
 
   const WORKFLOW_STATUSES = [
     'FOR_REVIEW',
@@ -207,7 +116,8 @@ export function DocumentsTable({
       }
     };
 
-  if (loading) {
+  // Keep the selected Document Workspace mounted while a save or route refreshes the table.
+  if (loading && !openDetails) {
     return (
       <Card className="rounded-[32px] border-0 bg-white shadow-xl transition-colors dark:bg-[#102418] dark:shadow-[0_0_30px_rgba(34,197,94,0.10)]">
         <CardContent className="p-16 text-center text-slate-500 dark:text-[#A9C5B6]">
@@ -405,19 +315,6 @@ export function DocumentsTable({
         {/* CONTENT */}
         <CardContent className="space-y-3 p-4">
           {uniqueDocuments.map((doc, i) => {
-            const canRoute = type !== 'outgoing' && [
-              'DRAFT',
-              'PENDING',
-              'REJECTED',
-              'FOR_REVIEW',
-              'FOR_APPROVAL',
-              'ON_PROCESS',
-              'APPROVED',
-            ].includes(
-              doc.currentStatus
-                ?.name,
-            );
-
             const deadlineInfo =
               getDeadlineInfo(
                 doc.deadline, doc.currentStatus?.name
@@ -434,9 +331,8 @@ export function DocumentsTable({
               <div
                 key={i}
                 onClick={async () => {
-                  setSelectedDocument(
-                    doc,
-                  );
+                  setWorkspaceSession((session) => session + 1);
+                  setSelectedDocument(doc);
 
                   const notification = notifications.find(n => n.documentId === doc.id);
                   if(notification) {
@@ -636,38 +532,14 @@ export function DocumentsTable({
                           onClick={(e) => {
                             e.stopPropagation();
 
-                            setSelectedDocument(
-                              doc,
-                            );
-
-                            setOpenDetails(
-                              true,
-                            );
+                            setWorkspaceSession((session) => session + 1);
+                            setSelectedDocument(doc);
+                            setOpenDetails(true);
                           }}
                           className="cursor-pointer"
                         >
                           View Details
                         </DropdownMenuItem>
-
-                        {/* TIMELINE */}
-                        {type === 'pending' && (
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-
-                              setSelectedDocument(
-                                doc,
-                              );
-
-                              setOpenTimeline(
-                                true,
-                              );
-                            }}
-                            className="cursor-pointer"
-                          >
-                            View Timeline
-                          </DropdownMenuItem>
-                        )}
                       
                         <DropdownMenuItem 
                           className="cursor-pointer"
@@ -685,23 +557,6 @@ export function DocumentsTable({
                           <DocumentDialog mode="edit" document={doc} onSuccess={onRefresh}/>
                         )}
 
-                        {/* ROUTE */}
-                        {canRoute && (
-                          <div
-                            className="px-2 py-1 w-full"
-                            onClick={(e) =>
-                              e.stopPropagation()
-                            }
-                          >
-                            <RouteDocumentDialog
-                              documentId={doc.id}
-                              title={doc.title}
-                              onSuccess={
-                                onRefresh
-                              }
-                            />
-                          </div>
-                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -748,20 +603,9 @@ export function DocumentsTable({
 
       </Card>
 
-      {/* TIMELINE */}
-      <DocumentTimelineDrawer
-        open={openTimeline}
-        onOpenChange={
-          setOpenTimeline
-        }
-        document={
-          selectedDocument
-        }
-      />
-
       {/* DETAILS */}
       <DocumentDetailsDrawer
-        key={selectedDocument?.id ?? 'document-details'}
+        key={`${selectedDocument?.id ?? 'document-details'}-${workspaceSession}`}
         open={openDetails}
         onOpenChange={
           setOpenDetails
@@ -769,38 +613,12 @@ export function DocumentsTable({
         document={
           selectedDocument
         }
-        onEdit={(document) => {
-          setDocumentToEdit(document);
-          setOpenDetails(false);
-          setOpenEdit(true);
-        }}
+        listType={type}
+        onSave={handleUpdateDocument}
+        onRouteSuccess={onRefresh}
       />
 
-        {documentToEdit && (
-          <EditDocumentDialog
-            key={`edit-document-${documentToEdit.id}`}
-            open={openEdit}
-            onOpenChange={(open) => {
-              setOpenEdit(open);
 
-              if (!open) {
-                setDocumentToEdit(
-                  null,
-                );
-              }
-            }}
-            document={
-              documentToEdit
-            }
-            canEdit={
-              canEditDocument
-            }
-            offices={offices}
-            onSave={
-              handleUpdateDocument
-            }
-          />
-        )}
 
     </>
   );
