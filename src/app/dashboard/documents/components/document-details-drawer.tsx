@@ -18,6 +18,10 @@ import {
   Route,
   MapPin,
   GitBranch,
+  Activity,
+  Eye,
+  Printer,
+  Download,
 } from "lucide-react";
 
 import {
@@ -29,6 +33,13 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,11 +52,12 @@ import {
 } from "@/components/ui/select";
 
 import { Separator } from "@/components/ui/separator";
-import { downloadRoutingSlipV2 } from "@/lib/download-routing-slip";
+import { generateRoutingSlipV2Blob } from "@/lib/download-routing-slip";
+import { saveAs } from "file-saver";
 import QRCode from "qrcode";
 import { useAuthStore } from "@/store/auth.store";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { Trash2, Save, X } from "lucide-react";
+import { Trash2, Save, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/axios";
 import { DocumentTimelineContent } from "./document-timeline-drawer";
@@ -61,15 +73,57 @@ type DocumentTypeOption = {
   name: string;
 };
 
+type ResponsibilityAssignmentForm = {
+  officeId: string;
+  responsiblePerson: string;
+};
+
 type UpdateDocumentPayload = {
   documentTypeId: string;
   priority: string;
   classification: string;
   confidentialityLevel: string;
   deadline: string | null;
-  responsibleOfficeId: string | null;
-  responsiblePerson: string | null;
+  responsibleAssignments: Array<{
+    officeId: string;
+    responsiblePerson: string | null;
+  }>;
 };
+
+function getInitialResponsibilityAssignments(
+  document:
+    | {
+        responsibilities?: Array<{
+          officeId?: string;
+          office?: { id?: string } | null;
+          responsiblePerson?: string | null;
+        }>;
+        responsibleOfficeId?: string | null;
+        responsibleOffice?: { id?: string } | null;
+        responsiblePerson?: string | null;
+      }
+    | null
+    | undefined,
+): ResponsibilityAssignmentForm[] {
+  const assignments = document?.responsibilities ?? [];
+
+  if (assignments.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return assignments.map((assignment: any) => ({
+      officeId: assignment.officeId ?? assignment.office?.id ?? "",
+      responsiblePerson: assignment.responsiblePerson ?? "",
+    }));
+  }
+
+  // Backward compatibility for documents created before the assignment table.
+  const legacyOfficeId =
+    document?.responsibleOfficeId ?? document?.responsibleOffice?.id ?? "";
+  const legacyPerson = document?.responsiblePerson ?? "";
+
+  return legacyOfficeId || legacyPerson
+    ? [{ officeId: legacyOfficeId, responsiblePerson: legacyPerson }]
+    : [];
+}
 
 const PRIORITIES = [
   { value: "LOW", label: "Low" },
@@ -119,11 +173,22 @@ const ROUTABLE_STATUSES = [
   "DRAFT",
   "PENDING",
   "REJECTED",
+  "FOR_RELEASE",
   "FOR_REVIEW",
   "FOR_APPROVAL",
   "ON_PROCESS",
   "APPROVED",
 ];
+
+const WORKFLOW_STATUS_OPTIONS = [
+  "FOR_REVIEW",
+  "FOR_APPROVAL",
+  "FOR_RELEASE",
+  "ON_PROCESS",
+  "APPROVED",
+  "COMPLETED",
+  "END_TRANSACTION",
+] as const;
 
 function toDateTimeLocal(value?: string | null) {
   if (!value) return "";
@@ -156,6 +221,8 @@ interface Props {
   listType?: string;
   onSave?: (documentId: string, data: UpdateDocumentPayload) => Promise<void>;
   onRouteSuccess?: () => void | Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onStatusChanged?: (updatedDocument: any) => void | Promise<void>;
 }
 
 export function DocumentDetailsDrawer({
@@ -165,6 +232,7 @@ export function DocumentDetailsDrawer({
   listType = "documents",
   onSave,
   onRouteSuccess,
+  onStatusChanged,
 }: Props) {
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.accessToken);
@@ -198,6 +266,17 @@ export function DocumentDetailsDrawer({
   const [documentEditError, setDocumentEditError] = useState<string | null>(
     null,
   );
+  const [selectedWorkflowStatus, setSelectedWorkflowStatus] = useState("");
+  const [updatingWorkflowStatus, setUpdatingWorkflowStatus] = useState(false);
+  const [routingSlipPreviewOpen, setRoutingSlipPreviewOpen] = useState(false);
+  const [routingSlipPreviewLoading, setRoutingSlipPreviewLoading] =
+    useState(false);
+  const [routingSlipPreviewUrl, setRoutingSlipPreviewUrl] = useState<
+    string | null
+  >(null);
+  const [routingSlipPreviewBlob, setRoutingSlipPreviewBlob] =
+    useState<Blob | null>(null);
+  const routingSlipPreviewFrameRef = useRef<HTMLIFrameElement>(null);
   const [offices, setOffices] = useState<OfficeOption[]>([]);
   const [documentTypes, setDocumentTypes] = useState<DocumentTypeOption[]>([]);
   const [loadingEditOptions, setLoadingEditOptions] = useState(false);
@@ -216,14 +295,9 @@ export function DocumentDetailsDrawer({
     toDateTimeLocal(documentData?.deadline),
   );
   const [workingDays, setWorkingDays] = useState("");
-  const [responsibleOfficeId, setResponsibleOfficeId] = useState(
-    documentData?.responsibleOfficeId ??
-      documentData?.responsibleOffice?.id ??
-      "",
-  );
-  const [responsiblePerson, setResponsiblePerson] = useState(
-    documentData?.responsiblePerson ?? "",
-  );
+  const [responsibilityAssignments, setResponsibilityAssignments] = useState<
+    ResponsibilityAssignmentForm[]
+  >(() => getInitialResponsibilityAssignments(documentData));
 
   const overviewTabRef = useRef<HTMLButtonElement>(null);
   const actionsTabRef = useRef<HTMLButtonElement>(null);
@@ -233,6 +307,14 @@ export function DocumentDetailsDrawer({
   // Form state is initialized from the selected document. DocumentsTable
   // gives this workspace a fresh key for each open session, so no reset
   // effect (and no synchronous setState inside an effect) is necessary.
+
+  useEffect(() => {
+    return () => {
+      if (routingSlipPreviewUrl) {
+        URL.revokeObjectURL(routingSlipPreviewUrl);
+      }
+    };
+  }, [routingSlipPreviewUrl]);
 
   useEffect(() => {
     if (!open || !isEditingDocument) return;
@@ -387,12 +469,9 @@ export function DocumentDetailsDrawer({
     setConfidentialityLevel(documentData?.confidentialityLevel ?? "PUBLIC");
     setDeadline(toDateTimeLocal(documentData?.deadline));
     setWorkingDays("");
-    setResponsibleOfficeId(
-      documentData?.responsibleOfficeId ??
-        documentData?.responsibleOffice?.id ??
-        "",
+    setResponsibilityAssignments(
+      getInitialResponsibilityAssignments(documentData),
     );
-    setResponsiblePerson(documentData?.responsiblePerson ?? "");
     setDocumentEditError(null);
   };
 
@@ -419,6 +498,10 @@ export function DocumentDetailsDrawer({
         ...(documentData.responsibleOffice?.id
           ? [documentData.responsibleOffice]
           : []),
+        ...(documentData.responsibilities ?? [])
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map((assignment: any) => assignment.office)
+          .filter(Boolean),
       ].map((office) => [office.id, office]),
     ).values(),
   );
@@ -443,14 +526,42 @@ export function DocumentDetailsDrawer({
       return;
     }
 
+    const hasPersonWithoutOffice = responsibilityAssignments.some(
+      (assignment) =>
+        !assignment.officeId && assignment.responsiblePerson.trim(),
+    );
+
+    if (hasPersonWithoutOffice) {
+      setDocumentEditError(
+        "Please select a responsible office for each named responsible person, or remove that assignment.",
+      );
+      return;
+    }
+
+    const normalizedAssignments = responsibilityAssignments
+      .filter((assignment) => assignment.officeId)
+      .map((assignment) => ({
+        officeId: assignment.officeId,
+        responsiblePerson: assignment.responsiblePerson.trim() || null,
+      }));
+
+    const uniqueOfficeIds = new Set(
+      normalizedAssignments.map((assignment) => assignment.officeId),
+    );
+    if (uniqueOfficeIds.size !== normalizedAssignments.length) {
+      setDocumentEditError(
+        "Each responsible office can only be assigned once.",
+      );
+      return;
+    }
+
     const payload: UpdateDocumentPayload = {
       documentTypeId,
       priority,
       classification,
       confidentialityLevel,
       deadline: deadline ? new Date(deadline).toISOString() : null,
-      responsibleOfficeId: responsibleOfficeId || null,
-      responsiblePerson: responsiblePerson.trim() || null,
+      responsibleAssignments: normalizedAssignments,
     };
 
     try {
@@ -461,9 +572,14 @@ export function DocumentDetailsDrawer({
       const selectedType = availableDocumentTypes.find(
         (item) => item.id === documentTypeId,
       );
-      const selectedOffice = availableOffices.find(
-        (office) => office.id === responsibleOfficeId,
-      );
+      const savedAssignments = normalizedAssignments.map((assignment) => ({
+        ...assignment,
+        office:
+          availableOffices.find(
+            (office) => office.id === assignment.officeId,
+          ) ?? null,
+      }));
+      const firstAssignment = savedAssignments[0] ?? null;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setDocumentData((previous: any) => ({
@@ -472,12 +588,21 @@ export function DocumentDetailsDrawer({
         documentType: selectedType
           ? { id: selectedType.id, name: selectedType.name }
           : previous.documentType,
-        responsibleOffice: selectedOffice
-          ? selectedOffice
-          : responsibleOfficeId
-            ? previous.responsibleOffice
-            : null,
+        responsibilities: savedAssignments.map((assignment) => ({
+          ...assignment,
+          office: assignment.office,
+        })),
+        // Maintain compatibility with older UI sections and generated routing slips.
+        responsibleOfficeId: firstAssignment?.officeId ?? null,
+        responsibleOffice: firstAssignment?.office ?? null,
+        responsiblePerson: firstAssignment?.responsiblePerson ?? null,
       }));
+      setResponsibilityAssignments(
+        savedAssignments.map((assignment) => ({
+          officeId: assignment.officeId,
+          responsiblePerson: assignment.responsiblePerson ?? "",
+        })),
+      );
 
       setIsEditingDocument(false);
       toast.success("Document updated successfully.");
@@ -513,6 +638,44 @@ export function DocumentDetailsDrawer({
     listType !== "outgoing" &&
     ROUTABLE_STATUSES.includes(documentData?.currentStatus?.name),
   );
+
+  // Keep the same list visibility as the former row-level status control.
+  const canChangeWorkflowStatus =
+    listType === "pending" || listType === "archived";
+
+  const handleUpdateWorkflowStatus = async () => {
+    if (!canChangeWorkflowStatus || !selectedWorkflowStatus) return;
+
+    const statusLabel = selectedWorkflowStatus.replaceAll("_", " ");
+
+    try {
+      setUpdatingWorkflowStatus(true);
+
+      const response = await api.patch(`/documents/${documentData.id}/status`, {
+        status: selectedWorkflowStatus,
+      });
+
+      const responseDocument = response.data ?? {};
+      const updatedDocument = {
+        ...documentData,
+        ...responseDocument,
+        currentStatus: responseDocument.currentStatus ?? {
+          ...(documentData.currentStatus ?? {}),
+          name: selectedWorkflowStatus,
+        },
+      };
+
+      setDocumentData(updatedDocument);
+      setSelectedWorkflowStatus("");
+      toast.success(`Document marked as ${statusLabel}`);
+      await onStatusChanged?.(updatedDocument);
+    } catch (error) {
+      console.error("Failed to update document status:", error);
+      toast.error("Failed to update status. Please try again.");
+    } finally {
+      setUpdatingWorkflowStatus(false);
+    }
+  };
 
   const selectedRouteOffice = routeOffices.find(
     (office) => office.id === routeForm.toOfficeId,
@@ -730,7 +893,7 @@ export function DocumentDetailsDrawer({
       }
     }; */
 
-  const handleDownloadRoutingSlip = async () => {
+  const handleViewRoutingSlip = async () => {
     try {
       /*
         |--------------------------------------------------------------------------
@@ -753,6 +916,54 @@ export function DocumentDetailsDrawer({
         division: [],
       };
 
+      // The routing-slip endpoint may return only the legacy primary
+      // responsibility fields. Prefer its full assignment list when present,
+      // otherwise use the already-loaded workspace document assignments.
+      const routingResponsibilities =
+        Array.isArray(routingDocument?.responsibilities) &&
+        routingDocument.responsibilities.length > 0
+          ? routingDocument.responsibilities
+          : Array.isArray(documentData.responsibilities)
+            ? documentData.responsibilities
+            : [];
+
+      const responsibilityAssignments =
+        routingResponsibilities.length > 0
+          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            routingResponsibilities.map((assignment: any) => ({
+              id: assignment.id,
+              officeId: assignment.officeId ?? assignment.office?.id ?? null,
+              officeCode:
+                assignment.office?.officeCode ?? assignment.officeCode ?? null,
+              officeName:
+                assignment.office?.officeName ?? assignment.officeName ?? null,
+              office: assignment.office
+                ? {
+                    id: assignment.office.id,
+                    officeCode: assignment.office.officeCode ?? null,
+                    officeName: assignment.office.officeName ?? null,
+                  }
+                : null,
+              responsiblePerson: assignment.responsiblePerson ?? null,
+            }))
+          : (routingDocument?.responsibleOffice ??
+              documentData.responsibleOffice ??
+              routingDocument?.responsiblePerson ??
+              documentData.responsiblePerson)
+            ? [
+                {
+                  office:
+                    routingDocument?.responsibleOffice ??
+                    documentData.responsibleOffice ??
+                    null,
+                  responsiblePerson:
+                    routingDocument?.responsiblePerson ??
+                    documentData.responsiblePerson ??
+                    null,
+                },
+              ]
+            : [];
+
       /*
         |--------------------------------------------------------------------------
         | TRACKING QR CODE
@@ -772,7 +983,7 @@ export function DocumentDetailsDrawer({
         |--------------------------------------------------------------------------
         */
 
-      await downloadRoutingSlipV2({
+      const routingSlipPdfBlob = await generateRoutingSlipV2Blob({
         trackingNumber:
           routingSlip?.trackingNumber ?? documentData.trackingNumber,
 
@@ -818,7 +1029,12 @@ export function DocumentDetailsDrawer({
 
         responsibleOffice: routingDocument?.responsibleOffice ?? null,
 
-        responsiblePerson: routingDocument?.responsiblePerson ?? null,
+        responsiblePerson:
+          routingDocument?.responsiblePerson ??
+          documentData.responsiblePerson ??
+          null,
+
+        responsibilities: responsibilityAssignments,
 
         totalAgeDays: routingDocument?.totalAgeDays ?? 0,
 
@@ -854,11 +1070,50 @@ export function DocumentDetailsDrawer({
 
         allActions: routingSlip?.allActions ?? [],
       });
-    } catch (error) {
-      console.error("Failed to download routing slip:", error);
 
-      toast.error("Failed to generate routing slip.");
+      const previewUrl = URL.createObjectURL(routingSlipPdfBlob);
+      setRoutingSlipPreviewBlob(routingSlipPdfBlob);
+      setRoutingSlipPreviewUrl(previewUrl);
+      setRoutingSlipPreviewOpen(true);
+    } catch (error) {
+      console.error("Failed to generate routing slip preview:", error);
+
+      toast.error("Failed to generate routing slip preview.");
+    } finally {
+      setRoutingSlipPreviewLoading(false);
     }
+  };
+
+  const openRoutingSlipPreview = () => {
+    setRoutingSlipPreviewLoading(true);
+    void handleViewRoutingSlip();
+  };
+
+  const closeRoutingSlipPreview = () => {
+    setRoutingSlipPreviewOpen(false);
+    setRoutingSlipPreviewUrl(null);
+    setRoutingSlipPreviewBlob(null);
+  };
+
+  const handleDownloadRoutingSlipPreview = () => {
+    if (!routingSlipPreviewBlob) return;
+
+    saveAs(
+      routingSlipPreviewBlob,
+      `${documentData.trackingNumber}-routing-slip-v2.pdf`,
+    );
+  };
+
+  const handlePrintRoutingSlipPreview = () => {
+    const previewWindow = routingSlipPreviewFrameRef.current?.contentWindow;
+
+    if (!previewWindow) {
+      toast.error("The routing slip preview is not ready to print.");
+      return;
+    }
+
+    previewWindow.focus();
+    previewWindow.print();
   };
 
   const getAttachmentUrl = (filePath: string) => {
@@ -1018,6 +1273,24 @@ export function DocumentDetailsDrawer({
     }
   };
 
+  const displayedResponsibilities =
+    documentData.responsibilities?.length > 0
+      ? documentData.responsibilities
+      : documentData.responsibleOfficeId ||
+          documentData.responsibleOffice?.id ||
+          documentData.responsiblePerson
+        ? [
+            {
+              officeId:
+                documentData.responsibleOfficeId ??
+                documentData.responsibleOffice?.id ??
+                null,
+              office: documentData.responsibleOffice ?? null,
+              responsiblePerson: documentData.responsiblePerson ?? null,
+            },
+          ]
+        : [];
+
   return (
     <Sheet
       open={open}
@@ -1134,12 +1407,23 @@ export function DocumentDetailsDrawer({
                     )}
 
                     <Button
+                      type="button"
                       variant="outline"
                       size="sm"
+                      disabled={routingSlipPreviewLoading}
                       className="cursor-pointer rounded-xl dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
-                      onClick={handleDownloadRoutingSlip}
+                      onClick={openRoutingSlipPreview}
                     >
-                      Download Routing Slip
+                      {routingSlipPreviewLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                          Preparing Preview...
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="mr-2 h-4 w-4" /> View Routing Slip
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -1417,78 +1701,173 @@ export function DocumentDetailsDrawer({
               </section>
 
               <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-[#214234] dark:bg-[#102418]">
-                <div className="mb-5 flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400">
-                    <Building2 className="h-4 w-4" />
+                <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400">
+                      <Building2 className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-black text-slate-900 dark:text-[#F3F8F3]">
+                        Responsible Offices &amp; Persons
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-[#7FA18E]">
+                        Assign one responsible person for each accountable
+                        office. These assignments do not route or transfer
+                        document custody.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-black text-slate-900 dark:text-[#F3F8F3]">
-                      Responsibility
-                    </h4>
-                    <p className="text-xs text-slate-500 dark:text-[#7FA18E]">
-                      Assign an optional responsible office or person.
-                    </p>
-                  </div>
+                  <Badge className="w-fit rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+                    {responsibilityAssignments.length} assignment
+                    {responsibilityAssignments.length === 1 ? "" : "s"}
+                  </Badge>
                 </div>
 
-                <div className="grid gap-5 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>
-                      Responsible Office{" "}
-                      <span className="text-xs font-normal text-slate-400">
-                        Optional
-                      </span>
-                    </Label>
-                    <Select
-                      value={responsibleOfficeId || "NONE"}
-                      disabled={savingDocument || loadingEditOptions}
-                      onValueChange={(value) =>
-                        setResponsibleOfficeId(value === "NONE" ? "" : value)
-                      }
-                    >
-                      <SelectTrigger className="h-11 w-full rounded-xl dark:border-[#214234] dark:bg-[#07150D] dark:text-[#F3F8F3]">
-                        <SelectValue placeholder="Select responsible office" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="NONE">
-                          No responsible office
-                        </SelectItem>
-                        {availableOffices.map((office) => (
-                          <SelectItem key={office.id} value={office.id}>
-                            {office.officeName}
-                            {office.officeCode ? ` (${office.officeCode})` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs leading-5 text-slate-500 dark:text-[#7FA18E]">
-                      Select the office accountable for the document or
-                      requested action.
-                    </p>
-                  </div>
+                <div className="space-y-3">
+                  {responsibilityAssignments.length === 0 && (
+                    <div className="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-center dark:border-[#315844]">
+                      <Building2 className="mx-auto h-6 w-6 text-slate-400" />
+                      <p className="mt-2 text-sm font-medium text-slate-600 dark:text-[#A9C5B6]">
+                        No responsible offices assigned
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-[#7FA18E]">
+                        Add an office and its corresponding responsible person.
+                      </p>
+                    </div>
+                  )}
 
-                  <div className="space-y-2">
-                    <Label htmlFor="workspace-responsible-person">
-                      Responsible Person{" "}
-                      <span className="text-xs font-normal text-slate-400">
-                        Optional
-                      </span>
-                    </Label>
-                    <Input
-                      id="workspace-responsible-person"
-                      value={responsiblePerson}
-                      disabled={savingDocument || loadingEditOptions}
-                      onChange={(event) =>
-                        setResponsiblePerson(event.target.value)
-                      }
-                      placeholder="Enter responsible person's name"
-                      className="h-11 rounded-xl dark:border-[#214234] dark:bg-[#07150D] dark:text-[#F3F8F3]"
-                    />
-                    <p className="text-xs leading-5 text-slate-500 dark:text-[#7FA18E]">
-                      This can be entered even when no responsible office is
-                      selected.
-                    </p>
-                  </div>
+                  {responsibilityAssignments.map((assignment, index) => {
+                    const officesForAssignment = availableOffices.filter(
+                      (office) =>
+                        office.id === assignment.officeId ||
+                        !responsibilityAssignments.some(
+                          (other, otherIndex) =>
+                            otherIndex !== index &&
+                            other.officeId === office.id,
+                        ),
+                    );
+
+                    return (
+                      <div
+                        key={`responsible-assignment-${index}`}
+                        className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-[#214234] dark:bg-[#0B1F14]"
+                      >
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          <p className="text-sm font-bold text-slate-800 dark:text-[#F3F8F3]">
+                            Assignment {index + 1}
+                          </p>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={savingDocument || loadingEditOptions}
+                            onClick={() =>
+                              setResponsibilityAssignments((previous) =>
+                                previous.filter(
+                                  (_, itemIndex) => itemIndex !== index,
+                                ),
+                              )
+                            }
+                            className="h-8 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
+                          >
+                            <Trash2 className="mr-1.5 h-4 w-4" />
+                            Remove
+                          </Button>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label>
+                              Responsible Office{" "}
+                              <span className="text-xs font-normal text-slate-400">
+                                Required
+                              </span>
+                            </Label>
+                            <Select
+                              value={assignment.officeId || "NONE"}
+                              disabled={savingDocument || loadingEditOptions}
+                              onValueChange={(value) =>
+                                setResponsibilityAssignments((previous) =>
+                                  previous.map((item, itemIndex) =>
+                                    itemIndex === index
+                                      ? {
+                                          ...item,
+                                          officeId:
+                                            value === "NONE" ? "" : value,
+                                        }
+                                      : item,
+                                  ),
+                                )
+                              }
+                            >
+                              <SelectTrigger className="h-11 w-full rounded-xl dark:border-[#214234] dark:bg-[#07150D] dark:text-[#F3F8F3]">
+                                <SelectValue placeholder="Select responsible office" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="NONE">
+                                  Select an office
+                                </SelectItem>
+                                {officesForAssignment.map((office) => (
+                                  <SelectItem key={office.id} value={office.id}>
+                                    {office.officeName}
+                                    {office.officeCode
+                                      ? ` (${office.officeCode})`
+                                      : ""}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor={`workspace-responsible-person-${index}`}
+                            >
+                              Responsible Person{" "}
+                              <span className="text-xs font-normal text-slate-400">
+                                Optional
+                              </span>
+                            </Label>
+                            <Input
+                              id={`workspace-responsible-person-${index}`}
+                              value={assignment.responsiblePerson}
+                              disabled={savingDocument || loadingEditOptions}
+                              onChange={(event) =>
+                                setResponsibilityAssignments((previous) =>
+                                  previous.map((item, itemIndex) =>
+                                    itemIndex === index
+                                      ? {
+                                          ...item,
+                                          responsiblePerson: event.target.value,
+                                        }
+                                      : item,
+                                  ),
+                                )
+                              }
+                              placeholder="Enter responsible person's name"
+                              className="h-11 rounded-xl dark:border-[#214234] dark:bg-[#07150D] dark:text-[#F3F8F3]"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={savingDocument || loadingEditOptions}
+                    onClick={() =>
+                      setResponsibilityAssignments((previous) => [
+                        ...previous,
+                        { officeId: "", responsiblePerson: "" },
+                      ])
+                    }
+                    className="w-full rounded-xl border-dashed border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950/20"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Responsible Office
+                  </Button>
                 </div>
               </section>
 
@@ -1760,45 +2139,55 @@ export function DocumentDetailsDrawer({
                   </div>
                 </div>
 
-                {/* RESPONSIBLE OFFICE */}
-
+                {/* RESPONSIBLE OFFICES & PERSONS */}
                 <div className="rounded-2xl border border-slate-200 bg-white p-5 transition-colors dark:border-[#214234] dark:bg-[#102418]">
-                  <div className="flex items-center gap-3">
-                    <Building2 className="h-5 w-5 text-slate-500 dark:text-[#A9C5B6]" />
-
-                    <div>
+                  <div className="flex items-start gap-3">
+                    <Building2 className="mt-0.5 h-5 w-5 text-slate-500 dark:text-[#A9C5B6]" />
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
-                        Responsible Office
+                        Responsible Offices &amp; Persons
                       </p>
 
-                      <h4 className="font-bold text-slate-900 dark:text-[#F3F8F3]">
-                        {documentData.responsibleOffice?.officeName ||
-                          "Not assigned"}
-                      </h4>
-
-                      {documentData.responsibleOffice?.officeCode && (
-                        <p className="mt-0.5 text-xs text-slate-400 dark:text-[#7FA18E]">
-                          {documentData.responsibleOffice.officeCode}
+                      {displayedResponsibilities.length > 0 ? (
+                        <div className="mt-3 space-y-3">
+                          {displayedResponsibilities.map(
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (assignment: any, index: number) => (
+                              <div
+                                key={
+                                  assignment.id ??
+                                  `${assignment.officeId ?? "legacy"}-${index}`
+                                }
+                                className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-[#214234] dark:bg-[#0B1F14]"
+                              >
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                  Assignment {index + 1}
+                                </p>
+                                <p className="mt-1 font-bold text-slate-900 dark:text-[#F3F8F3]">
+                                  {assignment.office?.officeName ??
+                                    "Office not assigned"}
+                                </p>
+                                {assignment.office?.officeCode && (
+                                  <p className="text-xs text-slate-400 dark:text-[#7FA18E]">
+                                    {assignment.office.officeCode}
+                                  </p>
+                                )}
+                                <p className="mt-2 text-sm text-slate-600 dark:text-[#A9C5B6]">
+                                  Responsible Person:{" "}
+                                  <span className="font-semibold text-slate-800 dark:text-[#F3F8F3]">
+                                    {assignment.responsiblePerson ||
+                                      "Not assigned"}
+                                  </span>
+                                </p>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      ) : (
+                        <p className="mt-1 font-bold text-slate-900 dark:text-[#F3F8F3]">
+                          No responsible offices assigned
                         </p>
                       )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* RESPONSIBLE PERSON */}
-
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 transition-colors dark:border-[#214234] dark:bg-[#102418]">
-                  <div className="flex items-center gap-3">
-                    <UserRound className="h-5 w-5 text-slate-500 dark:text-[#A9C5B6]" />
-
-                    <div>
-                      <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
-                        Responsible Person
-                      </p>
-
-                      <h4 className="font-bold text-slate-900 dark:text-[#F3F8F3]">
-                        {documentData.responsiblePerson || "Not assigned"}
-                      </h4>
                     </div>
                   </div>
                 </div>
@@ -1938,6 +2327,80 @@ export function DocumentDetailsDrawer({
               {actions.length} {actions.length === 1 ? "entry" : "entries"}
             </Badge>
           </div>
+
+          {canChangeWorkflowStatus && (
+            <section className="mb-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-[#214234] dark:bg-[#102418]">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+                    <Activity className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-[#F3F8F3]">
+                      Workflow Status
+                    </h4>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-[#A9C5B6]">
+                      Update the document&apos;s current processing status.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 sm:justify-end">
+                  <span className="text-xs font-medium text-slate-500 dark:text-[#A9C5B6]">
+                    Current status
+                  </span>
+                  <Badge className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300">
+                    {formatEnumLabel(documentData.currentStatus?.name)}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                <div className="space-y-2">
+                  <Label htmlFor="document-workflow-status">Change to</Label>
+                  <Select
+                    value={selectedWorkflowStatus}
+                    onValueChange={setSelectedWorkflowStatus}
+                    disabled={updatingWorkflowStatus}
+                  >
+                    <SelectTrigger
+                      id="document-workflow-status"
+                      className="h-11 w-full rounded-xl border-slate-200 bg-slate-50 dark:border-[#214234] dark:bg-[#07150D] dark:text-[#F3F8F3]"
+                    >
+                      <SelectValue placeholder="Select new status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {WORKFLOW_STATUS_OPTIONS.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status.replaceAll("_", " ")}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  type="button"
+                  onClick={handleUpdateWorkflowStatus}
+                  disabled={!selectedWorkflowStatus || updatingWorkflowStatus}
+                  className="h-11 rounded-xl bg-[#102418] px-5 text-white hover:bg-[#183B27] disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                >
+                  {updatingWorkflowStatus ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" /> Update Status
+                    </>
+                  )}
+                </Button>
+              </div>
+              <p className="mt-3 text-xs text-slate-500 dark:text-[#7FA18E]">
+                Status changes are recorded in the document workflow history.
+              </p>
+            </section>
+          )}
+
           <div className="space-y-5">
             {/* ACTIONS */}
             <div>
@@ -2602,6 +3065,92 @@ export function DocumentDetailsDrawer({
           )}
         </div>
       </SheetContent>
+
+      <Dialog
+        open={routingSlipPreviewOpen}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            closeRoutingSlipPreview();
+          } else {
+            setRoutingSlipPreviewOpen(true);
+          }
+        }}
+      >
+        <DialogContent
+          className="flex h-[94vh] w-[96vw] max-w-none flex-col gap-0 overflow-hidden border-slate-200 p-0 dark:border-[#214234] dark:bg-[#07150D] sm:!max-w-none"
+          style={{
+            width: "min(96vw, 1600px)",
+            maxWidth: "min(96vw, 1600px)",
+            height: "94vh",
+            maxHeight: "94vh",
+          }}
+        >
+          <DialogHeader className="shrink-0 border-b border-slate-200 px-6 py-4 pr-12 text-left dark:border-[#214234]">
+            <DialogTitle className="text-xl font-black text-slate-900 dark:text-[#F3F8F3]">
+              Routing Slip Preview
+            </DialogTitle>
+            <DialogDescription className="text-sm text-slate-500 dark:text-[#A9C5B6]">
+              {documentData.trackingNumber} · Review the official routing slip
+              before printing or downloading.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-6 py-3 dark:border-[#214234] dark:bg-[#0B1F14]">
+            <p className="text-xs text-slate-500 dark:text-[#A9C5B6]">
+              Generated from the current document and routing history.
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={!routingSlipPreviewBlob}
+                onClick={handlePrintRoutingSlipPreview}
+                className="rounded-xl dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]"
+              >
+                <Printer className="mr-2 h-4 w-4" />
+                Print
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                disabled={!routingSlipPreviewBlob}
+                onClick={handleDownloadRoutingSlipPreview}
+                className="rounded-xl bg-emerald-700 text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </Button>
+            </div>
+          </div>
+
+          <div className="min-h-0 flex-1 bg-slate-100 p-2 dark:bg-[#07150D]">
+            {routingSlipPreviewUrl ? (
+              <iframe
+                ref={routingSlipPreviewFrameRef}
+                src={routingSlipPreviewUrl}
+                title={`Routing slip preview for ${documentData.trackingNumber}`}
+                className="h-full w-full rounded-lg border border-slate-200 bg-white dark:border-[#214234]"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm text-slate-500 dark:text-[#A9C5B6]">
+                Preparing routing slip preview...
+              </div>
+            )}
+          </div>
+
+          <div className="flex shrink-0 justify-end border-t border-slate-200 bg-white px-6 py-3 dark:border-[#214234] dark:bg-[#0B1F14]">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={closeRoutingSlipPreview}
+              className="rounded-xl dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]"
+            >
+              Close Preview
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Sheet>
   );
 }

@@ -1,39 +1,32 @@
-'use client';
+"use client";
 
 import {
   Building2,
   FileText,
   MoreVertical,
   Search,
-  ChevronDown,
   UserCheck,
-} from 'lucide-react';
+} from "lucide-react";
 
-import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { api } from '@/lib/axios';
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { api } from "@/lib/axios";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
-import { Input } from '@/components/ui/input';
-import { DocumentDetailsDrawer } from './document-details-drawer';
-import { toast } from 'sonner';
-import { useNotificationStore } from '@/store/notification.store';
-import DocumentDialog from './document-dialog';
-import { useRouter } from 'next/navigation';
+import { Input } from "@/components/ui/input";
+import { DocumentDetailsDrawer } from "./document-details-drawer";
+import { useNotificationStore } from "@/store/notification.store";
+import DocumentDialog from "./document-dialog";
+import { useRouter } from "next/navigation";
 
 export function DocumentsTable({
   documents,
@@ -52,69 +45,27 @@ export function DocumentsTable({
   loading: boolean;
   onRefresh: () => void;
   page?: number;
-  setPage?: (page: number,) => void;
+  setPage?: (page: number) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   meta?: any;
   search?: string;
-  setSearch?: (value: string,) => void;
+  setSearch?: (value: string) => void;
 }) {
-
-
   const router = useRouter();
 
-   const [
+  const [
     selectedDocument,
     setSelectedDocument,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ] = useState<any | null>(null);
 
-  const [
-    openDetails,
-    setOpenDetails,
-  ] = useState(false);
+  const [openDetails, setOpenDetails] = useState(false);
 
   // Incremented each time a document is opened so the workspace initializes
   // its local form state from the latest selected row without a reset effect.
   const [workspaceSession, setWorkspaceSession] = useState(0);
 
-  const WORKFLOW_STATUSES = [
-    'FOR_REVIEW',
-    'FOR_APPROVAL',
-    'FOR_RELEASE',
-    'ON_PROCESS',
-    'APPROVED',
-    'COMPLETED',
-    'END_TRANSACTION',
-  ];
-
   const { markAsRead, notifications } = useNotificationStore();
-
-  const handleStatusChange =
-    async (
-      documentId: string,
-      status: string,
-    ) => {
-      try {
-        await api.patch(
-          `/documents/${documentId}/status`,
-          {
-            status,
-          },
-        );
-
-        toast.success(
-          `Document marked as ${status}`,
-        );
-
-        onRefresh?.();
-      } catch (error) {
-        console.error(error);
-
-        toast.error(
-          'Failed to update status',
-        );
-      }
-    };
 
   // Keep the selected Document Workspace mounted while a save or route refreshes the table.
   if (loading && !openDetails) {
@@ -127,154 +78,115 @@ export function DocumentsTable({
     );
   }
 
-  const getStatusStyle = (
-    status: string,
-  ) => {
+  const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'APPROVED':
-        return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+      case "APPROVED":
+        return "bg-emerald-100 text-emerald-700 border-emerald-200";
 
-      case 'REJECTED':
-        return 'bg-red-100 text-red-700 border-red-200';
+      case "REJECTED":
+        return "bg-red-100 text-red-700 border-red-200";
 
-      case 'COMPLETED':
-        return 'bg-slate-200 text-slate-700 border-slate-300';
+      case "COMPLETED":
+        return "bg-slate-200 text-slate-700 border-slate-300";
 
-      case 'FOR_REVIEW':
-        return 'bg-blue-100 text-blue-700 border-blue-200';
+      case "FOR_REVIEW":
+        return "bg-blue-100 text-blue-700 border-blue-200";
 
       default:
-        return 'bg-amber-100 text-amber-700 border-amber-200';
+        return "bg-amber-100 text-amber-700 border-amber-200";
     }
   };
 
-  const getClassificationStyle = (
-    status: string,
-  ) => {
+  const getClassificationStyle = (status: string) => {
     switch (status) {
-      case 'SIMPLE':
-        return 'bg-green-100 text-green-700 border-green-200';
+      case "SIMPLE":
+        return "bg-green-100 text-green-700 border-green-200";
 
-      case 'COMPLEX':
-        return 'bg-orange-100 text-orange-700 border-orange-200';
+      case "COMPLEX":
+        return "bg-orange-100 text-orange-700 border-orange-200";
 
-      case 'HIGHLY_TECHNICAL':
-        return 'bg-red-200 text-red-700 border-red-300';
+      case "HIGHLY_TECHNICAL":
+        return "bg-red-200 text-red-700 border-red-300";
 
       default:
-        return 'bg-amber-100 text-amber-700 border-amber-200';
+        return "bg-amber-100 text-amber-700 border-amber-200";
     }
   };
 
-  const getDeadlineInfo = (
-    deadline: string,
-    status?: string,
-  ) => {
+  const getDeadlineInfo = (deadline: string, status?: string) => {
     if (!deadline) {
       return null;
     }
 
     const now = new Date();
 
-    const deadlineDate =
-      new Date(deadline);
+    const deadlineDate = new Date(deadline);
 
-    const diffMs =
-      deadlineDate.getTime() -
-      now.getTime();
+    const diffMs = deadlineDate.getTime() - now.getTime();
 
     if (diffMs <= 0) {
-      if (status?.toUpperCase() === 'COMPLETED') {
+      if (status?.toUpperCase() === "COMPLETED") {
         return null;
       }
 
       return {
-        text: 'Overdue',
-        className:
-          'bg-red-100 text-red-700 border-red-200',
+        text: "Overdue",
+        className: "bg-red-100 text-red-700 border-red-200",
       };
     }
 
-    const diffHours = Math.floor(
-      diffMs /
-        (1000 * 60 * 60),
-    );
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
 
-    const diffDays = Math.floor(
-      diffHours / 24,
-    );
+    const diffDays = Math.floor(diffHours / 24);
 
     if (diffHours < 24) {
       return {
-        text: `${diffHours} hour${
-          diffHours > 1
-            ? 's'
-            : ''
-        } remaining`,
+        text: `${diffHours} hour${diffHours > 1 ? "s" : ""} remaining`,
         className:
-          'bg-orange-100 text-orange-700 border-orange-200 animate-pulse',
+          "bg-orange-100 text-orange-700 border-orange-200 animate-pulse",
       };
     }
 
     if (diffDays <= 3) {
       return {
-        text: `${diffDays} day${
-          diffDays > 1
-            ? 's'
-            : ''
-        } remaining`,
-        className:
-          'bg-amber-100 text-amber-700 border-amber-200',
+        text: `${diffDays} day${diffDays > 1 ? "s" : ""} remaining`,
+        className: "bg-amber-100 text-amber-700 border-amber-200",
       };
     }
 
     return {
       text: `${diffDays} days remaining`,
-      className:
-        'bg-emerald-100 text-emerald-700 border-emerald-200',
+      className: "bg-emerald-100 text-emerald-700 border-emerald-200",
     };
   };
 
-  const handleUpdateDocument =
-    async (
-      documentId: string,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      data: any,
-    ) => {
-      console.log("updated data:", data)
+  const handleUpdateDocument = async (
+    documentId: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: any,
+  ) => {
+    console.log("updated data:", data);
 
-      try {
-        const res = await api.patch(`/documents/${documentId}`, data);
+    try {
+      const res = await api.patch(`/documents/${documentId}`, data);
 
-        console.log(
-          'DOCUMENT UPDATED:',
-          res.data,
-        );
+      console.log("DOCUMENT UPDATED:", res.data);
 
-        // Replace this with imong existing
-        // document-list refresh function.
-         onRefresh();
-      } catch (error) {
-        console.error(
-          'UPDATE DOCUMENT ERROR:',
-          error,
-        );
+      // Replace this with imong existing
+      // document-list refresh function.
+      onRefresh();
+    } catch (error) {
+      console.error("UPDATE DOCUMENT ERROR:", error);
 
-        throw error;
-      }
-    };
+      throw error;
+    }
+  };
 
   const uniqueDocuments = Array.from(
-    new Map(
-      documents.map((document) => [
-        document.id,
-        document,
-      ]),
-    ).values(),
+    new Map(documents.map((document) => [document.id, document])).values(),
   );
 
-
-  console.log('all documents::',documents)
+  console.log("all documents::", documents);
 
   return (
     <>
@@ -299,11 +211,9 @@ export function DocumentsTable({
               <Input
                 placeholder="Search documents..."
                 className="pl-10 dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:placeholder:text-[#7FA18E]"
-                value={search ?? ''}
+                value={search ?? ""}
                 onChange={(e) => {
-                  setSearch?.(
-                    e.target.value,
-                  );
+                  setSearch?.(e.target.value);
 
                   setPage?.(1);
                 }}
@@ -315,17 +225,12 @@ export function DocumentsTable({
         {/* CONTENT */}
         <CardContent className="space-y-3 p-4">
           {uniqueDocuments.map((doc, i) => {
-            const deadlineInfo =
-              getDeadlineInfo(
-                doc.deadline, doc.currentStatus?.name
-              );
+            const deadlineInfo = getDeadlineInfo(
+              doc.deadline,
+              doc.currentStatus?.name,
+            );
 
-            const canUpdate = [
-                'DRAFT'
-              ].includes(
-                doc.currentStatus
-                  ?.name,
-              );
+            const canUpdate = ["DRAFT"].includes(doc.currentStatus?.name);
 
             return (
               <div
@@ -334,23 +239,20 @@ export function DocumentsTable({
                   setWorkspaceSession((session) => session + 1);
                   setSelectedDocument(doc);
 
-                  const notification = notifications.find(n => n.documentId === doc.id);
-                  if(notification) {
-                    await api.patch(
-                      `/notifications/${notification.id}/read`,
-                    );
+                  const notification = notifications.find(
+                    (n) => n.documentId === doc.id,
+                  );
+                  if (notification) {
+                    await api.patch(`/notifications/${notification.id}/read`);
                     markAsRead(notification.id);
                   }
 
-                  setOpenDetails(
-                    true,
-                  );
+                  setOpenDetails(true);
                 }}
                 className={`group cursor-pointer rounded-3xl border p-5 transition-all duration-300 hover:border-green-200 hover:bg-slate-50 hover:shadow-md dark:hover:border-green-600 dark:hover:bg-[#173227] ${
-                  deadlineInfo?.text ===
-                  'Overdue'
-                    ? 'border-red-200 bg-red-50/30 dark:border-red-900 dark:bg-red-950/30'
-                    : 'border-slate-200 bg-white dark:border-[#214234] dark:bg-[#102418]'
+                  deadlineInfo?.text === "Overdue"
+                    ? "border-red-200 bg-red-50/30 dark:border-red-900 dark:bg-red-950/30"
+                    : "border-slate-200 bg-white dark:border-[#214234] dark:bg-[#102418]"
                 }`}
               >
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
@@ -366,9 +268,7 @@ export function DocumentsTable({
                       {/* TITLE */}
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="truncate text-xl font-bold text-[#102418] dark:text-[#F3F8F3]">
-                          {
-                            doc.title
-                          }
+                          {doc.title}
                         </h3>
 
                         <span className="text-sm text-slate-400 dark:text-[#6C9A83]">
@@ -376,23 +276,17 @@ export function DocumentsTable({
                         </span>
 
                         <span className="text-sm font-medium text-slate-500 dark:text-[#A9C5B6]">
-                          {
-                            doc
-                              .documentType
-                              ?.name
-                          }
+                          {doc.documentType?.name}
                         </span>
                       </div>
 
                       {/* META */}
                       <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-[#A9C5B6]">
                         <div className="font-medium text-slate-700 dark:text-[#F3F8F3]">
-                          {
-                            doc.trackingNumber
-                          }
+                          {doc.trackingNumber}
                         </div>
 
-                        {type !== 'documents' && type !== 'pending' ? (
+                        {type !== "documents" && type !== "pending" ? (
                           <div className="flex items-center gap-1.5">
                             <Building2 className="h-4 w-4" />
                             {doc.currentOffice?.officeName}
@@ -408,17 +302,15 @@ export function DocumentsTable({
                           )
                         )}
 
-                        
-
                         <div className="flex items-center gap-1.5">
                           <Badge
                             className={`rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-wide ${getClassificationStyle(
-                             doc.classification,
+                              doc.classification,
                             )}`}
                           >
-                            {
-                              doc.classification === 'HIGHLY_TECHNICAL' ? 'HIGHLY HIGHLY_TECHNICAL' : doc.classification
-                            }
+                            {doc.classification === "HIGHLY_TECHNICAL"
+                              ? "HIGHLY HIGHLY_TECHNICAL"
+                              : doc.classification}
                           </Badge>
                         </div>
                       </div>
@@ -430,15 +322,10 @@ export function DocumentsTable({
                     {/* STATUS */}
                     <Badge
                       className={`rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-wide ${getStatusStyle(
-                        doc.currentStatus
-                          ?.name,
+                        doc.currentStatus?.name,
                       )}`}
                     >
-                      {
-                        doc
-                          .currentStatus
-                          ?.name
-                      }
+                      {doc.currentStatus?.name}
                     </Badge>
 
                     {/* DEADLINE */}
@@ -446,70 +333,15 @@ export function DocumentsTable({
                       <div
                         className={`rounded-full border px-4 py-1 text-sm font-bold ${deadlineInfo.className}`}
                       >
-                        {
-                          deadlineInfo.text
-                        }
+                        {deadlineInfo.text}
                       </div>
-                    )}
-
-                    {(type === 'pending' || type === 'archived') && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger 
-                          asChild
-                          onClick={(
-                            e,
-                          ) =>
-                            e.stopPropagation()
-                          }
-                        >
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-xl dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
-                          >
-                            Change Status
-
-                            <ChevronDown className="ml-2 h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-
-                        <DropdownMenuContent 
-                        align="end"
-                        onClick={(e) =>
-                            e.stopPropagation()
-                          }
-                        >
-                          {WORKFLOW_STATUSES.map(
-                            (status) => (
-                              <DropdownMenuItem
-                                key={status}
-                                onClick={() =>
-                                  handleStatusChange(
-                                    doc.id,
-                                    status,
-                                  )
-                                }
-                              >
-                                {status.replaceAll(
-                                  '_',
-                                  ' ',
-                                )}
-                              </DropdownMenuItem>
-                            ),
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     )}
 
                     {/* ACTIONS */}
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         asChild
-                        onClick={(
-                          e,
-                        ) =>
-                          e.stopPropagation()
-                        }
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <Button
                           variant="ghost"
@@ -523,9 +355,7 @@ export function DocumentsTable({
                       <DropdownMenuContent
                         align="end"
                         className="w-52 rounded-2xl dark:border-[#214234] dark:bg-[#102418] dark:text-[#F3F8F3]"
-                        onClick={(e) =>
-                          e.stopPropagation()
-                        }
+                        onClick={(e) => e.stopPropagation()}
                       >
                         {/* VIEW DETAILS */}
                         <DropdownMenuItem
@@ -540,13 +370,13 @@ export function DocumentsTable({
                         >
                           View Details
                         </DropdownMenuItem>
-                      
-                        <DropdownMenuItem 
+
+                        <DropdownMenuItem
                           className="cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
                             router.push(
-                              `/track?tracking=${encodeURIComponent(doc.trackingNumber)}`
+                              `/track?tracking=${encodeURIComponent(doc.trackingNumber)}`,
                             );
                           }}
                         >
@@ -554,9 +384,12 @@ export function DocumentsTable({
                         </DropdownMenuItem>
 
                         {canUpdate && (
-                          <DocumentDialog mode="edit" document={doc} onSuccess={onRefresh}/>
+                          <DocumentDialog
+                            mode="edit"
+                            document={doc}
+                            onSuccess={onRefresh}
+                          />
                         )}
-
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -568,17 +401,14 @@ export function DocumentsTable({
 
         <div className="flex items-center justify-between border-t border-slate-100 px-6 py-4 transition-colors dark:border-[#214234]">
           <p className="text-sm text-slate-500 dark:text-[#A9C5B6]">
-            Page {meta?.page} of{' '}
-            {meta?.totalPages}
+            Page {meta?.page} of {meta?.totalPages}
           </p>
 
           <div className="flex gap-2">
             <Button
               variant="outline"
               disabled={page === 1}
-              onClick={() =>
-                setPage?.(page! - 1)
-              }
+              onClick={() => setPage?.(page! - 1)}
               className="dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
             >
               Previous
@@ -586,40 +416,33 @@ export function DocumentsTable({
 
             <Button
               variant="outline"
-              disabled={
-                page ===
-                meta?.totalPages
-              }
-              onClick={() =>
-                setPage?.(page! + 1)
-              }
+              disabled={page === meta?.totalPages}
+              onClick={() => setPage?.(page! + 1)}
               className="dark:border-[#214234] dark:bg-[#173227] dark:text-[#F3F8F3] dark:hover:bg-[#214234]"
             >
               Next
             </Button>
           </div>
         </div>
-
-
       </Card>
 
       {/* DETAILS */}
       <DocumentDetailsDrawer
-        key={`${selectedDocument?.id ?? 'document-details'}-${workspaceSession}`}
+        key={`${selectedDocument?.id ?? "document-details"}-${workspaceSession}`}
         open={openDetails}
-        onOpenChange={
-          setOpenDetails
-        }
-        document={
-          selectedDocument
-        }
+        onOpenChange={setOpenDetails}
+        document={selectedDocument}
         listType={type}
         onSave={handleUpdateDocument}
         onRouteSuccess={onRefresh}
+        onStatusChanged={(updatedDocument) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          setSelectedDocument((current: any) =>
+            current ? { ...current, ...updatedDocument } : updatedDocument,
+          );
+          onRefresh();
+        }}
       />
-
-
-
     </>
   );
 }

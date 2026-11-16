@@ -13,8 +13,31 @@ import type {
   RoutingSlipRoute,
 } from '@/types/document';
 
+/**
+ * Responsibility assignments are intentionally modelled separately from
+ * routing destinations. A document can have several accountable offices,
+ * while each routing transaction still has one receiving office.
+ */
+export type RoutingSlipResponsibilityAssignment = {
+  id?: string;
+  officeId?: string | null;
+  officeCode?: string | null;
+  officeName?: string | null;
+  office?: {
+    id?: string | null;
+    officeCode?: string | null;
+    officeName?: string | null;
+  } | null;
+  responsiblePerson?: string | null;
+};
+
+export type RoutingSlipPdfV2DataWithResponsibilities =
+  RoutingSlipPdfV2Data & {
+    responsibilities?: RoutingSlipResponsibilityAssignment[];
+  };
+
 type Props = {
-  data: RoutingSlipPdfV2Data;
+  data: RoutingSlipPdfV2DataWithResponsibilities;
 };
 
 const styles = StyleSheet.create({
@@ -262,6 +285,40 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontFamily: 'Helvetica-Bold',
     color: '#075B45',
+  },
+
+  responsibilityCard: {
+    flex: 2,
+    minHeight: 42,
+    marginHorizontal: 3,
+    padding: 6,
+    borderWidth: 1,
+    borderColor: '#B8D9CA',
+    borderRadius: 4,
+    backgroundColor: '#F5FBF7',
+  },
+
+  responsibilityItem: {
+    marginBottom: 4,
+  },
+
+  responsibilityOffice: {
+    fontSize: 7.4,
+    fontFamily: 'Helvetica-Bold',
+    color: '#075B45',
+    lineHeight: 1.2,
+  },
+
+  responsibilityPerson: {
+    fontSize: 6.6,
+    color: '#526E60',
+    lineHeight: 1.2,
+    marginTop: 1,
+  },
+
+  responsibilityEmpty: {
+    fontSize: 7,
+    color: '#60776B',
   },
 
   statusDetails: {
@@ -898,6 +955,20 @@ export default function RoutingSlipPDFV2({
   const divisionActions =
     data.instructions?.division ?? [];
 
+  // Prefer the complete assignment list. Fall back to the legacy scalar
+  // fields so older documents still produce a useful routing slip.
+  const responsibilityAssignments =
+    data.responsibilities?.length
+      ? data.responsibilities
+      : data.responsibleOffice || data.responsiblePerson
+        ? [
+            {
+              office: data.responsibleOffice,
+              responsiblePerson: data.responsiblePerson,
+            },
+          ]
+        : [];
+
   return (
     <Document
       title={`Routing Slip - ${data.trackingNumber}`}
@@ -1196,24 +1267,51 @@ export default function RoutingSlipPDFV2({
                 </Text>
               </View>
 
-              <View style={styles.statusCard}>
+              <View style={styles.responsibilityCard}>
                 <Text style={styles.statusCardLabel}>
-                  Responsible Office
+                  Responsible Offices &amp; Persons
                 </Text>
 
-                <Text style={styles.statusCardValue}>
-                  {displayValue(data.responsibleOffice?.officeCode)}
-                </Text>
-              </View>
+                {responsibilityAssignments.length > 0 ? (
+                  responsibilityAssignments.map((assignment, index) => {
+                    const officeName =
+                      assignment.office?.officeName ??
+                      assignment.officeName ??
+                      assignment.office?.officeCode ??
+                      assignment.officeCode ??
+                      'Office not specified';
+                    const officeCode =
+                      assignment.office?.officeCode ??
+                      assignment.officeCode;
+                    const officeLabel =
+                      officeCode && officeName !== officeCode
+                        ? `${officeName} (${officeCode})`
+                        : officeName;
 
-              <View style={styles.statusCard}>
-                <Text style={styles.statusCardLabel}>
-                  Responsible Person
-                </Text>
-
-                <Text style={styles.statusCardValue}>
-                  {displayValue(data.responsiblePerson)}
-                </Text>
+                    return (
+                      <View
+                        key={
+                          assignment.id ??
+                          assignment.officeId ??
+                          assignment.office?.id ??
+                          `${officeLabel}-${index}`
+                        }
+                        style={styles.responsibilityItem}
+                      >
+                        <Text style={styles.responsibilityOffice}>
+                          {index + 1}. {officeLabel}
+                        </Text>
+                        <Text style={styles.responsibilityPerson}>
+                          Responsible Person: {displayValue(assignment.responsiblePerson, 'Not assigned')}
+                        </Text>
+                      </View>
+                    );
+                  })
+                ) : (
+                  <Text style={styles.responsibilityEmpty}>
+                    No responsible office assigned.
+                  </Text>
+                )}
               </View>
 
               <View style={styles.statusCard}>
@@ -1369,8 +1467,8 @@ export default function RoutingSlipPDFV2({
         <Text
           style={styles.pageNumber}
           fixed
-          render={({ pageNumber }) =>
-            `Page ${pageNumber} of 1`
+          render={({ pageNumber, totalPages }) =>
+            `Page ${pageNumber} of ${totalPages}`
           }
         />
       </Page>

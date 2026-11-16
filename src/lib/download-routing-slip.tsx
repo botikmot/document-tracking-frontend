@@ -7,11 +7,12 @@ import {
 import { saveAs } from 'file-saver';
 
 import RoutingSlipPDF from '@/app/dashboard/documents/components/pdf/routing-slip-pdf';
-import RoutingSlipPDFV2 from '@/app/dashboard/documents/components/pdf/routing-slip-pdf-v2';
+import RoutingSlipPDFV2, {
+  type RoutingSlipPdfV2DataWithResponsibilities,
+} from '@/app/dashboard/documents/components/pdf/routing-slip-pdf-v2';
 
 import type {
   RoutingHistoryItem,
-  RoutingSlipPdfV2Data,
 } from '@/types/document';
 
 type Props = {
@@ -44,14 +45,27 @@ export async function downloadRoutingSlip(
   );
 }
 
-export async function downloadRoutingSlipV2(
-  data: RoutingSlipPdfV2Data,
-) {
-  const blob = await pdf(
+/**
+ * Generates the official V2 routing slip as a Blob.
+ * This can be used for an embedded preview, printing, or downloading.
+ */
+export async function generateRoutingSlipV2Blob(
+  data: RoutingSlipPdfV2DataWithResponsibilities,
+): Promise<Blob> {
+  return pdf(
     <RoutingSlipPDFV2
       data={data}
     />,
   ).toBlob();
+}
+
+/**
+ * Keeps the existing download API backward-compatible.
+ */
+export async function downloadRoutingSlipV2(
+  data: RoutingSlipPdfV2DataWithResponsibilities,
+) {
+  const blob = await generateRoutingSlipV2Blob(data);
 
   saveAs(
     blob,
